@@ -43,7 +43,9 @@ const loginUser = async (email, password) => {
     const isMatch = await bcrypt_1.default.compare(password, user.password);
     if (!isMatch)
         throw new Error("Sai mật khẩu");
-    const token = jsonwebtoken_1.default.sign({ userId: user._id.toString(), email: user.email }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES || "1h" });
+    const token = jsonwebtoken_1.default.sign({ userId: user._id.toString(), email: user.email }, process.env.JWT_SECRET, {
+        expiresIn: process.env.JWT_EXPIRES || "1h",
+    });
     return { token, user };
 };
 exports.loginUser = loginUser;
