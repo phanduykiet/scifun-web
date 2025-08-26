@@ -39,7 +39,9 @@ const register = async (req, res) => {
     try {
         const { email, password } = req.body;
         await authService.registerUser(email, password);
-        res.json({ message: "Đăng ký thành công. Vui lòng kiểm tra email để lấy OTP." });
+        res.json({
+            message: "Đăng ký thành công. Vui lòng kiểm tra email để lấy OTP.",
+        });
     }
     catch (err) {
         res.status(400).json({ message: err.message });
