@@ -50,3 +50,42 @@ export const loginUser = async (email: string, password: string) => {
 
   return { token, user };
 };
+
+export const forgotPasswordService = async (email: string) => {
+  const user = await User.findOne({ email });
+  if (!user) throw new Error("Email không tồn tại");
+
+  const otp = generateOTP();
+  user.otp = otp;
+  user.otpExpires = new Date(Date.now() + 5 * 60 * 1000);
+  await user.save();
+
+  await sendMail(email, "OTP Reset mật khẩu", `Mã OTP của bạn là: ${otp}`);
+  return user;
+};
+
+export const verifyResetOtpService = async (email: string, otp: string) => {
+  const user = await User.findOne({ email });
+  if (!user) throw new Error("Email không tồn tại");
+
+  if (!user.otp || !user.otpExpires)
+    throw new Error("OTP không hợp lệ");
+
+  if (user.otp !== otp || new Date() > user.otpExpires) {
+    throw new Error("OTP sai hoặc đã hết hạn");
+  }
+
+  return user;
+};
+
+export const resetPasswordService = async (email: string, newPassword: string) => {
+  const user = await User.findOne({ email });
+  if (!user) throw new Error("Email không tồn tại");
+
+  user.password = await bcrypt.hash(newPassword, 10);
+  user.otp = "";
+  user.otpExpires = new Date(0);
+  await user.save();
+
+  return user;
+};
