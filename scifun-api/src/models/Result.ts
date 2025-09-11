@@ -1,18 +1,23 @@
 import mongoose, { Schema, Document, Types } from "mongoose";
 import { IQuiz } from "./Quiz";
-import e from "express";
 
 export interface IResult extends Document {
   userId: string; // hoặc ObjectId nếu có User model
   quiz: Types.ObjectId | IQuiz;
-  score: number;
+  bestScore: number;
+  attempts: number;        // số lần làm quiz
+  averageScore: number;    // điểm trung bình
+  lastSubmissionAt: Date;  // lần nộp gần nhất
   createdAt: Date;
 }
 
 const ResultSchema = new Schema<IResult>({
   userId: { type: String, required: true },
   quiz: { type: Schema.Types.ObjectId, ref: "Quiz", required: true },
-  score: { type: Number, required: true },
+  bestScore: { type: Number, required: true },
+  attempts: { type: Number, required: true, default: 0 },
+  averageScore: { type: Number, required: true, default: 0 },
+  lastSubmissionAt: { type: Date, default: null },
   createdAt: { type: Date, default: Date.now },
 });
 

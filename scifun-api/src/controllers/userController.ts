@@ -41,11 +41,12 @@ export const verifyOTP = async (req: Request, res: Response) => {
 export const login = async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
-    const { token } = await authService.loginUserSv(email, password);
+    const { token, user } = await authService.loginUserSv(email, password);
     res.status(200).json({
       status: 200,
       message: "Đăng nhập thành công",
       token: token,
+      data: user
     });
   } catch (err: any) {
     res.status(400).json({

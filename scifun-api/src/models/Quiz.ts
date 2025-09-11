@@ -1,6 +1,5 @@
 import mongoose, { Schema, Document, Types } from "mongoose";
 import { ITopic } from "./Topic";
-import e from "express";
 
 export interface IQuiz extends Document {
   title: string;

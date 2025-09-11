@@ -17,7 +17,7 @@ const UserSchema = new Schema<IUser>({
   otp: { type: String },
   otpExpires: { type: Date },
   isVerified: { type: Boolean, default: false },
-  avatar: { type: String, default: "https://example.com/default-avatar.png" }
+  avatar: { type: String, default: "https://i.pravatar.cc/150?img=5" }
 });
 
 export default mongoose.model<IUser>("User", UserSchema);

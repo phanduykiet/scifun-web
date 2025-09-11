@@ -59,6 +59,16 @@ export const getTopicsSv = async (
     total,
     page,
     totalPages: Math.ceil(total / limit),
-    topics
+    topics,
   };
+};
+
+// Lấy chi tiết chủ đề
+export const getTopicByIdSv = async (_id: string) => {
+  if (!_id) throw new Error("ID topic không hợp lệ");
+
+  const topic = await Topic.findById(_id).populate("subject");
+  if (!topic) throw new Error("Topic không tồn tại");
+
+  return topic;
 };
