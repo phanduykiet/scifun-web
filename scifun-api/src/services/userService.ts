@@ -41,7 +41,7 @@ export const verifyUserOtpSv = async (email: string, otp: string) => {
 
 // Đăng nhập với JWT
 export const loginUserSv = async (email: string, password: string) => {
-  const user = await User.findOne({ email });
+  const user = await User.findOne({ email }).select("-otp -otpExpires");
   if (!user) throw new Error("Email không tồn tại");
   if (!user.isVerified) throw new Error("Tài khoản chưa xác thực OTP");
   const isMatch = await bcrypt.compare(password, user.password);
