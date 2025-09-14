@@ -26,13 +26,22 @@ export const deleteSubjectSv = async (_id: string) => {
   if (!subject) throw new Error("Môn học không tồn tại");
 };
 
-// Lấy danh sách môn học với phân trang
-export const getSubjectsSv = async (page: number, limit: number) => {
+// Lấy danh sách môn học với phân trang + tìm kiếm theo tên môn học
+export const getSubjectsSv = async (page: number, limit: number, search?: string) => {
   const skip = (page - 1) * limit;
 
+  // nếu có search thì dùng regex để tìm gần đúng
+  const filter: any = {};
+  if (search) {
+    filter.name = { $regex: search, $options: "i" }; // i = không phân biệt hoa/thường
+  }
+
   const [subjects, total] = await Promise.all([
-    Subject.find().skip(skip).limit(limit).sort({ createdAt: -1 }),
-    Subject.countDocuments(),
+    Subject.find(filter)
+      .skip(skip)
+      .limit(limit)
+      .sort({ createdAt: -1 }),
+    Subject.countDocuments(filter),
   ]);
 
   return {
@@ -43,6 +52,7 @@ export const getSubjectsSv = async (page: number, limit: number) => {
     subjects,
   };
 };
+
 
 //
 export const getSubjectByIdSv = async (_id: string) =>{
