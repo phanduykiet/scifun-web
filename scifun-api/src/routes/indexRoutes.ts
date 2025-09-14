@@ -4,6 +4,7 @@ import { createSubject, getSubjects, updateSubject, deleteSubject, getSubjectByI
 import { createTopic, getTopics, updateTopic, deleteTopic, getTopicById } from "../controllers/topicController";
 import { createQuiz, getQuizzes, updateQuiz, deleteQuiz, getQuizById } from "../controllers/quizController";
 import { createQuestion, getQuestions, updateQuestion, deleteQuestion, getQuestionById } from "../controllers/questionController";
+import { handleSubmitQuiz, getSubmissionDetail, getResults } from "../controllers/submissionController";
 import { authMiddleware } from "../middleware/authMiddleware";
 
 const router = Router();
@@ -50,6 +51,9 @@ router.get("/question/get-questionById/:_id", getQuestionById);
 router.put("/question/update-question/:_id", updateQuestion);
 router.delete("/question/delete-question/:_id", deleteQuestion);
 
-// 
+// Submission, Result routes
+router.post("/submission/handle-submit", handleSubmitQuiz);
+router.get("/submission/get-submissionDetail/:submissionId", getSubmissionDetail)
+router.get("/submisstion/get-all", getResults)
 
 export default router;
