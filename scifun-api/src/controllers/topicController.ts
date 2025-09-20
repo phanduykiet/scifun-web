@@ -65,8 +65,9 @@ export const getTopics = async (req: Request, res: Response) => {
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
     const subjectId = req.query.subjectId as string | undefined;
+    const name = req.query.name as string | undefined;
 
-    const result = await topicService.getTopicsSv(page, limit, subjectId);
+    const result = await topicService.getTopicsSv(page, limit, subjectId, name);
 
     res.status(200).json({
       status: 200,

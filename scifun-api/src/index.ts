@@ -1,6 +1,7 @@
 import express from "express";
 import dotenv from "dotenv";
 import { connectDB } from "./config/db";
+import { connectES } from "./config/elasticSearch";
 import indexRoutes from "./routes/indexRoutes";
 import cors from "cors";
 
@@ -28,6 +29,7 @@ app.use("/api/v1", indexRoutes);
 
 
 connectDB();
+connectES();
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
