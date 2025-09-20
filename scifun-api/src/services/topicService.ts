@@ -34,14 +34,22 @@ export const deleteTopicSv = async (_id: string) => {
   return { message: "Xóa thành công", topic };
 };
 
-// Lấy danh sách có phân trang
+// Lấy danh sách có phân trang + lọc + tìm kiếm
 export const getTopicsSv = async (
   page: number,
   limit: number,
-  subjectId?: string
+  subjectId?: string,
+  searchName?: string
 ) => {
   const filter: any = {};
-  if (subjectId) filter.subject = subjectId; // lọc theo subject nếu có
+
+  // lọc theo subject nếu có
+  if (subjectId) filter.subject = subjectId;
+
+  // Tìm kiếm theo tên (không phân biệt hoa thường)
+  if (searchName && searchName.trim() !== "") {
+    filter.name = { $regex: searchName, $options: "i" };
+  }
 
   const skip = (page - 1) * limit;
 
