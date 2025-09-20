@@ -1,6 +1,7 @@
 import express from "express";
 import dotenv from "dotenv";
 import { connectDB } from "./config/db";
+import { connectES } from "./config/elasticSearch";
 import indexRoutes from "./routes/indexRoutes";
 
 //Đọc file .env trong thư mục gốc, nạp các biến môi trường vào process.env.
@@ -15,6 +16,7 @@ app.use("/api/v1", indexRoutes);
 const PORT = process.env.PORT || 5000;
 
 connectDB();
+connectES();
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

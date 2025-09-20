@@ -1,4 +1,7 @@
 import Subject, { ISubject } from "../models/Subject";
+import { esClient } from "../config/elasticSearch";
+
+const SUBJECT_INDEX = "subject";
 
 // Tạo môn học
 export const createSubjectSv = async (data: Partial<ISubject>) => {
@@ -28,21 +31,42 @@ export const deleteSubjectSv = async (_id: string) => {
 
 // Lấy danh sách môn học với phân trang + tìm kiếm theo tên môn học
 export const getSubjectsSv = async (page: number, limit: number, search?: string) => {
-  const skip = (page - 1) * limit;
+  const from = (page - 1) * limit;
 
-  // nếu có search thì dùng regex để tìm gần đúng
-  const filter: any = {};
-  if (search) {
-    filter.name = { $regex: search, $options: "i" }; // i = không phân biệt hoa/thường
+  const must: any[] = [];
+  if (search && search.trim()) {
+    must.push({
+      multi_match: {
+        query: search.trim(),
+        fields: ["name^2", "description", "code"], // chỉnh theo schema của bạn
+        operator: "AND",               // chặt chẽ hơn khi search
+        fuzziness: "AUTO",             // cho phép typo nhẹ
+        minimum_should_match: "75%",   // yêu cầu mức khớp tối thiểu
+        type: "best_fields",
+      },
+    });
   }
 
-  const [subjects, total] = await Promise.all([
-    Subject.find(filter)
-      .skip(skip)
-      .limit(limit)
-      .sort({ createdAt: -1 }),
-    Subject.countDocuments(filter),
-  ]);
+  const result = await esClient.search({
+    index: SUBJECT_INDEX,
+    from,
+    size: limit,
+    track_total_hits: true,
+    query: must.length
+      ? { bool: { must } }
+      : { match_all: {} }, // Không có search thì match_all
+  });
+
+  // Lấy total theo dạng ES 8 (object) hoặc number (tùy cấu hình)
+  const total =
+    typeof (result.hits.total as any) === "number"
+      ? (result.hits.total as unknown as number)
+      : (result.hits.total as { value: number }).value;
+
+  const subjects = result.hits.hits.map((hit) => ({
+    id: hit._id, // trả về id ES
+    ...(hit._source as Record<string, any>),
+  }));
 
   return {
     page,
@@ -53,8 +77,32 @@ export const getSubjectsSv = async (page: number, limit: number, search?: string
   };
 };
 
+// Tạm thời 
+export const syncSubjectToES = async (): Promise<void> => {
+  try {
+    // .lean() để lấy plain object
+    const subject = await Subject.find().lean();
 
-//
+    for (const lesson of subject) {
+      const { _id, __v, ...doc } = lesson;
+
+      await esClient.index({
+        index: SUBJECT_INDEX,
+        id: _id.toString(),
+        document: doc,   // không còn _id trong body
+        refresh: true,   // cần thấy ngay khi search (tùy nhu cầu)
+      });
+    }
+
+    console.log("Sync subject to Elasticsearch completed!");
+  } catch (error) {
+    console.error("Error syncing subject:", error);
+    throw error; // propagate lỗi ra ngoài nếu cần
+  }
+};
+
+
+// Lấy chi tiết môn học
 export const getSubjectByIdSv = async (_id: string) =>{
   if (!_id) throw new Error("ID môn học không hợp lệ");
   
