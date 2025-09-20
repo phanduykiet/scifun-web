@@ -4,7 +4,7 @@ const instance = axios.create({
 });
 
 instance.interceptors.request.use(function (config) {
-    config.headers.Authorization = 'Bearer ${localstorage.getItem("access_token")}';
+    config.headers.Authorization = `Bearer ${localStorage.getItem("access_token")}`;
     return config;
 }, function (error) {
     return Promise.reject(error);
