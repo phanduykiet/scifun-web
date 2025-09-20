@@ -6,6 +6,7 @@ export const createSubject = async (req: Request, res: Response) => {
   try {
     const { name, description, maxTopics, image } = req.body;
     const subject = await subjectService.createSubjectSv(req.body);
+    await subjectService.syncSubjectToES();
     res.status(200).json({
       status: 200,
       message: "Tạo môn học thành công",
@@ -59,14 +60,14 @@ export const deleteSubject = async (req: Request, res: Response) => {
   }
 };
 
-// Lấy danh sách môn học với phân trang
+// Lấy danh sách môn học với phân trang + tìm kiếm theo tên môn học
 export const getSubjects = async (req: Request, res: Response) => {
   try {
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
-    const name = req.query.name as string | undefined;
+    const search = req.query.search as string | undefined;
 
-    const result = await subjectService.getSubjectsSv(page, limit, name);
+    const result = await subjectService.getSubjectsSv(page, limit, search);
 
     res.status(200).json({
       status: 200,
