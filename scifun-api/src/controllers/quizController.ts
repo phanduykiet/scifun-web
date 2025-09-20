@@ -6,6 +6,7 @@ export const createQuiz = async (req: Request, res: Response) => {
   try {
     const {title, description, topic} = req.body;
     const quiz = await quizService.createQuizSv(req.body);
+    await quizService.syncToES();
     res.status(200).json({
       status: 200,
       message: "Thêm thành công",
@@ -61,8 +62,9 @@ export const getQuizzes = async (req: Request, res: Response) => {
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
     const topicId = req.query.topicId as string;
+    const search = req.query.search as string;
 
-    const result = await quizService.getQuizzesSv(page, limit, topicId);
+    const result = await quizService.getQuizzesSv(page, limit, topicId, search);
     res.status(200).json({
       status: 200,
       message: "Lấy danh sách thành công",
