@@ -40,7 +40,9 @@ const Home: React.FC = () => {
       >
         {/* <h1>Chào mừng đến với SciFun</h1> */}
       </div>
-      <Lessons />
+      <div id="lessons-section">
+        <Lessons />
+      </div>
       <Footer />
     </>
   );

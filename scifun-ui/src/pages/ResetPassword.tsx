@@ -1,28 +1,34 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { createUserApi } from "../util/api";
+import { useNavigate, useLocation } from "react-router-dom";
+import { resetPasswordApi } from "../util/api";
 import { notification, Input, Button, Card } from "antd";
 
-export default function Register() {
-  const [email, setEmail] = useState("");
+export default function ResetPassword() {
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // ✅ Nhận email từ OTP page
+  const email = location.state?.email || "";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     try {
-      const res = await createUserApi(email, password);
+      const res = await resetPasswordApi(email, password);
+      console.log("Reset password response:", res);
 
       notification.success({
-        message: "Đăng ký thành công",
-        description: res.data?.message || "Tài khoản đã được tạo",
+        message: "Đặt lại mật khẩu",
+        description: res.data?.message || "Mật khẩu đã được đặt lại thành công",
       });
 
-      navigate("/otp", { state: { email, flow: "register" } });
+      navigate("/login");
     } catch (err: any) {
+      console.error("Lỗi reset password:", err);
       notification.error({
-        message: "Đăng ký thất bại",
-        description: err.response?.data?.message || "Vui lòng thử lại",
+        message: "Đặt lại mật khẩu",
+        description: err.response?.data?.message || "Đặt lại mật khẩu thất bại",
       });
     }
   };
@@ -37,19 +43,10 @@ export default function Register() {
         padding: "20px",
       }}
     >
-      <Card title="Đăng ký" style={{ width: 400 }}>
+      <Card title="Đặt lại mật khẩu" style={{ width: 400 }}>
         <form onSubmit={handleSubmit}>
           <div style={{ marginBottom: 16 }}>
-            <label>Email</label>
-            <Input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </div>
-          <div style={{ marginBottom: 16 }}>
-            <label>Mật khẩu</label>
+            <label>Mật khẩu mới</label>
             <Input.Password
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -57,7 +54,7 @@ export default function Register() {
             />
           </div>
           <Button type="primary" htmlType="submit" block>
-            Đăng ký
+            Xác nhận
           </Button>
         </form>
       </Card>

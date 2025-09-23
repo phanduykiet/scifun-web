@@ -1,44 +1,19 @@
-import React, { useEffect, useState, useRef  } from "react";
+import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import LessonCard from "./LessonCard";
-
-interface Subject {
-  _id: string;
-  name: string;
-  description: string;
-  maxTopics: number;
-  image: string;
-}
-
-interface ApiResponse {
-  status: number;
-  message: string;
-  data: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-    subjects: Subject[];
-  };
-}
+import { getLessonListApi } from "../../util/api";
+import { Subject, GetSubjectResponse } from "../../types/subject";
 
 const Lessons: React.FC = () => {
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [page, setPage] = useState<number>(1);
-  const [totalPages, setTotalPages] = useState<number>(1);
 
-  // ref cho danh sách
-  const listRef = useRef<HTMLDivElement>(null);
-
-  const fetchSubjects = async (page: number) => {
+  const fetchSubjects = async () => {
     setLoading(true);
     try {
-      const res = await fetch(
-        `http://localhost:5000/api/v1/subject/get-subjects?page=${page}&limit=4`
-      );
-      const json: ApiResponse = await res.json();
-      setSubjects(json.data.subjects || []);
-      setTotalPages(json.data.totalPages);
+      // Giới hạn 4 để hiển thị mẫu, còn trang "Xem tất cả" sẽ load đầy đủ
+      const json: GetSubjectResponse = await getLessonListApi("1", "4", "");
+      setSubjects(json.data.subjects ?? []);
     } catch (err) {
       console.error("Lỗi khi gọi API:", err);
     } finally {
@@ -47,8 +22,8 @@ const Lessons: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchSubjects(page);
-  }, [page]);
+    fetchSubjects();
+  }, []);
 
   if (loading) {
     return (
@@ -63,35 +38,38 @@ const Lessons: React.FC = () => {
 
   return (
     <div className="container mt-4">
-      <h2 className="mb-4 text-center">Danh sách môn học</h2>
-
-      {/* Nút mũi tên trước & sau */}
-      <div className="d-flex justify-content-between mb-3">
-        <button
-          type="button"
-          className="btn btn-outline-success"
-          disabled={page === 1}
-          onClick={() => setPage(page - 1)}
+      <div className="d-flex justify-content-between align-items-center mb-3">
+        <h2
+          className="mb-0 fw-bold position-relative"
+          style={{
+            color: "#000000", // chữ màu đen
+            paddingBottom: "5px",
+          }}
         >
-          ← Trước
-        </button>
-
-        <button
-          type="button"
-          className="btn btn-outline-success"
-          disabled={page === totalPages}
-          onClick={() => setPage(page + 1)}
-        >
-          Sau →
-        </button>
+          Danh sách môn học
+          {/* gạch chân màu xanh lá */}
+          <span
+            style={{
+              position: "absolute",
+              bottom: 0,
+              left: 0,
+              width: "50px",
+              height: "4px",
+              backgroundColor: "#28a745", // xanh lá
+              borderRadius: "2px",
+            }}
+          ></span>
+        </h2>
+        <Link to="/all-lessons" className="text-decoration-none text-success fw-semibold">
+          Xem tất cả →
+        </Link>
       </div>
 
-      {/* Danh sách bài học */}
       <div className="row justify-content-center">
         {subjects.map((subject) => (
           <div
             className="col-md-3 mb-4 d-flex justify-content-center"
-            key={subject._id}
+            key={subject.id}
           >
             <LessonCard
               title={subject.name}

@@ -1,4 +1,5 @@
 import React from "react";
+import "../../styles/LessonCard.css"
 
 interface LessonCardProps {
   title: string;
@@ -46,19 +47,18 @@ const LessonCard: React.FC<LessonCardProps> = ({ title, image, onDetail }) => {
         {/* Link xem bài học */}
         <div className="card-body d-flex flex-column">
             <a
-            href="#"
-            className="text-success mt-auto"
-            style={{
-                textDecoration: "underline",
-                textAlign: "right",
-                display: "block",
-            }}
-            onClick={(e) => {
-                e.preventDefault();
-                onDetail();
-            }}
-            >
-            Xem bài học
+                href="#"
+                className="text-success mt-auto hover-underline"
+                style={{
+                    textAlign: "right",
+                    display: "block",
+                }}
+                onClick={(e) => {
+                    e.preventDefault();
+                    onDetail();
+                }}
+                >
+                Xem bài học →
             </a>
         </div>
         </div>

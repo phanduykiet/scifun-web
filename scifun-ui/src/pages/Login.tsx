@@ -1,10 +1,7 @@
 import { useState, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import AuthLayout from "../components/AuthLayout";
-import FormInput from "../components/FormInput";
-import Button from "../components/Button";
 import { loginApi } from "../util/api";
-import { notification } from "antd";
+import { notification, Input, Button, Card } from "antd";
 import { AuthContext } from "../components/context/auth.context";
 
 export default function Login() {
@@ -13,32 +10,31 @@ export default function Login() {
   const navigate = useNavigate();
   const authContext = useContext(AuthContext);
 
-  if (!authContext) return null; // tránh lỗi null
+  if (!authContext) return null;
   const { setAuth } = authContext;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Đang submit:", email, password);
-
     try {
       const res = await loginApi(email, password);
-      console.log("Kết quả API:", res);
 
-      // 🔑 Lưu token + user vào localStorage
+      // Lưu token + user
       localStorage.setItem("token", res.token);
       localStorage.setItem(
         "user",
         JSON.stringify({
+          _id: res.data._id,
           email: res.data.email,
           name: res.data.fullname,
           avatar: res.data.avatar,
         })
       );
 
-      // 🔑 Set auth context
+      // Set context
       setAuth({
         isAuthenticated: true,
         user: {
+          _id: res.data._id,
           email: res.data.email,
           name: res.data.fullname,
           avatar: res.data.avatar,
@@ -46,42 +42,58 @@ export default function Login() {
       });
 
       notification.success({
-        message: "LOGIN",
-        description: res.message || "Đăng nhập thành công",
+        message: "Đăng nhập thành công",
       });
 
       navigate("/");
     } catch (err: any) {
       notification.error({
-        message: "LOGIN",
-        description: err.response?.data?.message || "Đăng nhập thất bại",
+        message: "Đăng nhập thất bại",
+        description: err.response?.data?.message || "Vui lòng thử lại",
       });
     }
   };
 
   return (
-    <AuthLayout title="Đăng nhập">
-      <form onSubmit={handleSubmit}>
-        <FormInput
-          label="Email"
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-        <FormInput
-          label="Mật khẩu"
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-        <Button text="Đăng nhập" type="submit" variant="primary" />
-      </form>
-      <div className="mt-3 text-center">
-        <Link to="/forgotpassword">Quên mật khẩu?</Link>
-      </div>
-      <div className="mt-2 text-center">
-        Bạn chưa có tài khoản? <Link to="/register">Đăng ký ngay</Link>
-      </div>
-    </AuthLayout>
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        minHeight: "80vh",
+        padding: "20px",
+      }}
+    >
+      <Card title="Đăng nhập" style={{ width: 400 }}>
+        <form onSubmit={handleSubmit}>
+          <div style={{ marginBottom: 16 }}>
+            <label>Email</label>
+            <Input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
+          <div style={{ marginBottom: 16 }}>
+            <label>Mật khẩu</label>
+            <Input.Password
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
+          <Button type="primary" htmlType="submit" block>
+            Đăng nhập
+          </Button>
+        </form>
+        <div style={{ marginTop: 12, textAlign: "center" }}>
+          <Link to="/forgotpassword">Quên mật khẩu?</Link>
+        </div>
+        <div style={{ marginTop: 8, textAlign: "center" }}>
+          Bạn chưa có tài khoản? <Link to="/register">Đăng ký ngay</Link>
+        </div>
+      </Card>
+    </div>
   );
 }
