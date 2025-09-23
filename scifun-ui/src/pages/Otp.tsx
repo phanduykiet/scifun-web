@@ -1,51 +1,69 @@
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import AuthLayout from "../components/AuthLayout";
-import FormInput from "../components/FormInput";
-import Button from "../components/Button";
 import { otpVerify } from "../util/api";
-import { notification } from "antd";
+import { notification, Input, Button, Card } from "antd";
 
 export default function Otp() {
   const [otp, setOtp] = useState("");
   const navigate = useNavigate();
   const location = useLocation();
 
-  // ✅ Nhận email từ trang Register
+  // Nhận email + flow từ Register hoặc ForgotPassword
   const email = location.state?.email || "";
+  const flow = location.state?.flow || "register"; // mặc định là đăng ký
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     try {
-      // ✅ Gửi cả email + otp sang API
       const res = await otpVerify(email, otp);
       console.log("API response:", res);
 
       notification.success({
-        message: "VERIFY OTP",
+        message: "Xác thực OTP",
         description: res.data?.message || "Xác thực thành công",
       });
-      navigate("/login");
+
+      // Điều hướng theo flow
+      if (flow === "register") {
+        navigate("/login");
+      } else if (flow === "forgot") {
+        navigate("/reset-password", { state: { email } });
+      }
     } catch (err: any) {
       notification.error({
-        message: "VERIFY OTP",
+        message: "Xác thực OTP",
         description: err.response?.data?.message || "Xác thực thất bại",
       });
     }
   };
 
   return (
-    <AuthLayout title="Xác nhận OTP">
-      <form onSubmit={handleSubmit}>
-        <FormInput
-          label="Mã OTP"
-          type="text"
-          value={otp}
-          onChange={(e) => setOtp(e.target.value)}
-        />
-        <Button text="Xác nhận" type="submit" variant="warning" />
-      </form>
-    </AuthLayout>
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        minHeight: "80vh",
+        padding: "20px",
+      }}
+    >
+      <Card title="Xác nhận OTP" style={{ width: 400 }}>
+        <form onSubmit={handleSubmit}>
+          <div style={{ marginBottom: 16 }}>
+            <label>Mã OTP</label>
+            <Input
+              type="text"
+              value={otp}
+              onChange={(e) => setOtp(e.target.value)}
+              required
+            />
+          </div>
+          <Button type="primary" htmlType="submit" block>
+            Xác nhận
+          </Button>
+        </form>
+      </Card>
+    </div>
   );
 }

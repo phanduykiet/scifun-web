@@ -10,3 +10,7 @@ export interface LoginResponse {
       avatar?: string;
     };
 }
+export interface UpdateUserData {
+  name?: string;
+  avatar?: string;
+}

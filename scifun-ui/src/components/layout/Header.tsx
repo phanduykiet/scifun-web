@@ -13,7 +13,7 @@ const Header: React.FC = () => {
     localStorage.removeItem("token");
     setAuth({
       isAuthenticated: false,
-      user: { email: "", name: "" },
+      user: { _id: "", email: "", name: "" },
     });
     navigate("/login");
   };
@@ -66,9 +66,9 @@ const Header: React.FC = () => {
                 </Link>
               </li>
               <li>
-                <button onClick={handleLogout} className="dropdown-item">
+                <a className="dropdown-item" href="#" onClick={handleLogout}>
                   Đăng xuất
-                </button>
+                </a>
               </li>
             </ul>
           </div>

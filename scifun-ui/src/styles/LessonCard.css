@@ -1,0 +1,9 @@
+.hover-underline {
+    text-decoration: none; /* mặc định không gạch chân */
+    transition: text-decoration 0.2s ease-in-out;
+  }
+  
+  .hover-underline:hover {
+    text-decoration: underline; /* hover mới gạch chân */
+  }
+  

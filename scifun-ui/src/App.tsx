@@ -5,10 +5,12 @@ import Register from "./pages/Register";
 import Otp from "./pages/Otp";
 import ForgotPassword from "./pages/ForgotPassword";
 import Profile from "./pages/Profile";
+import AllLessons from "./pages/AllLessons";
+import ResetPassword from "./pages/ResetPassword";
+import ChangePassword from "./pages/ChangePassword";
 
 export default function App() {
   return (
-    <Router>
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
@@ -16,7 +18,9 @@ export default function App() {
         <Route path="/otp" element={<Otp />} />
         <Route path="/forgotpassword" element={<ForgotPassword />} />
         <Route path="/profile" element={<Profile/>}/>
+        <Route path="/all-lessons" element={<AllLessons />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/change-password" element={<ChangePassword />} />
       </Routes>
-    </Router>
   );
 }

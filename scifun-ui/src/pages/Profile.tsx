@@ -1,6 +1,8 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useRef, useState } from "react";
 import { AuthContext } from "../components/context/auth.context";
 import Header from "../components/layout/Header";
+import { Link } from "react-router-dom";
+import { updateProfileApi } from "../util/api";
 
 const Profile: React.FC = () => {
   const authContext = useContext(AuthContext);
@@ -10,7 +12,9 @@ const Profile: React.FC = () => {
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(auth.user.name || "");
   const [avatar, setAvatar] = useState(auth.user.avatar || "");
-  const [password, setPassword] = useState("");
+
+  // ref cho input file
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   if (!auth.isAuthenticated) {
     return (
@@ -20,19 +24,54 @@ const Profile: React.FC = () => {
     );
   }
 
-  const handleSave = () => {
-    // TODO: gọi API update profile ở backend (PUT/PATCH)
-    // hiện tại chỉ update context
-    setAuth({
-      ...auth,
-      user: {
-        ...auth.user,
-        name,
-        avatar,
-      },
-    });
-    setEditing(false);
-    alert("Cập nhật thông tin thành công!");
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const previewUrl = URL.createObjectURL(file);
+      setAvatar(previewUrl);
+    }
+  };
+
+  const handleSave = async () => {
+    try {
+      const formData = new FormData();
+      formData.append("name", name);
+  
+      // Nếu user chọn file mới
+      const file = fileInputRef.current?.files?.[0];
+  
+      // ✅ Log avatar để kiểm tra
+      console.log("File avatar đang gửi:", file);
+  
+      if (file) {
+        formData.append("avatar", file);
+      }
+  
+      await updateProfileApi(auth.user._id, formData);
+  
+      // Cập nhật local state
+      setAuth({
+        ...auth,
+        user: {
+          ...auth.user,
+          name,
+          avatar: file ? URL.createObjectURL(file) : avatar, // chỉ để preview
+        },
+      });
+  
+      setEditing(false);
+      alert("Cập nhật thông tin thành công!");
+    } catch (error: any) {
+      console.error("Cập nhật thất bại:", error);
+      alert("Cập nhật thông tin thất bại!");
+    }
+  };
+  
+
+  const handleAvatarClick = () => {
+    if (editing && fileInputRef.current) {
+      fileInputRef.current.click(); // mở hộp chọn file khi nhấn ảnh
+    }
   };
 
   return (
@@ -52,19 +91,23 @@ const Profile: React.FC = () => {
               src={avatar || "https://via.placeholder.com/120"}
               alt="avatar"
               className="rounded-circle mb-3"
-              style={{ width: "120px", height: "120px", objectFit: "cover" }}
+              style={{
+                width: "120px",
+                height: "120px",
+                objectFit: "cover",
+                cursor: editing ? "pointer" : "default",
+                border: editing ? "2px dashed #0d6efd" : "none",
+              }}
+              onClick={handleAvatarClick}
             />
-            {editing ? (
-              <input
-                type="text"
-                className="form-control mb-2"
-                value={avatar}
-                onChange={(e) => setAvatar(e.target.value)}
-                placeholder="Link ảnh avatar"
-              />
-            ) : null}
-            <h3 className="mb-0">{name || "Người dùng"}</h3>
-            <p className="text-muted">{auth.user.email}</p>
+            {/* input file ẩn */}
+            <input
+              type="file"
+              accept="image/*"
+              ref={fileInputRef}
+              className="d-none"
+              onChange={handleFileChange}
+            />
           </div>
 
           <hr />
@@ -72,51 +115,59 @@ const Profile: React.FC = () => {
           {editing ? (
             <div>
               <div className="mb-3">
-                <label className="form-label">Họ tên</label>
+                <label className="form-label fw-bold">Họ tên</label>
                 <input
                   type="text"
-                  className="form-control"
+                  className="form-control form-control-lg"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                 />
               </div>
-              <div className="mb-3">
-                <label className="form-label">Mật khẩu mới</label>
-                <input
-                  type="password"
-                  className="form-control"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Nhập mật khẩu mới"
-                />
+
+              {/* Link nhỏ đổi mật khẩu */}
+              <div className="mb-3 text-end">
+                <Link
+                  to="/change-password"
+                  className="text-decoration-none small text-primary"
+                >
+                  🔑 Đổi mật khẩu
+                </Link>
               </div>
-              <button className="btn btn-success me-2" onClick={handleSave}>
-                Lưu thay đổi
-              </button>
-              <button
-                className="btn btn-secondary"
-                onClick={() => setEditing(false)}
-              >
-                Hủy
-              </button>
+
+              <div className="d-flex justify-content-center gap-3">
+                <button className="btn btn-success btn-lg" onClick={handleSave}>
+                  💾 Lưu thay đổi
+                </button>
+                <button
+                  className="btn btn-secondary btn-lg"
+                  onClick={() => setEditing(false)}
+                >
+                  ❌ Hủy
+                </button>
+              </div>
             </div>
           ) : (
-            <div>
-              <p className="mb-2">
-                <strong>Họ tên:</strong> {name}
-              </p>
-              <p className="mb-2">
-                <strong>Email:</strong> {auth.user.email}
-              </p>
-              <p className="mb-2">
-                <strong>Mật khẩu:</strong> ********
-              </p>
-              <button
-                className="btn btn-primary mt-2"
-                onClick={() => setEditing(true)}
-              >
-                Chỉnh sửa
-              </button>
+            <div className="fs-5">
+              <div className="d-flex justify-content-between mb-3">
+                <span className="fw-bold">Họ tên:</span>
+                <span>{name}</span>
+              </div>
+              <div className="d-flex justify-content-between mb-3">
+                <span className="fw-bold">Email:</span>
+                <span>{auth.user.email}</span>
+              </div>
+              <div className="d-flex justify-content-between mb-3">
+                <span className="fw-bold">Mật khẩu:</span>
+                <span>********</span>
+              </div>
+              <div className="d-flex justify-content-center">
+                <button
+                  className="btn btn-primary btn-lg mt-3"
+                  onClick={() => setEditing(true)}
+                >
+                  ✏️ Chỉnh sửa
+                </button>
+              </div>
             </div>
           )}
         </div>
