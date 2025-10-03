@@ -2,7 +2,7 @@ import mongoose, { Schema, Document, Types } from "mongoose";
 import { IQuiz } from "./Quiz";
 
 export interface IResult extends Document {
-  userId: string; // hoặc ObjectId nếu có User model
+  userId: string;
   quiz: Types.ObjectId | IQuiz;
   bestScore: number;
   attempts: number;        // số lần làm quiz
