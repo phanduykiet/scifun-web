@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import Question from "../models/Question";
 import Submission from "../models/Submission";
 import Result from "../models/Result";
+import Quiz, { IQuiz } from "../models/Quiz";
 
 export type SubmittedAnswer = {
   questionId: string;

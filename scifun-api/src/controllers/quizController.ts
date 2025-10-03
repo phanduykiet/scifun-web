@@ -4,7 +4,7 @@ import * as quizService from "../services/quizService";
 // Thêm Quiz
 export const createQuiz = async (req: Request, res: Response) => {
   try {
-    const {title, description, topic} = req.body;
+    const {title, description, topic, uniqueUserCount, lastAttemptAt} = req.body;
     const quiz = await quizService.createQuizSv(req.body);
     await quizService.syncToES();
     res.status(200).json({

@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import * as submissionService from "../services/submissionService";
+import * as submissionService from "../services/quizSubmissionService";
 
 // Nộp bài + chấm điểm
 export const handleSubmitQuiz = async (req: Request, res: Response) => {

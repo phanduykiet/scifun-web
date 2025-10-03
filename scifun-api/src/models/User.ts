@@ -8,6 +8,7 @@ export interface IUser extends Document {
   otpExpires: Date;
   isVerified: boolean;
   avatar: string;
+  role: "USER" | "ADMIN";
 }
 
 const UserSchema = new Schema<IUser>({
@@ -17,7 +18,13 @@ const UserSchema = new Schema<IUser>({
   otp: { type: String },
   otpExpires: { type: Date },
   isVerified: { type: Boolean, default: false },
-  avatar: { type: String, default: "https://i.pravatar.cc/150?img=5" }
+  avatar: { type: String, default: "https://i.pravatar.cc/150?img=5" },
+  role: {
+    type: String,
+    enum: ["USER", "ADMIN"],
+    default: "USER",
+    required: true,
+  },
 });
 
 export default mongoose.model<IUser>("User", UserSchema);

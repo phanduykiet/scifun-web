@@ -4,7 +4,7 @@ import { createSubject, getSubjects, updateSubject, deleteSubject, getSubjectByI
 import { createTopic, getTopics, updateTopic, deleteTopic, getTopicById } from "../controllers/topicController";
 import { createQuiz, getQuizzes, updateQuiz, deleteQuiz, getQuizById } from "../controllers/quizController";
 import { createQuestion, getQuestions, updateQuestion, deleteQuestion, getQuestionById } from "../controllers/questionController";
-import { handleSubmitQuiz, getSubmissionDetail, getResults } from "../controllers/submissionController";
+import { handleSubmitQuiz, getSubmissionDetail, getResults } from "../controllers/quizSubmissionController";
 import { authMiddleware } from "../middleware/authMiddleware";
 
 const router = Router();
