@@ -8,6 +8,8 @@ import Profile from "./pages/Profile";
 import AllLessons from "./pages/AllLessons";
 import ResetPassword from "./pages/ResetPassword";
 import ChangePassword from "./pages/ChangePassword";
+import Test from "./pages/Test";
+import DemoTestPage from "./pages/DemoTestPage";
 
 export default function App() {
   return (
@@ -21,6 +23,8 @@ export default function App() {
         <Route path="/all-lessons" element={<AllLessons />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/change-password" element={<ChangePassword />} />
+        <Route path="/test" element={<Test />} />
+        <Route path="/demo-test" element={<DemoTestPage />} />
       </Routes>
   );
 }

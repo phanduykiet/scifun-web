@@ -10,8 +10,9 @@ const Profile: React.FC = () => {
   const { auth, setAuth } = authContext;
 
   const [editing, setEditing] = useState(false);
-  const [name, setName] = useState(auth.user.name || "");
+  const [fullname, setName] = useState(auth.user.fullname || "");
   const [avatar, setAvatar] = useState(auth.user.avatar || "");
+  
 
   // ref cho input file
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -34,28 +35,28 @@ const Profile: React.FC = () => {
 
   const handleSave = async () => {
     try {
-      const formData = new FormData();
-      formData.append("name", name);
-  
-      // Nếu user chọn file mới
+      // Nếu user chọn file mới, tạo URL để lưu vào backend
       const file = fileInputRef.current?.files?.[0];
-  
-      // ✅ Log avatar để kiểm tra
-      console.log("File avatar đang gửi:", file);
-  
+      let avatarToSend = auth.user.avatar; // mặc định là avatar cũ
       if (file) {
-        formData.append("avatar", file);
+        avatarToSend = URL.createObjectURL(file); // hoặc convert sang base64 nếu backend yêu cầu
       }
   
-      await updateProfileApi(auth.user._id, formData);
+      // Gửi object JSON thay vì FormData
+      const dataToSend = {
+        fullname,
+        avatar: avatarToSend || "",
+      };
+  
+      await updateProfileApi(auth.user._id, dataToSend);
   
       // Cập nhật local state
       setAuth({
         ...auth,
         user: {
           ...auth.user,
-          name,
-          avatar: file ? URL.createObjectURL(file) : avatar, // chỉ để preview
+          fullname,
+          avatar: avatarToSend,
         },
       });
   
@@ -66,6 +67,7 @@ const Profile: React.FC = () => {
       alert("Cập nhật thông tin thất bại!");
     }
   };
+  
   
 
   const handleAvatarClick = () => {
@@ -119,7 +121,7 @@ const Profile: React.FC = () => {
                 <input
                   type="text"
                   className="form-control form-control-lg"
-                  value={name}
+                  value={fullname}
                   onChange={(e) => setName(e.target.value)}
                 />
               </div>
@@ -150,7 +152,7 @@ const Profile: React.FC = () => {
             <div className="fs-5">
               <div className="d-flex justify-content-between mb-3">
                 <span className="fw-bold">Họ tên:</span>
-                <span>{name}</span>
+                <span>{fullname}</span>
               </div>
               <div className="d-flex justify-content-between mb-3">
                 <span className="fw-bold">Email:</span>

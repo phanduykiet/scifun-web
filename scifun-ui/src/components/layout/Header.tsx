@@ -13,7 +13,7 @@ const Header: React.FC = () => {
     localStorage.removeItem("token");
     setAuth({
       isAuthenticated: false,
-      user: { _id: "", email: "", name: "" },
+      user: { _id: "", email: "", fullname: "" },
     });
     navigate("/login");
   };
@@ -56,7 +56,7 @@ const Header: React.FC = () => {
                   }}
                 />
               )}
-              {auth.user.name || auth.user.email}
+              {auth.user.fullname || auth.user.email}
             </button>
 
             <ul className="dropdown-menu dropdown-menu-end">
