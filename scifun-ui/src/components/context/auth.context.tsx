@@ -3,7 +3,7 @@ import { createContext, useState, ReactNode, useEffect } from "react";
 interface User {
   _id: string;
   email: string;
-  name: string;
+  fullname: string;
   avatar?: string;
 }
 
@@ -24,7 +24,7 @@ export const AuthContext = createContext<AuthContextType | null>(null);
 export const AuthWrapper = ({ children }: { children: ReactNode }) => {
   const [auth, setAuth] = useState<AuthState>({
     isAuthenticated: false,
-    user: { _id: "", email: "", name: "", avatar: "" },
+    user: { _id: "", email: "", fullname: "", avatar: "" },
   });
 
   const [appLoading, setAppLoading] = useState(true);

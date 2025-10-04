@@ -38,16 +38,18 @@ const getLessonListApi = async (
   );
   return res;
 };
-const updateProfileApi = async (userId: string, formData: FormData) => {
+const updateProfileApi = async (userId: string, data: { fullname: string, avatar: string }) => {
   const token = localStorage.getItem("token");
-  const res = await axios.put(`/api/v1/user/update-user/${userId}`, formData, {
+  const res = await axios.put(`/api/v1/user/update-user/${userId}`, data, {
     headers: {
       Authorization: `Bearer ${token}`,
-      "Content-Type": "multipart/form-data",
+      "Content-Type": "application/json",
     },
   });
   return res;
 };
+
+
 // Quên mật khẩu (gửi OTP hoặc link reset)
 const forgotPasswordApi = async (email: string) => {
   const res = await axios.post("/api/v1/user/forgot-password", { email });

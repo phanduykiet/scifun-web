@@ -25,7 +25,7 @@ export default function Login() {
         JSON.stringify({
           _id: res.data._id,
           email: res.data.email,
-          name: res.data.fullname,
+          fullname: res.data.fullname,
           avatar: res.data.avatar,
         })
       );
@@ -36,7 +36,7 @@ export default function Login() {
         user: {
           _id: res.data._id,
           email: res.data.email,
-          name: res.data.fullname,
+          fullname: res.data.fullname,
           avatar: res.data.avatar,
         },
       });
