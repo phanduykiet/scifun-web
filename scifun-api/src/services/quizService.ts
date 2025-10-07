@@ -109,6 +109,90 @@ export const getQuizByIdSv = async (_id: string) => {
   return quiz;
 };
 
+// Lấy danh sách Quiz thịnh hành
+export const getTrendingQuizzesSv = async (
+  page: number,
+  limit: number,
+  timeWeight: number,
+  popularityWeight: number
+) => {
+  const skip = (page - 1) * limit;
+  // Lấy tất cả quiz có lastAttemptAt (quiz đã từng có người làm)
+  const quizzes = await Quiz.find({ lastAttemptAt: { $ne: null } })
+    .populate("topic")
+    .lean();
+
+  if (quizzes.length === 0) {
+    return {
+      page,
+      limit,
+      total: 0,
+      totalPages: 0,
+      data: [],
+    };
+  }
+
+  // Lấy thời gian hiện tại
+  const now = Date.now();
+
+  // Tính khoảng thời gian max để normalize
+  const times = quizzes.map((q) =>
+    q.lastAttemptAt ? now - new Date(q.lastAttemptAt).getTime() : Infinity
+  );
+  const maxTimeDiff = Math.max(...times.filter((t) => t !== Infinity));
+
+  // Lấy số lượng người làm max để normalize
+  const maxUserCount = Math.max(...quizzes.map((q) => q.uniqueUserCount || 0));
+
+  // Tính điểm cho mỗi quiz
+  const quizzesWithScore = quizzes.map((quiz) => {
+    // 1. Điểm thời gian (càng gần = điểm càng cao)
+    const timeDiff = quiz.lastAttemptAt
+      ? now - new Date(quiz.lastAttemptAt).getTime()
+      : maxTimeDiff;
+
+    // Normalize về 0-1, đảo ngược (gần nhất = 1, xa nhất = 0)
+    const timeScore = maxTimeDiff > 0 ? 1 - timeDiff / maxTimeDiff : 0;
+
+    // 2. Điểm độ phổ biến (càng nhiều người = điểm càng cao)
+    const popularityScore =
+      maxUserCount > 0 ? (quiz.uniqueUserCount || 0) / maxUserCount : 0;
+
+    // 3. Điểm tổng hợp (weighted average)
+    const finalScore =
+      timeScore * timeWeight + popularityScore * popularityWeight;
+
+    return {
+      ...quiz,
+      _score: finalScore,
+      _timeScore: timeScore,
+      _popularityScore: popularityScore,
+    };
+  });
+
+  // Sắp xếp theo điểm tổng hợp (giảm dần)
+  quizzesWithScore.sort((a, b) => b._score - a._score);
+
+  // Phân trang
+  const paginatedQuizzes = quizzesWithScore.slice(skip, skip + limit);
+
+  return {
+    page,
+    limit,
+    total: quizzesWithScore.length,
+    totalPages: Math.ceil(quizzesWithScore.length / limit),
+    data: paginatedQuizzes.map((quiz) => ({
+      _id: quiz._id,
+      title: quiz.title,
+      description: quiz.description,
+      topic: quiz.topic,
+      uniqueUserCount: quiz.uniqueUserCount,
+      lastAttemptAt: quiz.lastAttemptAt,
+      score: Math.round(quiz._score * 100) / 100, // Điểm tổng hợp
+    })),
+  };
+};
+
 // Tạm thời
 export const syncToES = async (): Promise<void> => {
   try {
