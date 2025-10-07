@@ -6,14 +6,14 @@ export const handleSubmitQuiz = async (req: Request, res: Response) => {
   try {
     const result = await submissionService.handleSubmitQuizSv(req.body);
     res.status(200).json({
-        status: 200,
-        message: "Thành công",
-        data: result
+      status: 200,
+      message: "Thành công",
+      data: result,
     });
   } catch (err: any) {
     res.status(400).json({
-        status: 400,
-        message: err.message
+      status: 400,
+      message: err.message,
     });
   }
 };
@@ -24,18 +24,19 @@ export const getSubmissionDetail = async (req: Request, res: Response) => {
     const { submissionId } = req.params;
     const result = await submissionService.getSubmissionDetailSv(submissionId);
     res.status(200).json({
-        status: 200,
-        message: "Thành công",
-        data: result
+      status: 200,
+      message: "Thành công",
+      data: result,
     });
   } catch (err: any) {
     res.status(400).json({
-        status: 400,
-        message: err.message
+      status: 400,
+      message: err.message,
     });
   }
 };
 
+// Lấy danh sách kết quả (Result) với phân trang
 export const getResults = async (req: Request, res: Response) => {
   try {
     const page = parseInt(req.query.page as string) || 1;
