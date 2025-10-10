@@ -1,6 +1,7 @@
 import React, { useRef, useState, useEffect } from "react";
 import "../styles/TestPage.css"; // import css
 import TestQuestion from "../components/layout/TestQuestion";
+import { BsPatchQuestion } from "react-icons/bs";
 
 const totalQuestions = 30;
 const TEST_DURATION = 15 * 60; // 15 phút = 900 giây
@@ -105,7 +106,7 @@ const Test: React.FC = () => {
                     key={idx}
                     className="gridButton"
                     style={{
-                      backgroundColor: answeredQuestions[idx] ? "lightgreen" : "",
+                      backgroundColor: answeredQuestions[idx] ? "green" : "",
                     }}
                     onClick={(e) => {
                       e.stopPropagation();
@@ -118,7 +119,7 @@ const Test: React.FC = () => {
               </div>
             </>
           ) : (
-            <div className="bubbleIcon">Q</div>
+            <div className="bubbleIcon"><BsPatchQuestion /></div>
           )}
         </div>
       </div>

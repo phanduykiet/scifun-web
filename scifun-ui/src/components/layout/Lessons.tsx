@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import LessonCard from "./LessonCard";
 import { getLessonListApi } from "../../util/api";
 import { Subject, GetSubjectResponse } from "../../types/subject";
@@ -7,11 +7,11 @@ import { Subject, GetSubjectResponse } from "../../types/subject";
 const Lessons: React.FC = () => {
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const navigate = useNavigate(); // dùng navigate để chuyển trang
 
   const fetchSubjects = async () => {
     setLoading(true);
     try {
-      // Giới hạn 4 để hiển thị mẫu, còn trang "Xem tất cả" sẽ load đầy đủ
       const json: GetSubjectResponse = await getLessonListApi("1", "4", "");
       setSubjects(json.data.subjects ?? []);
     } catch (err) {
@@ -42,12 +42,11 @@ const Lessons: React.FC = () => {
         <h2
           className="mb-0 fw-bold position-relative"
           style={{
-            color: "#000000", // chữ màu đen
+            color: "#000000",
             paddingBottom: "5px",
           }}
         >
           Danh sách môn học
-          {/* gạch chân màu xanh lá */}
           <span
             style={{
               position: "absolute",
@@ -55,7 +54,7 @@ const Lessons: React.FC = () => {
               left: 0,
               width: "50px",
               height: "4px",
-              backgroundColor: "#28a745", // xanh lá
+              backgroundColor: "#28a745",
               borderRadius: "2px",
             }}
           ></span>
@@ -74,7 +73,7 @@ const Lessons: React.FC = () => {
             <LessonCard
               title={subject.name}
               image={subject.image}
-              onDetail={() => alert(`Xem chi tiết: ${subject.name}`)}
+              onDetail={() => navigate(`/subject/${subject.id}`)} // chuyển trang tới SubjectPage
             />
           </div>
         ))}
