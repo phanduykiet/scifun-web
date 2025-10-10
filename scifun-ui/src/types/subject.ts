@@ -17,4 +17,15 @@ export interface Subject {
       subjects: Subject[];
     };
   }
+  export interface Topic {
+    _id: string;
+    name: string;
+    description?: string;
+    subjectId: string;
+  }
+  export interface GetSubjectByIdResponse {
+    status: number;
+    message: string;
+    data: Subject & { topics: Topic[] };
+  }
   

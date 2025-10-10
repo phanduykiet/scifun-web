@@ -1,6 +1,6 @@
 import axios from "./axios.customize";
 import { LoginResponse, UpdateUserData } from "../types/auth";
-import { GetSubjectResponse } from "../types/subject";
+import { GetSubjectResponse, GetSubjectByIdResponse } from "../types/subject";
 
 // Đăng ký user
 const createUserApi = (email: string, password: string) => {
@@ -81,5 +81,26 @@ const changePasswordApi = async (
   );
   return res;
 };
+const getTopicsBySubjectApi = async (
+  subjectId: string,
+  page: number = 1,
+  limit: number = 10
+) => {
+  const res = await axios.get(`/api/v1/topic/get-topics`, {
+    params: { subjectId, page, limit },
+  });
+  return res;
+};
+const getQuizsByTopicApi = async (
+  subjectId: string,
+  page: number = 1,
+  limit: number = 10
+) => {
+  const res = await axios.get(`/api/v1/quiz/get-quizzes`, {
+    params: { subjectId, page, limit },
+  });
+  return res;
+};
 
-export { createUserApi, loginApi, otpVerify, getLessonListApi, updateProfileApi, forgotPasswordApi, resetPasswordApi, changePasswordApi };
+export { createUserApi, loginApi, otpVerify, getLessonListApi, updateProfileApi, forgotPasswordApi, resetPasswordApi, changePasswordApi,
+  getTopicsBySubjectApi, getQuizsByTopicApi };
