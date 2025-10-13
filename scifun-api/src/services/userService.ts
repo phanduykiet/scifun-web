@@ -22,7 +22,11 @@ export const registerUserSv = async (email: string, password: string) => {
       otpExpires: new Date(Date.now() + 5 * 60 * 1000),
     });
   }
-  await sendMail(email, "OTP xác thực đăng ký", `Mã OTP của bạn là: ${existingUser.otp}`);
+  await sendMail(
+    email,
+    "OTP xác thực đăng ký",
+    `Mã OTP của bạn là: ${existingUser.otp}`
+  );
   await existingUser.save();
 };
 
@@ -41,13 +45,13 @@ export const verifyUserOtpSv = async (email: string, otp: string) => {
 
 // Đăng nhập với JWT
 export const loginUserSv = async (email: string, password: string) => {
-  const user = await User.findOne({ email }).select("-otp -otpExpires");
+  const user = await User.findOne({ email }).select("-otp -otpExpires -__v");
   if (!user) throw new Error("Email không tồn tại");
   if (!user.isVerified) throw new Error("Tài khoản chưa xác thực OTP");
   const isMatch = await bcrypt.compare(password, user.password);
   if (!isMatch) throw new Error("Sai mật khẩu");
   const token = jwt.sign(
-    { userId: user._id.toString(), email: user.email },
+    { userId: user._id.toString(), email: user.email, role: user.role },
     process.env.JWT_SECRET as jwt.Secret,
     {
       expiresIn: (process.env.JWT_EXPIRES as string) || "1h",
@@ -56,11 +60,28 @@ export const loginUserSv = async (email: string, password: string) => {
   return { token, user };
 };
 
+// Hàm kiểm tra email có đúng định dạng
+const isValidEmailStrict = (email: string): boolean => {
+  const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  return emailRegex.test(email) && email.length <= 254;
+};
+
+// Hàm kiểm tra OTP có được tạo thành công
+const isOTPGenerated = (otp: string | null | undefined): boolean => {
+  return otp !== null && otp !== undefined && otp.length > 0;
+};
+
 // Quên mật khẩu với OTP
 export const forgotPasswordSv = async (email: string) => {
+  if (!email || email.trim() === "")
+    throw new Error("Email không được để trống");
+  if (!isValidEmailStrict(email.trim()))
+    throw new Error("Email không đúng định dạng");
   const user = await User.findOne({ email });
   if (!user) throw new Error("Email không tồn tại");
   const otp = generateOTP();
+  if (!isOTPGenerated(otp))
+    throw new Error("Không thể tạo mã OTP. Vui lòng thử lại sau");
   user.otp = otp;
   user.otpExpires = new Date(Date.now() + 5 * 60 * 1000);
   await user.save();
@@ -102,18 +123,29 @@ export const updateUserSv = async (_id: string, updateData: Partial<IUser>) => {
   return user;
 };
 
-//
-export const updatePasswordSv = async (_id: string, oldPassword: string, newPassword: string, confirmPassword: string) => {
+// Cập nhât mật khẩu
+export const updatePasswordSv = async (
+  _id: string,
+  oldPassword: string,
+  newPassword: string,
+  confirmPassword: string
+) => {
   if (!_id) throw new Error("ID người dùng không hợp lệ");
-  if (newPassword !== confirmPassword) throw new Error("Mật khẩu xác nhận không khớp");
-  const check = await bcrypt.compare(oldPassword, (await User.findById(_id)).password);
+  if (newPassword !== confirmPassword)
+    throw new Error("Mật khẩu xác nhận không khớp");
+  const check = await bcrypt.compare(
+    oldPassword,
+    (
+      await User.findById(_id)
+    ).password
+  );
   if (!check) throw new Error("Mật khẩu cũ không đúng");
   await User.updateMany(
     { _id },
     { $set: { password: await bcrypt.hash(newPassword, 10) } },
     { runValidators: true }
-  )
-}
+  );
+};
 
 // Xoá người dùng
 export const deleteUserSv = async (userId: string) => {
@@ -123,9 +155,11 @@ export const deleteUserSv = async (userId: string) => {
 };
 
 // Lấy chi tiết thông tin người dùng
-export const getInfoUserSv = async (_id: string) =>{
-  if(!_id) throw new Error("ID người dùng không hợp lệ");
-  const infoUser = await User.findById(_id).select("-otp -otpExpires -isVerified");
-  if(!infoUser) throw new Error("Người dùng không tồn tại");
+export const getInfoUserSv = async (_id: string) => {
+  if (!_id) throw new Error("ID người dùng không hợp lệ");
+  const infoUser = await User.findById(_id).select(
+    "-otp -otpExpires -isVerified"
+  );
+  if (!infoUser) throw new Error("Người dùng không tồn tại");
   return infoUser;
-}
+};
