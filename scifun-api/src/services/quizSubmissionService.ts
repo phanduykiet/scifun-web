@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import Question from "../models/Question";
 import Submission from "../models/Submission";
 import Result from "../models/Result";
+import Quiz from "../models/Quiz";
 
 export type SubmittedAnswer = {
   questionId: string;
@@ -14,6 +15,15 @@ export interface SubmitQuizPayload {
   userId: string;
 }
 
+// Hàm cập nhật thông tin Quiz (uniqueUserCount và lastAttemptAt)
+const updateQuizStatistics = async (quizId: string) => {
+  const uniqueUserCount = await Result.countDocuments({ quiz: quizId });
+  await Quiz.findByIdAndUpdate(quizId, {
+    uniqueUserCount,
+    lastAttemptAt: new Date(),
+  });
+};
+
 // Nộp bài + chấm điểm
 export const handleSubmitQuizSv = async (payload: SubmitQuizPayload) => {
   const { quizId, answers, userId } = payload;
@@ -22,7 +32,7 @@ export const handleSubmitQuizSv = async (payload: SubmitQuizPayload) => {
   }
 
   // Lấy câu hỏi
-  const questionIds = Array.from(new Set(answers.map(a => a.questionId)));
+  const questionIds = Array.from(new Set(answers.map((a) => a.questionId)));
   const questions = await Question.find({ _id: { $in: questionIds } });
   const qMap = new Map<string, any>();
   for (const q of questions) qMap.set(q._id.toString(), q);
@@ -36,7 +46,7 @@ export const handleSubmitQuizSv = async (payload: SubmitQuizPayload) => {
     isCorrect: boolean;
   }[] = [];
 
-  // Kiểm tra đáp án 
+  // Kiểm tra đáp án
   for (const ans of answers) {
     const q = qMap.get(ans.questionId);
     let isCorrect = false;
@@ -55,9 +65,8 @@ export const handleSubmitQuizSv = async (payload: SubmitQuizPayload) => {
       isCorrect,
     });
   }
-  console.log(detailedAnswers);
 
-  // Tính điểm bài làm 
+  // Tính điểm bài làm
   const totalQuestions = questionIds.length;
   const score = correctCount * 10;
 
@@ -82,7 +91,8 @@ export const handleSubmitQuizSv = async (payload: SubmitQuizPayload) => {
     });
   } else {
     const newAttempts = (oldResult.attempts ?? 0) + 1;
-    const newAvg = ((oldResult.averageScore ?? 0) * (newAttempts - 1) + score) / newAttempts;
+    const newAvg =
+      ((oldResult.averageScore ?? 0) * (newAttempts - 1) + score) / newAttempts;
 
     oldResult.bestScore = Math.max(oldResult.bestScore ?? 0, score);
     oldResult.attempts = newAttempts;
@@ -90,6 +100,9 @@ export const handleSubmitQuizSv = async (payload: SubmitQuizPayload) => {
     oldResult.lastSubmissionAt = new Date();
     await oldResult.save();
   }
+
+  // Cập nhật thống kê cho Quiz
+  await updateQuizStatistics(quizId);
 
   // Trả về kết quả chấm điểm
   return {
@@ -106,7 +119,7 @@ export const getSubmissionDetailSv = async (submissionId: string) => {
   const submission = await Submission.findById(submissionId)
     .populate("quiz")
     .populate("answers.question");
-    
+
   if (!submission) throw new Error("Không tìm thấy submission");
 
   return {
@@ -138,6 +151,7 @@ export const getSubmissionDetailSv = async (submissionId: string) => {
   };
 };
 
+// Lấy danh sách kết quả (Result) với phân trang
 export const getResultsSV = async (page: number, limit: number) => {
   const skip = (page - 1) * limit;
 
