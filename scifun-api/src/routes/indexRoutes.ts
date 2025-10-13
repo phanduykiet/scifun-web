@@ -57,4 +57,11 @@ router.post("/submission/handle-submit", handleSubmitQuiz);
 router.get("/submission/get-submissionDetail/:submissionId", getSubmissionDetail)
 router.get("/submisstion/get-all", getResults)
 
+// Favorite Quiz routes
+import { addFavoriteQuiz, removeFavoriteQuiz, getFavoriteQuizzes } from "../controllers/favoriteQuizController";
+router.post("/favorite-quiz/add", addFavoriteQuiz);
+router.delete("/favorite-quiz/remove/:quizId", removeFavoriteQuiz);
+router.get("/favorite-quiz/list", getFavoriteQuizzes);
+
+
 export default router;

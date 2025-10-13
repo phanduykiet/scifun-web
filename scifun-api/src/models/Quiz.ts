@@ -7,6 +7,7 @@ export interface IQuiz extends Document {
   topic: Types.ObjectId | ITopic;
   uniqueUserCount: number;   
   lastAttemptAt?: Date;      
+  favoriteCount: number;
 }
 
 const QuizSchema = new Schema<IQuiz>(
@@ -15,7 +16,8 @@ const QuizSchema = new Schema<IQuiz>(
     description: { type: String },
     topic: { type: Schema.Types.ObjectId, ref: "Topic", required: true },
     uniqueUserCount: { type: Number, default: 0, index: true },
-    lastAttemptAt: { type: Date, default: null, index: true }
+    lastAttemptAt: { type: Date, default: null, index: true },
+    favoriteCount: { type: Number, default: 0, index: true } 
   },
   { timestamps: true }
 );
