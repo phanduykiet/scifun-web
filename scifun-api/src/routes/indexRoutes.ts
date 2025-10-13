@@ -5,6 +5,8 @@ import { createTopic, getTopics, updateTopic, deleteTopic, getTopicById } from "
 import { createQuiz, getQuizzes, updateQuiz, deleteQuiz, getQuizById, getTrendingQuizzes } from "../controllers/quizController";
 import { createQuestion, getQuestions, updateQuestion, deleteQuestion, getQuestionById } from "../controllers/questionController";
 import { handleSubmitQuiz, getSubmissionDetail, getResults } from "../controllers/quizSubmissionController";
+import { addFavoriteQuiz, removeFavoriteQuiz, getFavoriteQuizzes } from "../controllers/favoriteQuizController";
+import { createVideoLesson, updateVideoLesson, deleteVideoLesson, getVideoLessons } from "../controllers/videoLessonController";
 import { authMiddleware } from "../middleware/authMiddleware";
 
 const router = Router();
@@ -58,10 +60,15 @@ router.get("/submission/get-submissionDetail/:submissionId", getSubmissionDetail
 router.get("/submisstion/get-all", getResults)
 
 // Favorite Quiz routes
-import { addFavoriteQuiz, removeFavoriteQuiz, getFavoriteQuizzes } from "../controllers/favoriteQuizController";
 router.post("/favorite-quiz/add", addFavoriteQuiz);
 router.delete("/favorite-quiz/remove/:quizId", removeFavoriteQuiz);
 router.get("/favorite-quiz/list", getFavoriteQuizzes);
+
+// Video Lesson routes
+router.post("/video-lesson/create", createVideoLesson);
+router.put("/video-lesson/update/:id", updateVideoLesson);
+router.delete("/video-lesson/delete/:id", deleteVideoLesson);
+router.get("/video-lesson/list", getVideoLessons);
 
 
 export default router;
