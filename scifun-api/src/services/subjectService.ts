@@ -1,3 +1,4 @@
+import cloudinary from "../config/cloudinary";
 import Subject, { ISubject } from "../models/Subject";
 import { esClient } from "../config/elasticSearch";
 
@@ -5,7 +6,23 @@ const SUBJECT_INDEX = "subject";
 
 // Tạo môn học
 export const createSubjectSv = async (data: Partial<ISubject>) => {
-  const subject = new Subject(data);
+  let imageUrl = data.image;
+
+  // Nếu có ảnh được chọn thì upload lên Cloudinary
+  if (data.image && typeof data.image === "string" && data.image.startsWith("uploads/")) {
+    const uploadResult = await cloudinary.uploader.upload(data.image, {
+      folder: "cb62bef7a80946b11f47eb3f10294c4410", // thư mục bạn tạo trong Cloudinary
+    });
+    imageUrl = uploadResult.secure_url;
+  }
+
+  const subject = new Subject({
+    name: data.name,
+    description: data.description,
+    maxTopics: data.maxTopics,
+    image: imageUrl || "https://images-na.ssl-images-amazon.com/images/I/51T8OXMiB5L._SX329_BO1,204,203,200_.jpg",
+  });
+
   await subject.save();
   return subject;
 };
