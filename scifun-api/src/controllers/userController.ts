@@ -112,7 +112,8 @@ export const updateUser = async (req: Request, res: Response) => {
   try {
     const { _id } = req.params;
     const updateData = req.body;
-    const updatedUser = await authService.updateUserSv(_id, updateData);
+    const authenticatedUserId = req.user!.userId;
+    const updatedUser = await authService.updateUserSv(_id, updateData, authenticatedUserId);
     res.status(200).json({ 
       status: 200, 
       message: "Cập nhật thành công", 
@@ -164,7 +165,8 @@ export const deleteUser = async (req: Request, res: Response) =>{
 export const getInfoUser = async (req: Request, res: Response) =>{
   try{
       const { _id } = req.params;
-      const user = await authService.getInfoUserSv(_id);
+      const authenticatedUserId = req.user!.userId;
+      const user = await authService.getInfoUserSv(_id, authenticatedUserId);
       res.status(200).json({
         status: 200,
         message: "Lấy thông tin người dùng thành công",
