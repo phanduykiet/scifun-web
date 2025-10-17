@@ -1,98 +1,180 @@
-.container {
-    font-family: Arial, sans-serif;
-    padding: 20px;
-    position: relative;
-  }
-  
-  .content {
-    display: flex;
-    width: 100%;
-    box-sizing: border-box;
-    flex-direction: column;
-  }
-  
-  .questions {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-  
-  .questionBox {
-    border: 2px dashed #ccc;
-    border-radius: 8px;
-    padding: 20px;
-    min-height: 100px;
-    
-    /* Căn lề trái và xếp theo cột */
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    color: #888;
-    font-size: 16px;
-  }
-  .optionLabel input[type="radio"] {
-    accent-color: black;  /* màu khi chọn */
-    background-color: white; /* nền mặc định trắng */
-    width: 16px;
-    height: 16px;
-    margin-right: 8px;
-    cursor: pointer;
-  }
-  
-  .questionContent {
-    margin-bottom: 10px; /* khoảng cách giữa câu hỏi và đáp án */
-  }
-  
-  
-  .gridNav {
-    background-color: #fff;
-    border: 1px solid #ccc;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    z-index: 1000;
-    overflow: hidden;
-    transition: all 0.3s ease;
-  }
-  
-  .bubbleIcon {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    background-color: #007bff;
-    color: #fff;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-weight: bold;
-    font-size: 18px;
-  }
-  
-  .gridButton {
-    padding: 10px;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-    background-color: #f0f0f0;
-    cursor: pointer;
-  }
-  
-  .timer {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    background-color: #fff;
-    padding: 10px 15px;
-    border-radius: 8px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-    z-index: 1000;
-    font-weight: bold;
-    font-size: 16px;
-  }
-  .options {
-    display: flex;
-    flex-direction: column;
-    margin-top: 10px;
-  }
-  
-  .optionLabel {
-    margin-bottom: 5px;
-  }
-  
+.test-page {
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+}
+
+.test-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.test-main {
+  display: flex;
+  gap: 16px;
+  position: relative;
+}
+
+/* Container câu hỏi chiếm 70% */
+.questions-container {
+  flex: 0 0 80%;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Sidebar / Bottom grid */
+.sidebar {
+  position: fixed;
+  top: 100px;
+  right: 20px;
+  background: #e0e7ff; /* xanh nhẹ nổi bật */
+  padding: 10px;
+  border-radius: 12px;
+  cursor: pointer;
+  z-index: 10;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1); /* thêm bóng để nổi bật */
+}
+
+.bottom-sheet {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #f8f9fa;
+  padding: 10px;
+  border-radius: 10px 10px 0 0;
+  cursor: pointer;
+  z-index: 10;
+}
+
+/* Container các nút */
+.grid-buttons {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+}
+
+/* Nút câu hỏi */
+.grid-button {
+  padding: 8px;
+  border-radius: 50%;
+  border: none;
+  background-color: #e0e0e0; /* màu nền mặc định */
+  color: #333;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.15); /* bóng nhẹ */
+}
+
+/* Hover */
+.grid-button:hover {
+  background-color: #a0c4ff; /* màu nổi bật khi hover */
+  transform: translateY(-2px);
+}
+
+/* Đã trả lời */
+.grid-button.answered {
+  background-color: #4caf50; /* xanh nổi bật */
+  color: white;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
+.grid-icon {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+
+/* Card câu hỏi */
+.questionCard {
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  padding: 20px;
+  margin-bottom: 20px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+/* Không hover card nữa */
+.questionCard:hover {
+  transform: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.questionHeader {
+  font-size: 1.1rem;
+  margin-bottom: 8px;
+  color: #333;
+}
+
+.questionContent {
+  margin-bottom: 12px;
+  color: #555;
+  line-height: 1.5;
+}
+
+/* Options */
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.optionLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 8px;
+  transition: background-color 0.2s, transform 0.2s;
+}
+
+/* Hover chỉ phần đáp án */
+.optionLabel:hover {
+  background-color: #f0f0f0;
+  transform: translateX(2px);
+}
+
+.timer-fixed {
+  position: fixed;
+  top: 20px;        /* cách mép trên */
+  right: 20px;      /* cách mép phải */
+  background: #fffbcc;  /* màu nổi bật */
+  padding: 10px 16px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  font-weight: bold;
+  z-index: 100;     /* luôn nổi trên các phần khác */
+}
+
+
+/* Nút nộp bài trong grid */
+.grid-submit-button {
+  margin-top: 10px;
+  width: 100%;
+  padding: 8px 0;
+  background-color: #236900;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.grid-submit-button:hover {
+  background-color: #73d13d;
+}
+
+.optionLabel input[type="radio"] {
+  accent-color: #52c41a; /* xanh lá hoặc màu bạn muốn */
+}
+
+
+

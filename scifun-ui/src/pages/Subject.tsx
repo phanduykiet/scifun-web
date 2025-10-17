@@ -4,7 +4,8 @@ import { notification } from "antd";
 import { Topic } from "../types/subject";
 import { getTopicsBySubjectApi, getQuizsByTopicApi } from "../util/api";
 import TopicCard from "../components/layout/TopicCard";
-import QuizCard, { Quiz } from "../components/layout/QuizCard";
+import QuizCard from "../components/layout/QuizCard";
+import { Quiz } from "../types/quiz";
 import Header from "../components/layout/Header";
 
 const SubjectPage: React.FC = () => {
@@ -104,18 +105,24 @@ const SubjectPage: React.FC = () => {
               borderLeft: "4px solid #28a745",
             }}
           >
-            Ôn tập theo chương
+            Ôn tập theo chủ đề
           </h3>
         </div>
         <div className="row">
           {topics.length === 0 ? (
-            <p>Chưa có chương nào cho môn học này.</p>
+            <p>Chưa có chủ đề nào cho môn học này.</p>
           ) : (
             topics.map((topic) => (
               <div className="col-md-4 mb-4 d-flex justify-content-start" key={topic._id}>
                 <TopicCard
                   topic={topic}
-                  onClick={(t) => alert(`Vào chương: ${t.name}`)}
+                  onClick={() => navigate(`/topic/${topic._id}`, { 
+                    state: { 
+                      ...topic,
+                      subjectId: id,
+                      subjectName: subjectNameFromState
+                    }
+                  })}
                 />
               </div>
             ))
@@ -125,32 +132,37 @@ const SubjectPage: React.FC = () => {
 
       {/* Danh sách quiz */}
       <div className="container mt-4">
+        {/* Heading */}
         <div className="mb-4">
           <h3
             className="fw-bold d-inline-block"
             style={{
               color: "#000000",
-              paddingLeft: "10px",
+              paddingLeft: "15px",
               borderLeft: "4px solid #28a745",
             }}
           >
             Đề trắc nghiệm
           </h3>
         </div>
-        <div className="row">
-          {quizzes.length === 0 ? (
-            <p>Chưa có quiz nào cho môn học này.</p>
-          ) : (
-            quizzes.map((quiz) => (
-              <div className="col-md-4 mb-4 d-flex justify-content-start" key={quiz._id}>
+
+        {/* Quiz grid */}
+        {quizzes.length === 0 ? (
+          <p>Chưa có quiz nào cho môn học này.</p>
+        ) : (
+          <div className="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+            {quizzes.map((quiz) => (
+              <div className="col d-flex flex-column" key={quiz._id}>
+                {/* Card chiếm toàn bộ chiều cao col, các card cùng hàng cao bằng nhau */}
                 <QuizCard
+                  className="flex-fill"
                   quiz={quiz}
-                  onClick={() => navigate(`/test`)}
+                  onClick={() => navigate("/test", { state: { quizId: quiz._id } })}
                 />
               </div>
-            ))
-          )}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </>
   );

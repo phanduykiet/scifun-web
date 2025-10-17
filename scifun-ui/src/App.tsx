@@ -11,6 +11,7 @@ import ChangePassword from "./pages/ChangePassword";
 import Test from "./pages/Test";
 import DemoTestPage from "./pages/DemoTestPage";
 import SubjectPage from "./pages/Subject";
+import TopicPage from "./pages/Topic";
 
 export default function App() {
   return (
@@ -27,6 +28,7 @@ export default function App() {
         <Route path="/test" element={<Test />} />
         <Route path="/demo-test" element={<DemoTestPage />} />
         <Route path="/subject/:id" element={<SubjectPage />} />
+        <Route path="/topic/:topicId" element={<TopicPage />} />
       </Routes>
   );
 }

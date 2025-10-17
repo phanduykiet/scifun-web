@@ -1,113 +1,111 @@
 import React, { useRef, useState, useEffect } from "react";
-import "../styles/TestPage.css"; // import css
+import "../styles/TestPage.css"; 
 import TestQuestion from "../components/layout/TestQuestion";
 import { BsPatchQuestion } from "react-icons/bs";
+import { useLocation } from "react-router-dom";
+import { getQuestionsByQuizApi } from "../util/api";
 
-const totalQuestions = 30;
-const TEST_DURATION = 15 * 60; // 15 phút = 900 giây
+const TEST_DURATION = 15 * 60;
 
 const Test: React.FC = () => {
-  const questionRefs = useRef<Array<HTMLDivElement | null>>([]);
-  const [isOpen, setIsOpen] = useState(false);
-  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+  const location = useLocation();
+  const quizId = (location.state as any)?.quizId;
+
+  const [questions, setQuestions] = useState<any[]>([]);
+  const [answeredQuestions, setAnsweredQuestions] = useState<boolean[]>([]);
   const [timeLeft, setTimeLeft] = useState(TEST_DURATION);
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+  const [isOpen, setIsOpen] = useState(false);
 
+  const questionRefs = useRef<Array<HTMLDivElement | null>>([]);
   const isMobile = windowWidth <= 600;
+  const questionMarginRight = !isMobile ? (isOpen ? "280px" : "60px") : "0";
 
-  const scrollToQuestion = (index: number) => {
-    questionRefs.current[index]?.scrollIntoView({ behavior: "smooth", block: "start" });
-  };
-  const [answeredQuestions, setAnsweredQuestions] = useState<boolean[]>(
-    Array(totalQuestions).fill(false)
-  );
-
-  // Cập nhật kích thước màn hình
   useEffect(() => {
-    const handleResize = () => setWindowWidth(window.innerWidth);
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
+    if (!quizId) return;
+    const fetchQuestions = async () => {
+      try {
+        const res = await getQuestionsByQuizApi(quizId);
+        setQuestions(res.data.data);
+        setAnsweredQuestions(Array(res.data.data.length).fill(false));
+      } catch (err) {
+        console.error("Lỗi tải câu hỏi:", err);
+      }
+    };
+    fetchQuestions();
+  }, [quizId]);
 
-  // Đồng hồ đếm ngược
   useEffect(() => {
     if (timeLeft <= 0) return;
     const timer = setInterval(() => setTimeLeft(prev => prev - 1), 1000);
     return () => clearInterval(timer);
   }, [timeLeft]);
 
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const scrollToQuestion = (index: number) => {
+    questionRefs.current[index]?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
   const minutes = Math.floor(timeLeft / 60);
   const seconds = timeLeft % 60;
 
-  const questionMarginRight = !isMobile ? (isOpen ? "280px" : "60px") : "0";
-  const sampleOptions = ["A", "B", "C", "D"];
-
   return (
-    <div className="container">
-      <h1>Bài Kiểm Tra</h1>
-        {/* Đồng hồ đếm ngược */}
-        <div className="timer">
-        Thời gian còn lại: {minutes.toString().padStart(2,"0")}:{seconds.toString().padStart(2,"0")}
-        </div>
+    <div className="test-page">
+      <div className="test-header">
+        <h2>Bài Kiểm Tra</h2>
+      </div>
 
-        <div className="content">
-        <div
-            className="questions"
-            style={{ marginRight: questionMarginRight }}
-        >
-            {Array.from({ length: totalQuestions }).map((_, idx) => (
+      <div className="timer-fixed">
+        Thời gian còn lại: {minutes.toString().padStart(2,"0")}:{seconds.toString().padStart(2,"0")}
+      </div>
+
+      <div className="test-main">
+        {/* Câu hỏi */}
+        <div className="questions-container" style={{ marginRight: questionMarginRight }}>
+          {questions.length === 0 ? (
+            <p>Đang tải câu hỏi...</p>
+          ) : (
+            questions.map((q, idx) => (
               <TestQuestion
-                key={idx}
+                key={q._id}
                 ref={(el) => { questionRefs.current[idx] = el; }}
                 index={idx}
-                content={`Đây là nội dung câu hỏi ${idx + 1}`}
-                options={sampleOptions}
+                content={q.text}
+                options={q.answers.map((a: any, i: number) => `${String.fromCharCode(65 + i)}. ${a.text}`)}
                 onAnswer={() => {
                   setAnsweredQuestions(prev => {
                     const copy = [...prev];
-                    copy[idx] = true; // đánh dấu câu này đã trả lời
+                    copy[idx] = true;
                     return copy;
                   });
                 }}
               />
-            ))}
+            ))
+          )}
         </div>
 
-        {/* Thanh lưới câu hỏi */}
+        {/* Sidebar / Bottom Grid */}
         <div
-          className="gridNav"
+          className={`question-grid ${isMobile ? "bottom-sheet" : "sidebar"}`}
           style={{
-            position: "fixed",
-            bottom: isMobile ? "0" : undefined,
-            left: isMobile ? "0" : undefined,
-            right: isMobile ? "0" : "20px",
-            top: isMobile ? undefined : "100px",
-            width: isOpen ? (isMobile ? "100%" : "260px") : "50px",
-            height: isOpen ? "auto" : "50px",
-            padding: isOpen ? "10px" : "0",
-            borderRadius: isMobile ? "10px 10px 0 0" : "50px",
-            cursor: "pointer",
+            width: isOpen && !isMobile ? "260px" : "50px",
+            transition: "width 0.3s",
           }}
           onClick={() => setIsOpen(!isOpen)}
         >
-          {isOpen ? (
-            <>
-              <h3 style={{ textAlign: "center", margin: "5px 0" }}>Câu hỏi</h3>
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: isMobile
-                    ? `repeat(auto-fit, minmax(40px, 1fr))`
-                    : `repeat(5, 1fr)`,
-                  gap: "5px",
-                }}
-              >
-                {Array.from({ length: totalQuestions }).map((_, idx) => (
+          {isOpen || isMobile ? (
+            <div className="grid-content">
+              <h4>Câu hỏi</h4>
+              <div className="grid-buttons">
+                {questions.map((_, idx) => (
                   <button
                     key={idx}
-                    className="gridButton"
-                    style={{
-                      backgroundColor: answeredQuestions[idx] ? "green" : "",
-                    }}
+                    className={`grid-button ${answeredQuestions[idx] ? "answered" : ""}`}
                     onClick={(e) => {
                       e.stopPropagation();
                       scrollToQuestion(idx);
@@ -117,13 +115,27 @@ const Test: React.FC = () => {
                   </button>
                 ))}
               </div>
-            </>
+
+              {/* Nút nộp bài trong grid */}
+              <button
+                className="grid-submit-button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (window.confirm("Bạn có chắc muốn nộp bài không?")) {
+                    alert("Bài đã được nộp!");
+                  }
+                }}
+              >
+                Nộp bài
+              </button>
+            </div>
           ) : (
-            <div className="bubbleIcon"><BsPatchQuestion /></div>
+            <div className="grid-icon"><BsPatchQuestion /></div>
           )}
         </div>
       </div>
     </div>
+
   );
 };
 
