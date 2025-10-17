@@ -34,16 +34,17 @@ export const getSubjectsSv = async (page: number, limit: number, search?: string
   const from = (page - 1) * limit;
 
   const must: any[] = [];
+
+  // Search theo tên / mô tả / code
   if (search && search.trim()) {
     must.push({
       multi_match: {
         query: search.trim(),
-        fields: ["name^2", "description", "code"], // chỉnh theo schema của bạn
-        operator: "AND",               // chặt chẽ hơn khi search
-        fuzziness: "AUTO",             // cho phép typo nhẹ
-        minimum_should_match: "75%",   // yêu cầu mức khớp tối thiểu
-        type: "best_fields",
-      },
+        fields: ["name^2", "description", "code"], // ưu tiên name
+        operator: "AND",
+        fuzziness: "AUTO",
+        minimum_should_match: "75%",
+      }
     });
   }
 
@@ -52,20 +53,18 @@ export const getSubjectsSv = async (page: number, limit: number, search?: string
     from,
     size: limit,
     track_total_hits: true,
-    query: must.length
-      ? { bool: { must } }
-      : { match_all: {} }, // Không có search thì match_all
+    query: must.length ? { bool: { must } } : { match_all: {} }
   });
 
-  // Lấy total theo dạng ES 8 (object) hoặc number (tùy cấu hình)
+  // Lấy total (ES 8 trả về number hoặc object)
   const total =
-    typeof (result.hits.total as any) === "number"
-      ? (result.hits.total as unknown as number)
-      : (result.hits.total as { value: number }).value;
+    typeof result.hits.total === "number"
+      ? result.hits.total
+      : result.hits.total?.value || 0;
 
-  const subjects = result.hits.hits.map((hit) => ({
-    id: hit._id, // trả về id ES
-    ...(hit._source as Record<string, any>),
+  const subjects = result.hits.hits.map((hit: any) => ({
+    id: hit._id,
+    ...hit._source
   }));
 
   return {
@@ -73,31 +72,42 @@ export const getSubjectsSv = async (page: number, limit: number, search?: string
     limit,
     total,
     totalPages: Math.ceil(total / limit),
-    subjects,
+    subjects
   };
 };
 
 // Tạm thời 
-export const syncSubjectToES = async (): Promise<void> => {
+export const syncToES = async (): Promise<void> => {
   try {
-    // .lean() để lấy plain object
-    const subject = await Subject.find().lean();
+    // Xoá hết dữ liệu cũ trong index
+    await esClient.deleteByQuery({
+      index: SUBJECT_INDEX,
+      body: {
+        query: {
+          match_all: {}   // xoá tất cả documents
+        }
+      }
+    } as any); // ép kiểu any để TS không bắt lỗi
 
-    for (const lesson of subject) {
-      const { _id, __v, ...doc } = lesson;
+
+    // Lấy dữ liệu từ Mongo
+    const subjects = await Subject.find().lean();
+
+    for (const subject of subjects) {
+      const { _id, __v, ...doc } = subject;
 
       await esClient.index({
         index: SUBJECT_INDEX,
         id: _id.toString(),
-        document: doc,   // không còn _id trong body
-        refresh: true,   // cần thấy ngay khi search (tùy nhu cầu)
+        document: doc,
+        refresh: true
       });
     }
 
-    console.log("Sync subject to Elasticsearch completed!");
+    console.log("✅ Sync to Elasticsearch completed!");
   } catch (error) {
-    console.error("Error syncing subject:", error);
-    throw error; // propagate lỗi ra ngoài nếu cần
+    console.error("❌ Error syncing:", error);
+    throw error;
   }
 };
 
