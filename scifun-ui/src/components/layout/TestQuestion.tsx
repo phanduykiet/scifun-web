@@ -8,13 +8,16 @@ interface TestQuestionProps {
   onAnswer?: () => void;
 }
 
-// Sử dụng forwardRef để truyền ref từ cha xuống
+// forwardRef để truyền ref từ cha
 const TestQuestion = forwardRef<HTMLDivElement, TestQuestionProps>(
   ({ index, content, options = [], onAnswer }, ref) => {
     return (
-      <div ref={ref} className="questionBox">
+      <div ref={ref} className="questionCard">
+        <div className="questionHeader">
+          <strong>Câu {index + 1}</strong>
+        </div>
         <div className="questionContent">
-          <strong>Câu {index + 1}:</strong> {content || "Nội dung câu hỏi"}
+          {content || "Nội dung câu hỏi"}
         </div>
         {options.length > 0 && (
           <div className="options">

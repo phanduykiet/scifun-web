@@ -92,15 +92,25 @@ const getTopicsBySubjectApi = async (
   return res;
 };
 const getQuizsByTopicApi = async (
-  subjectId: string,
+  topicId: string,
   page: number = 1,
   limit: number = 10
 ) => {
   const res = await axios.get(`/api/v1/quiz/get-quizzes`, {
-    params: { subjectId, page, limit },
+    params: { topicId, page, limit },
+  });
+  return res;
+};
+const getQuestionsByQuizApi = async (
+  quizId: string,
+  page: number = 1,
+  limit: number = 10
+) => {
+  const res = await axios.get(`/api/v1/question/get-questions`, {
+    params: { quizId, page, limit },
   });
   return res;
 };
 
 export { createUserApi, loginApi, otpVerify, getLessonListApi, updateProfileApi, forgotPasswordApi, resetPasswordApi, changePasswordApi,
-  getTopicsBySubjectApi, getQuizsByTopicApi };
+  getTopicsBySubjectApi, getQuizsByTopicApi, getQuestionsByQuizApi };

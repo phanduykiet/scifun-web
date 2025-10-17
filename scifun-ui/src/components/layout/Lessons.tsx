@@ -73,7 +73,9 @@ const Lessons: React.FC = () => {
             <LessonCard
               title={subject.name}
               image={subject.image}
-              onDetail={() => navigate(`/subject/${subject.id}`)} // chuyển trang tới SubjectPage
+              onDetail={() => 
+                navigate(`/subject/${subject.id}`, { state: subject }) // ✅ Truyền state
+              }
             />
           </div>
         ))}

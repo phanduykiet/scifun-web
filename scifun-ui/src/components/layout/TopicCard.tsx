@@ -24,7 +24,7 @@ const TopicCard: React.FC<TopicCardProps> = ({ topic, onClick }) => {
           className="btn btn-success mt-2"
           onClick={() => onClick && onClick(topic)}
         >
-          Ôn Tập Chương
+          Ôn Tập Chủ Đề
         </button>
       </div>
     </div>
