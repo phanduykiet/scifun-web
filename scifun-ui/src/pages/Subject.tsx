@@ -113,10 +113,10 @@ const SubjectPage: React.FC = () => {
             <p>Chưa có chủ đề nào cho môn học này.</p>
           ) : (
             topics.map((topic) => (
-              <div className="col-md-4 mb-4 d-flex justify-content-start" key={topic._id}>
+              <div className="col-md-4 mb-4 d-flex justify-content-start" key={topic.id}>
                 <TopicCard
                   topic={topic}
-                  onClick={() => navigate(`/topic/${topic._id}`, { 
+                  onClick={() => navigate(`/topic/${topic.id}`, { 
                     state: { 
                       ...topic,
                       subjectId: id,
@@ -152,12 +152,12 @@ const SubjectPage: React.FC = () => {
         ) : (
           <div className="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
             {quizzes.map((quiz) => (
-              <div className="col d-flex flex-column" key={quiz._id}>
+              <div className="col d-flex flex-column" key={quiz.id}>
                 {/* Card chiếm toàn bộ chiều cao col, các card cùng hàng cao bằng nhau */}
                 <QuizCard
                   className="flex-fill"
                   quiz={quiz}
-                  onClick={() => navigate("/test", { state: { quizId: quiz._id } })}
+                  onClick={() => navigate("/test", { state: { quizId: quiz.id } })}
                 />
               </div>
             ))}

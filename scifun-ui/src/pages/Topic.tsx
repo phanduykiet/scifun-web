@@ -100,10 +100,10 @@ const Topic: React.FC = () => {
           ) : (
             <div className="row gx-3"> {/* gx-3: khoảng cách giữa các cột */}
               {quizzes.map((quiz) => (
-                <div className="col-md-3 mb-4" key={quiz._id}>
+                <div className="col-md-3 mb-4" key={quiz.id}>
                   <QuizCard 
                     quiz={quiz} 
-                    onClick={() => navigate("/test", { state: { quizId: quiz._id } })} 
+                    onClick={() => navigate("/test", { state: { quizId: quiz.id } })} 
                   />
                 </div>
               ))}

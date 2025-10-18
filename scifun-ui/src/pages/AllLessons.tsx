@@ -5,6 +5,7 @@ import Footer from "../components/layout/Footer";
 import LessonCard from "../components/layout/LessonCard";
 import { getLessonListApi } from "../util/api";
 import { Subject, GetSubjectResponse } from "../types/subject";
+import { useNavigate } from "react-router-dom";
 
 const PAGE_SIZE = 8; // số bài học mỗi trang, bạn có thể chỉnh
 
@@ -13,6 +14,7 @@ const AllLessons: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [page, setPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
+  const navigate = useNavigate();
 
   const fetchSubjects = async (page: number) => {
     setLoading(true);
@@ -61,10 +63,12 @@ const AllLessons: React.FC = () => {
               key={subject.id}
             >
               <LessonCard
-                title={subject.name}
-                image={subject.image}
-                onDetail={() => alert(`Xem chi tiết: ${subject.name}`)}
-              />
+              title={subject.name}
+              image={subject.image}
+              onDetail={() => 
+                navigate(`/subject/${subject.id}`, { state: subject }) // ✅ Truyền state
+              }
+            />
             </div>
           ))}
         </div>
