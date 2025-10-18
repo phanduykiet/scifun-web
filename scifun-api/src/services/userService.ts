@@ -114,7 +114,7 @@ export const loginUserSv = async (email: string, password: string) => {
   if (!user.isVerified) throw new Error("Tài khoản chưa xác thực OTP");
   // Validate định dạng mật khẩu
   const PasswordValidation = validatePasswordFormat(password);
-  if (!PasswordValidation.isValid) {
+  if (!validatePasswordFormat(password).isValid) {
     throw new Error(`Mật khẩu không hợp lệ: ${PasswordValidation.message}`);
   }
   // Kiểm tra mật khẩu
@@ -280,3 +280,5 @@ export const getInfoUserSv = async (_id: string, authenticatedUserId: string) =>
   if (!infoUser) throw new Error("Người dùng không tồn tại");
   return infoUser;
 };
+
+

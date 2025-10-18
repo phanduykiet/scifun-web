@@ -80,7 +80,7 @@ export const getSubjectsSv = async (page: number, limit: number, search?: string
       : result.hits.total?.value || 0;
 
   const subjects = result.hits.hits.map((hit: any) => ({
-    id: hit._id,
+    _id: hit._id,
     ...hit._source
   }));
 

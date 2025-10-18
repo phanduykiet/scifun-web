@@ -81,7 +81,7 @@ export const getQuizzesSv = async (
   });
 
   const quizzes = (result.hits.hits as any[]).map((hit) => ({
-    id: hit._id,
+    _id: hit._id,
     ...hit._source,
   }));
 
