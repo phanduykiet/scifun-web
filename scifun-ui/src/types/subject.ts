@@ -18,7 +18,7 @@ export interface Subject {
     };
   }
   export interface Topic {
-    _id: string;
+    id: string;
     name: string;
     description?: string;
     subjectId: string;
