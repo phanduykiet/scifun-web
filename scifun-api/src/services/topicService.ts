@@ -83,7 +83,7 @@ export const getTopicsSv = async (
   });
 
   const hits = result.hits.hits.map((hit: any) => ({
-    id: hit._id,
+    _id: hit._id,
     ...hit._source
   }));
   
