@@ -79,8 +79,7 @@ export const updateSubject = async (id: string, subject: Partial<Omit<Subject, "
  * @param id ID của môn học
  */
 export const getSubjectById = async (id: string): Promise<Subject> => {
-  // Giả sử endpoint của bạn là /get-subject/:id
-  const res = await fetch(`${BASE_URL}/get-subject/${id}`);
+  const res = await fetch(`${BASE_URL}/get-subjectById/${id}`);
   if (!res.ok) {
     const errorText = await res.text();
     throw new Error(`Failed to fetch subject with id ${id}: ${errorText}`);

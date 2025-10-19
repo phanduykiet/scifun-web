@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo, useCallback } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import PageBreadcrumb from "@/components/common/PageBreadcrumb";
 import Input from "@/components/form/input/InputField";
 import TextArea from "@/components/form/input/TextArea";
@@ -15,9 +15,10 @@ type FormData = {
   image: string;
 };
 
-const UpdateSubjectPage = ({ params }: { params: { id: string } }) => {
+const UpdateSubjectPage = () => {
   const router = useRouter();
-const { id: subjectId } = React.use(params);
+  const params = useParams<{ id: string }>();
+  const subjectId = params?.id;
 
   const [formData, setFormData] = useState<FormData>({
     name: "",
@@ -45,12 +46,19 @@ const { id: subjectId } = React.use(params);
           maxTopics: subjectData.maxTopics || 0,
           image: subjectData.image || "",
         });
-      } catch (error) {
-        console.error("Failed to fetch subject:", error);
-        setMessage("❌ Không tìm thấy thông tin môn học.");
-      } finally {
-        setIsLoading(false);
-      }
+} catch (error: any) {
+  console.warn(`Môn học với ID "${subjectId}" không tồn tại hoặc đã bị xóa.`);
+  setMessage("❌ Môn học không tồn tại hoặc đã bị xóa.");
+  setFormData({
+    name: "",
+    description: "",
+    maxTopics: 0,
+    image: "",
+  });
+} finally {
+  setIsLoading(false);
+}
+
     };
     fetchSubject();
   }, [subjectId]);

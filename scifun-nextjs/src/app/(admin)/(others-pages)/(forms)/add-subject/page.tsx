@@ -2,8 +2,8 @@
 
 import React, { useState } from "react";
 import PageBreadcrumb from "@/components/common/PageBreadcrumb";
-import Input from "@/components/form/input/InputField"; //!
-import TextArea from "@/components/form/input/TextArea"; //!
+import Input from "@/components/form/input/InputField";
+import TextArea from "@/components/form/input/TextArea";
 import DropzoneComponent from "@/components/form/form-elements/DropZone";
 import { addSubject } from "@/services/subjectService";
 
@@ -12,7 +12,7 @@ export default function CreateSubjectPage() {
     name: "",
     description: "",
     maxTopics: 0,
-    image: "", // Sẽ là URL sau khi upload, hoặc link trực tiếp
+    image: "",
   });
   const [imageFile, setImageFile] = useState<File | null>(null);
 
@@ -24,12 +24,10 @@ export default function CreateSubjectPage() {
     maxTopics: string;
   }>({ name: "", description: "", maxTopics: "" });
 
-  // Hàm xử lý thay đổi input
   const handleChange = (
     field: keyof typeof formData,
     value: string | number
   ) => {
-    console.log(`[handleChange] Field: ${field}, Value:`, value);
     setFormData((prev) => ({
       ...prev,
       [field]: value,
@@ -41,17 +39,11 @@ export default function CreateSubjectPage() {
   };
 
   const handleFileAccepted = (file: File) => {
-    console.log("[handleFileAccepted] File accepted:", file);
     setImageFile(file);
-    // Tạm thời hiển thị tên file, trong thực tế bạn sẽ upload và lấy URL
     handleChange("image", file.name);
   };
-  // Hàm xử lý khi bấm "Tạo môn học"
-  const handleSubmit = async () => {
-    console.log("[handleSubmit] Starting submission...");
-    console.log("[handleSubmit] Current formData:", formData);
-    console.log("[handleSubmit] Current imageFile:", imageFile);
 
+  const handleSubmit = async () => {
     const newErrors = {
       name: formData.name ? "" : "Tên môn học là bắt buộc.",
       description: formData.description ? "" : "Mô tả là bắt buộc.",
@@ -70,15 +62,6 @@ export default function CreateSubjectPage() {
       setMessage("");
 
       let imageUrl = formData.image;
-      // Nếu có file, bạn sẽ thực hiện upload ở đây
-      if (imageFile) {
-        // const uploadedUrl = await uploadImage(imageFile); // Hàm upload giả định
-        // imageUrl = uploadedUrl;
-        console.log("Uploading file:", imageFile);
-        // NOTE: Hiện tại API chưa hỗ trợ upload file, nên ta sẽ bỏ qua bước này
-        // và chỉ gửi link ảnh nếu người dùng nhập trực tiếp.
-        // Nếu bạn có dịch vụ upload, hãy tích hợp ở đây.
-      }
 
       const payload = {
         name: formData.name,
@@ -87,11 +70,8 @@ export default function CreateSubjectPage() {
         image: imageUrl,
       };
 
-      console.log("[handleSubmit] Calling addSubject with payload:", payload);
-      // Gọi API tạo môn học
       const created = await addSubject(payload);
 
-      console.log("[handleSubmit] API response:", created);
       setMessage(`✅ Đã tạo thành công môn học: ${created.name}`);
       setFormData({ name: "", description: "", maxTopics: 0, image: "" });
     } catch (error: any) {
@@ -108,7 +88,9 @@ export default function CreateSubjectPage() {
       <div className="max-w-3xl mx-auto mt-6 space-y-6">
         {/* Tên môn học */}
         <div>
-          <h3 className="text-lg font-semibold mb-2">Tên môn học</h3>
+          <h3 className="text-lg font-semibold mb-2">
+            Tên môn học <span className="text-red-500">*</span>
+          </h3>
           <Input
             type="text"
             value={formData.name}
@@ -121,7 +103,9 @@ export default function CreateSubjectPage() {
 
         {/* Mô tả */}
         <div>
-          <h3 className="text-lg font-semibold mb-2">Mô tả</h3>
+          <h3 className="text-lg font-semibold mb-2">
+            Mô tả <span className="text-red-500">*</span>
+          </h3>
           <TextArea
             rows={6}
             placeholder="Nhập mô tả, ví dụ: Là một môn học về những hiện tượng thú vị"
@@ -134,7 +118,9 @@ export default function CreateSubjectPage() {
 
         {/* Số chủ đề tối đa */}
         <div>
-          <h3 className="text-lg font-semibold mb-2">Số chủ đề tối đa</h3>
+          <h3 className="text-lg font-semibold mb-2">
+            Số chủ đề tối đa <span className="text-red-500">*</span>
+          </h3>
           <Input
             type="number"
             min="1"
@@ -148,7 +134,9 @@ export default function CreateSubjectPage() {
 
         {/* Ảnh minh họa */}
         <div>
-          <h3 className="text-lg font-semibold mb-2">Ảnh minh họa (link hoặc upload)</h3>
+          <h3 className="text-lg font-semibold mb-2">
+            Ảnh minh họa (link hoặc upload)
+          </h3>
           <Input
             type="text"
             value={formData.image}
