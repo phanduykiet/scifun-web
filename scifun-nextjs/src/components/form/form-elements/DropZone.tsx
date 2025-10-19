@@ -3,10 +3,15 @@ import React from "react";
 import ComponentCard from "../../common/ComponentCard";
 import { useDropzone } from "react-dropzone";
 
-const DropzoneComponent: React.FC = () => {
+interface DropzoneProps {
+  onFileAccepted?: (file: File) => void;
+}
+
+const DropzoneComponent: React.FC<DropzoneProps> = ({ onFileAccepted }) => {
   const onDrop = (acceptedFiles: File[]) => {
-    console.log("Files dropped:", acceptedFiles);
-    // Handle file uploads here
+    if (acceptedFiles.length > 0 && onFileAccepted) {
+      onFileAccepted(acceptedFiles[0]);
+    }
   };
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({

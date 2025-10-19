@@ -10,31 +10,46 @@ import {
 } from "../ui/table";
 import Badge from "../ui/badge/Badge";
 import Image from "next/image";
+import Link from "next/link";
 
 export default function RecentOrders() {  const [subjects, setSubjects] = useState<Subject[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
   const [loading, setLoading] = useState(false);
+  const limit = 5; // Số lượng môn học trên mỗi trang
 
   useEffect(() => {
     const fetchSubjects = async () => {
       setLoading(true);
       try {
-        const data = await getSubjects();
-        setSubjects(data);
+        // Gọi service với tham số phân trang
+        const response = await getSubjects(currentPage, limit);
+        setSubjects(response.subjects);
+        setTotalPages(response.totalPages);
       } catch (error) {
         console.error("Failed to fetch subjects:", error);
       } finally {
         setLoading(false);
       }
     };
-
+ 
     fetchSubjects();
-  }, []);
+  }, [currentPage]); // Chạy lại useEffect khi currentPage thay đổi
+
+  const handlePrevPage = () => {
+    setCurrentPage((prev) => Math.max(prev - 1, 1));
+  };
+
+  const handleNextPage = () => {
+    setCurrentPage((prev) => Math.min(prev + 1, totalPages));
+  };
+
   return (
     <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white px-4 pb-3 pt-4 dark:border-gray-800 dark:bg-white/[0.03] sm:px-6">
       <div className="flex flex-col gap-2 mb-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
-            Recent Orders
+            Danh sách môn học
           </h3>
         </div>
 
@@ -131,9 +146,11 @@ export default function RecentOrders() {  const [subjects, setSubjects] = useSta
                       />
                     </div>
                     <div>
-                      <p className="font-medium text-gray-800 text-theme-sm dark:text-white/90">
-                        {subject.name}
-                      </p>
+                      <Link href={`/update-subject/${subject.id}`}>
+                        <p className="font-medium text-gray-800 text-theme-sm dark:text-white/90 hover:text-blue-600 dark:hover:text-blue-400 cursor-pointer">
+                          {subject.name}
+                        </p>
+                      </Link>
                       <span className="text-gray-500 text-theme-xs dark:text-gray-400">
                         {subject.description}
                       </span>
@@ -164,6 +181,28 @@ export default function RecentOrders() {  const [subjects, setSubjects] = useSta
             ))}
           </TableBody>
         </Table>
+      </div>
+      {/* Pagination Controls */}
+      <div className="flex items-center justify-end gap-4 mt-4">
+        <span className="text-sm text-gray-500 dark:text-gray-400">
+          Trang {currentPage} / {totalPages}
+        </span>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handlePrevPage}
+            disabled={currentPage === 1 || loading}
+            className="px-3 py-1 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-700"
+          >
+            Trước
+          </button>
+          <button
+            onClick={handleNextPage}
+            disabled={currentPage === totalPages || loading}
+            className="px-3 py-1 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-700"
+          >
+            Sau
+          </button>
+        </div>
       </div>
     </div>
   );
