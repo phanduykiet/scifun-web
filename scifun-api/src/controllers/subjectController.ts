@@ -6,7 +6,7 @@ export const createSubject = async (req: Request, res: Response) => {
   try {
     const { name, description, maxTopics, image } = req.body;
     const subject = await subjectService.createSubjectSv(req.body);
-    await subjectService.syncSubjectToES();
+    await subjectService.syncToES();
     res.status(200).json({
       status: 200,
       message: "Tạo môn học thành công",

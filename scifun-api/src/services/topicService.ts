@@ -1,4 +1,7 @@
 import Topic, { ITopic } from "../models/Topic";
+import { esClient } from "../config/elasticSearch";
+
+const TOPIC_INDEX = "topic";
 
 // Thêm Topic
 export const createTopicSv = async (data: Partial<ITopic>) => {
@@ -39,35 +42,64 @@ export const getTopicsSv = async (
   page: number,
   limit: number,
   subjectId?: string,
-  searchName?: string
+  search?: string
 ) => {
-  const filter: any = {};
+  const must: any[] = [];
+  const filters: any[] = [];
 
   // lọc theo subject nếu có
-  if (subjectId) filter.subject = subjectId;
-
-  // Tìm kiếm theo tên (không phân biệt hoa thường)
-  if (searchName && searchName.trim() !== "") {
-    filter.name = { $regex: searchName, $options: "i" };
+  if (subjectId) {
+    filters.push({ term: { "subject.keyword": subjectId } });
   }
 
-  const skip = (page - 1) * limit;
+  // tìm kiếm theo tên
+  if (search && search.trim() !== "") {
+    must.push({
+      match: {
+        name: {
+          query: search.trim(),
+          operator: "AND",               // chặt chẽ hơn khi search
+          fuzziness: "AUTO",             // cho phép typo nhẹ
+          minimum_should_match: "75%"    // yêu cầu mức khớp tối thiểu
+        }
+      }
+    });
+  }
 
-  const [topics, total] = await Promise.all([
-    Topic.find(filter)
-      .skip(skip)
-      .limit(limit)
-      .sort({ createdAt: -1 })
-      .populate("subject"),
-    Topic.countDocuments(filter),
-  ]);
+  const from = (page - 1) * limit;
+
+  const result = await esClient.search({
+    index: TOPIC_INDEX,
+    from,
+    size: limit,
+    track_total_hits: true, // để total chính xác
+    query: {
+      bool: {
+        must: must.length ? must : [{ match_all: {} }],
+        filter: filters
+      }
+    },
+    // sort: [{ createdAt: { order: "desc" } }]
+  });
+
+  const hits = result.hits.hits.map((hit: any) => ({
+    id: hit._id,
+    ...hit._source
+  }));
+  
+  let total = 0;
+  if (typeof result.hits.total === "number") {
+    total = result.hits.total;
+  } else {
+    total = result.hits.total.value;
+  }
 
   return {
     limit,
     total,
     page,
     totalPages: Math.ceil(total / limit),
-    topics,
+    topics: hits
   };
 };
 
@@ -79,4 +111,39 @@ export const getTopicByIdSv = async (_id: string) => {
   if (!topic) throw new Error("Topic không tồn tại");
 
   return topic;
+};
+
+// Tạm thời 
+export const syncToES = async (): Promise<void> => {
+  try {
+    // Xoá hết dữ liệu cũ trong index
+    await esClient.deleteByQuery({
+      index: TOPIC_INDEX,
+      body: {
+        query: {
+          match_all: {}   // xoá tất cả documents
+        }
+      }
+    } as any); // ép kiểu any để TS không bắt lỗi
+
+
+    // Lấy dữ liệu từ Mongo
+    const topics = await Topic.find().lean();
+
+    for (const topic of topics) {
+      const { _id, __v, ...doc } = topic;
+
+      await esClient.index({
+        index: TOPIC_INDEX,
+        id: _id.toString(),
+        document: doc,
+        refresh: true
+      });
+    }
+
+    console.log("✅ Sync to Elasticsearch completed!");
+  } catch (error) {
+    console.error("❌ Error syncing:", error);
+    throw error;
+  }
 };
