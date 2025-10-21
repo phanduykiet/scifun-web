@@ -39,7 +39,7 @@ const Profile: React.FC = () => {
       const file = fileInputRef.current?.files?.[0];
       let avatarToSend = auth.user.avatar; // mặc định là avatar cũ
       if (file) {
-        avatarToSend = URL.createObjectURL(file); // hoặc convert sang base64 nếu backend yêu cầu
+        avatarToSend = URL.createObjectURL(file);
       }
   
       // Gửi object JSON thay vì FormData
@@ -67,8 +67,6 @@ const Profile: React.FC = () => {
       alert("Cập nhật thông tin thất bại!");
     }
   };
-  
-  
 
   const handleAvatarClick = () => {
     if (editing && fileInputRef.current) {
@@ -90,7 +88,7 @@ const Profile: React.FC = () => {
           <div className="text-center">
             {/* Avatar */}
             <img
-              src={avatar || "https://via.placeholder.com/120"}
+              src={avatar || "https://cdn-icons-png.flaticon.com/512/219/219983.png"}
               alt="avatar"
               className="rounded-circle mb-3"
               style={{

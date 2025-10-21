@@ -6,9 +6,11 @@ interface ConfirmModalProps {
   message: React.ReactNode;
   onConfirm: () => void;
   onCancel: () => void;
+  confirmText?: string;
+  cancelText?: string;
 }
 
-const ConfirmModal: React.FC<ConfirmModalProps> = ({ show, title = "Xác nhận", message, onConfirm, onCancel }) => {
+const ConfirmModal: React.FC<ConfirmModalProps> = ({ show, title = "Xác nhận", message, onConfirm, onCancel, confirmText, cancelText }) => {
   if (!show) return null;
 
   return (
@@ -39,10 +41,10 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({ show, title = "Xác nhận"
         </div>
         <div className="d-flex justify-content-end" style={{ gap: "10px" }}>
           <button className="btn btn-secondary" onClick={onCancel}>
-            Hủy
+            {cancelText || "Hủy"}
           </button>
           <button className="btn btn-success" onClick={onConfirm}>
-            Bắt đầu
+            {confirmText || "Bắt đầu"}
           </button>
         </div>
       </div>

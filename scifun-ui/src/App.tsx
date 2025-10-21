@@ -9,7 +9,7 @@ import AllLessons from "./pages/AllLessons";
 import ResetPassword from "./pages/ResetPassword";
 import ChangePassword from "./pages/ChangePassword";
 import Test from "./pages/Test";
-import DemoTestPage from "./pages/DemoTestPage";
+import TestReview from "./pages/TestReview";
 import SubjectPage from "./pages/Subject";
 import TopicPage from "./pages/Topic";
 
@@ -26,7 +26,7 @@ export default function App() {
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/change-password" element={<ChangePassword />} />
         <Route path="/test" element={<Test />} />
-        <Route path="/demo-test" element={<DemoTestPage />} />
+        <Route path="/test-review" element={<TestReview />} />
         <Route path="/subject/:id" element={<SubjectPage />} />
         <Route path="/topic/:topicId" element={<TopicPage />} />
       </Routes>

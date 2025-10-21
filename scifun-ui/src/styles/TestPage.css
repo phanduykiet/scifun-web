@@ -175,6 +175,12 @@
 .optionLabel input[type="radio"] {
   accent-color: #52c41a; /* xanh lá hoặc màu bạn muốn */
 }
+.grid-button.wrong {
+  background-color: #dc3545;
+}
+.grid-button.answered {
+  background-color: #28a745;
+}
 
 
 
