@@ -4,9 +4,6 @@ import Lessons from "../components/layout/Lessons";
 import Footer from "../components/layout/Footer";
 
 const Home: React.FC = () => {
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
   const heroImage =
     "https://img.lovepik.com/photo/60225/6908.jpg_wh860.jpg";
 

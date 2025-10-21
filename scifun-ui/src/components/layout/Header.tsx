@@ -23,14 +23,9 @@ const Header: React.FC = () => {
 
   // Detect scroll để thay đổi màu navbar
   useEffect(() => {
-    if (location.pathname === "/") {
-      // scroll về đầu khi vào Home
-      window.scrollTo(0,0);
-      return; // không thêm listener scroll
-    }
   
     const handleScroll = () => {
-      setScrolled(window.scrollY > 400);
+      setScrolled(window.scrollY > 50);
     };
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);

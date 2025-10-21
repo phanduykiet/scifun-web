@@ -3,7 +3,7 @@ import type { Quiz } from "../../types/quiz";
 import { FaClock, FaQuestionCircle } from "react-icons/fa";
 import { CiHeart, CiBookmark } from "react-icons/ci";
 import { getQuestionsByQuizApi } from "../../util/api";
-import ConfirmModal from "../ConfirmModal";
+import ConfirmModal from "../common/ConfirmModal";
 
 interface QuizCardProps {
   quiz: Quiz;
