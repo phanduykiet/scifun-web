@@ -1,0 +1,14 @@
+/* src/styles/Header.css */
+.transparent-navbar {
+    background-color: rgba(255, 255, 255, 0); /* hoàn toàn trong suốt */
+    backdrop-filter: none; /* chưa blur khi đầu trang */
+    transition: background-color 0.3s ease, box-shadow 0.3s ease, backdrop-filter 0.3s ease;
+  }
+  
+  .scrolled-navbar {
+    background-color: #d0d0d0; /* nền trắng mờ */
+    backdrop-filter: blur(10px); /* làm mờ nền phía sau */
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    transition: background-color 0.3s ease, box-shadow 0.3s ease, backdrop-filter 0.3s ease;
+  }
+  

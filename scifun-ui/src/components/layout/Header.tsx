@@ -1,13 +1,13 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { AuthContext } from "../context/auth.context";
+import "../../styles/Header.css";
 
 const Header: React.FC = () => {
   const navigate = useNavigate();
-  const location = useLocation(); // ✅ Lấy route hiện tại
-  const topic = location.state as any;
-  const subject = location.state as any;
+  const location = useLocation();
   const authContext = useContext(AuthContext);
+  const [scrolled, setScrolled] = useState(false);
 
   if (!authContext) return null;
   const { auth, setAuth } = authContext;
@@ -21,22 +21,35 @@ const Header: React.FC = () => {
     navigate("/login");
   };
 
-  // ✅ Tạo breadcrumb theo URL
+  // Detect scroll để thay đổi màu navbar
+  useEffect(() => {
+    if (location.pathname === "/") {
+      // scroll về đầu khi vào Home
+      window.scrollTo(0,0);
+      return; // không thêm listener scroll
+    }
+  
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 400);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [location.pathname]);  
+
+  // Breadcrumb
   const renderBreadcrumb = () => {
     const path = location.pathname;
     const state = location.state as any;
-  
-    // Ẩn breadcrumb khi đang ở trang chủ
     if (path === "/") return null;
-  
+
     return (
       <nav className="bg-light px-3 py-2 border-bottom" style={{ fontSize: "14px" }}>
-        <Link to="/" className="text-secondary text-decoration-none">Trang chủ</Link>
-  
+        <Link to="/" className="text-secondary text-decoration-none">
+          Trang chủ
+        </Link>
         {path.startsWith("/subject") && (
           <span className="text-muted"> &gt; <b>{state?.name || "Môn học"}</b></span>
         )}
-  
         {path.startsWith("/topic") && (
           <>
             <span className="text-muted">
@@ -56,11 +69,17 @@ const Header: React.FC = () => {
       </nav>
     );
   };
-  
+
   return (
     <>
-      {/* ✅ Navbar chính */}
-      <nav className="navbar navbar-expand-lg navbar-dark bg-dark px-3">
+      {/* Navbar */}
+      <nav
+        className={`navbar navbar-expand-lg fixed-top px-3 ${
+          location.pathname === "/"
+            ? "transparent-navbar navbar-dark"
+            : "scrolled-navbar navbar-light"
+        }`}
+      >
         <Link className="navbar-brand" to="/">
           Scifun
         </Link>
@@ -117,8 +136,12 @@ const Header: React.FC = () => {
         </div>
       </nav>
 
-      {/* ✅ Breadcrumb nằm dưới navbar */}
-      {renderBreadcrumb()}
+      {/* Breadcrumb */}
+      {renderBreadcrumb() && (
+        <div style={{ paddingTop: "70px" }}>
+          {renderBreadcrumb()}
+        </div>
+      )}
     </>
   );
 };

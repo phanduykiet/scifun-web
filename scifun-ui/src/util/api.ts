@@ -111,6 +111,14 @@ const getQuestionsByQuizApi = async (
   });
   return res;
 };
+const submitQuizApi = async (userId: string, quizId: string, answers: { questionId: string, selectedAnswerId: string }[]) => {
+  const res = await axios.post("/api/v1/submission/handle-submit", {
+    userId,
+    quizId,
+    answers,
+  });
+  return res;
+};
 
 export { createUserApi, loginApi, otpVerify, getLessonListApi, updateProfileApi, forgotPasswordApi, resetPasswordApi, changePasswordApi,
-  getTopicsBySubjectApi, getQuizsByTopicApi, getQuestionsByQuizApi };
+  getTopicsBySubjectApi, getQuizsByTopicApi, getQuestionsByQuizApi, submitQuizApi };

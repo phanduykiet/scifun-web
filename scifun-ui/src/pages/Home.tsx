@@ -1,23 +1,14 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import Header from "../components/layout/Header";
 import Lessons from "../components/layout/Lessons";
 import Footer from "../components/layout/Footer";
 
 const Home: React.FC = () => {
-  const images = [
-    "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRGrlIO4ES80Wt3ELJyTkUuqosDLSbLsHEjPBYHEgRJlRqSfvKLxRIe4E_95pkSAxligK0&usqp=CAU",
-    "https://www.shutterstock.com/image-vector/chemistry-items-seamless-pattern-cartoon-260nw-2267777097.jpg",
-    "https://media.istockphoto.com/id/2148124381/vi/anh/c%E1%BA%A5u-tr%C3%BAc-xo%E1%BA%AFn-dna-l%E1%BA%A5p-l%C3%A1nh-m%C3%A0u-xanh-v%C3%A0-%C4%91%E1%BB%8F-kh%C3%A1i-ni%E1%BB%87m-c%C3%B4ng-ngh%E1%BB%87-cao-v%E1%BB%81-nghi%C3%AAn-c%E1%BB%A9u-di-truy%E1%BB%81n-tin.jpg?s=612x612&w=0&k=20&c=woXhAma2lK2q7dpU79Kec1KLGZZyf4eh0xEZlv8O-8Y=",
-  ];
-
-  const [currentIndex, setCurrentIndex] = useState(0);
-
   useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % images.length);
-    }, 4000); // đổi ảnh sau 4 giây
-    return () => clearInterval(interval);
-  }, [images.length]);
+    window.scrollTo(0, 0);
+  }, []);
+  const heroImage =
+    "https://img.lovepik.com/photo/60225/6908.jpg_wh860.jpg";
 
   return (
     <>
@@ -26,23 +17,54 @@ const Home: React.FC = () => {
       <div
         style={{
           width: "100%",
-          height: "300px",
-          backgroundImage: `url(${images[currentIndex]})`,
-          backgroundSize: "contain",
-          backgroundRepeat: "no-repeat",
+          height: "80vh",
+          position: "relative",
+          backgroundImage: `url(${heroImage})`,
+          backgroundSize: "cover",
           backgroundPosition: "center",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          color: "white",
-          transition: "background-image 1s ease-in-out",
         }}
       >
-        {/* <h1>Chào mừng đến với SciFun</h1> */}
+        {/* Overlay mờ */}
+        <div
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            backgroundColor: "rgba(0,0,0,0.4)", // overlay đen mờ
+          }}
+        />
+
+        {/* Text nổi bật */}
+        <div
+          style={{
+            position: "relative",
+            zIndex: 1,
+            height: "100%",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            alignItems: "center",
+            color: "white",
+            textAlign: "center",
+            padding: "0 20px",
+          }}
+        >
+          <h1 style={{ fontSize: "3rem", fontWeight: "bold", marginBottom: "1rem" }}>
+            Chào mừng đến với SciFun
+          </h1>
+          <p style={{ fontSize: "1.5rem", maxWidth: "700px" }}>
+            Khám phá các bài học, quiz, và trải nghiệm học tập trực tuyến thú vị!
+          </p>
+        </div>
       </div>
+
+      {/* Lessons Section */}
       <div id="lessons-section">
         <Lessons />
       </div>
+
       <Footer />
     </>
   );
