@@ -2,10 +2,10 @@ import React, { useRef, useState, useEffect } from "react";
 import "../styles/TestPage.css"; 
 import TestQuestion from "../components/layout/TestQuestion";
 import { BsPatchQuestion } from "react-icons/bs";
-import { useLocation } from "react-router-dom";
-import { getQuestionsByQuizApi } from "../util/api";
+import { useLocation, useNavigate } from "react-router-dom";
+import { getQuestionsByQuizApi, submitQuizApi } from "../util/api";
 
-const TEST_DURATION = 15 * 60;
+const TEST_DURATION = 3;
 
 const Test: React.FC = () => {
   const location = useLocation();
@@ -15,10 +15,15 @@ const Test: React.FC = () => {
   const [answeredQuestions, setAnsweredQuestions] = useState<boolean[]>([]);
   const [timeLeft, setTimeLeft] = useState(TEST_DURATION);
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(true);
+  // Lấy userId từ localStorage
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const userId = user._id;
+  const [userAnswers, setUserAnswers] = useState<{ [key: string]: string }>({});
+  const navigate = useNavigate();
 
   const questionRefs = useRef<Array<HTMLDivElement | null>>([]);
-  const isMobile = windowWidth <= 600;
+  const isMobile = windowWidth <= 900;
   const questionMarginRight = !isMobile ? (isOpen ? "280px" : "60px") : "0";
 
   useEffect(() => {
@@ -50,6 +55,37 @@ const Test: React.FC = () => {
   const scrollToQuestion = (index: number) => {
     questionRefs.current[index]?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
+  const handleSubmit = async () => {
+    if (!window.confirm("Bạn có chắc muốn nộp bài không?")) return;
+  
+    const answersPayload = questions.map(q => ({
+      questionId: q._id,
+      selectedAnswerId: userAnswers[q._id] || "", // phải có giá trị
+    }));
+  
+    // ✅ debug trước khi gửi
+    console.log("User ID:", userId);
+    console.log("Quiz ID:", quizId);
+    console.log("Answers Payload:", answersPayload);
+  
+    try {
+      const res = await submitQuizApi(userId, quizId, answersPayload);
+  
+      // ✅ debug sau khi submit
+      console.log("Response từ API:", res.data);
+  
+      alert("Bài đã nộp thành công!");
+      // Lấy topicId từ câu hỏi đầu tiên
+      const topicId = questions[0]?.quiz?.topic;
+      if (topicId) {
+        navigate(`/topic/${topicId}`);
+      }
+    } catch (err: any) {
+      console.error("Lỗi khi nộp bài:", err.response?.data || err);
+      alert("Nộp bài thất bại, vui lòng thử lại!");
+    }
+  };
+    
 
   const minutes = Math.floor(timeLeft / 60);
   const seconds = timeLeft % 60;
@@ -76,8 +112,14 @@ const Test: React.FC = () => {
                 ref={(el) => { questionRefs.current[idx] = el; }}
                 index={idx}
                 content={q.text}
-                options={q.answers.map((a: any, i: number) => `${String.fromCharCode(65 + i)}. ${a.text}`)}
-                onAnswer={() => {
+                options={q.answers.map((a: any) => a.text)}
+                onAnswer={(selectedText: string) => {
+                  // Tìm answerId dựa trên text đã chọn
+                  const selected = q.answers.find((a: any) => a.text === selectedText);
+                  if (!selected) return;
+                  
+                  setUserAnswers(prev => ({ ...prev, [q._id]: selected._id }));
+                  
                   setAnsweredQuestions(prev => {
                     const copy = [...prev];
                     copy[idx] = true;
@@ -121,9 +163,7 @@ const Test: React.FC = () => {
                 className="grid-submit-button"
                 onClick={(e) => {
                   e.stopPropagation();
-                  if (window.confirm("Bạn có chắc muốn nộp bài không?")) {
-                    alert("Bài đã được nộp!");
-                  }
+                  handleSubmit();
                 }}
               >
                 Nộp bài

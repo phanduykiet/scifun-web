@@ -4,8 +4,8 @@ import "../../styles/TestPage.css";
 interface TestQuestionProps {
   index: number;
   content?: string;
-  options?: string[]; // mảng các lựa chọn trắc nghiệm
-  onAnswer?: () => void;
+  options?: string[];
+  onAnswer?: (answer: string) => void; // truyền giá trị lên cha
 }
 
 // forwardRef để truyền ref từ cha
@@ -27,7 +27,7 @@ const TestQuestion = forwardRef<HTMLDivElement, TestQuestionProps>(
                   type="radio"
                   name={`question-${index}`}
                   value={opt}
-                  onChange={() => onAnswer && onAnswer()}
+                  onChange={() => onAnswer && onAnswer(opt)} // truyền opt lên cha
                 />
                 {opt}
               </label>
