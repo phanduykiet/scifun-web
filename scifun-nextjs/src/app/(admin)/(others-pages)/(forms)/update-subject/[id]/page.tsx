@@ -1,227 +1,183 @@
 "use client";
 
-import React, { useState, useEffect, useMemo, useCallback } from "react";
-import { useRouter, useParams } from "next/navigation";
-import PageBreadcrumb from "@/components/common/PageBreadcrumb";
+import React, { useState, useEffect } from "react";
+import { useParams, useRouter } from "next/navigation";
+import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import Input from "@/components/form/input/InputField";
 import TextArea from "@/components/form/input/TextArea";
-import DropzoneComponent from "@/components/form/form-elements/DropZone";
-import { getSubjectById, updateSubject } from "@/services/subjectService";
+import { getSubjectById, updateSubject, deleteSubject } from "@/services/subjectService";
 
-type FormData = {
-  name: string;
-  description: string;
-  maxTopics: number;
-  image: string;
-};
-
-const UpdateSubjectPage = () => {
+export default function UpdateSubjectPage() {
+  const { id } = useParams(); // 🆔 Lấy id từ URL
   const router = useRouter();
-  const params = useParams<{ id: string }>();
-  const subjectId = params?.id;
-
-  const [formData, setFormData] = useState<FormData>({
+  const [formData, setFormData] = useState({
     name: "",
     description: "",
-    maxTopics: 0,
     image: "",
+    maxTopics: 0,
   });
 
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [loading, setLoading] = useState(true); // Bắt đầu với loading true
   const [message, setMessage] = useState("");
-  const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({});
-
-  // 🔹 Lấy dữ liệu môn học theo ID
-  useEffect(() => {
-    const fetchSubject = async () => {
-      if (!subjectId) return;
-      try {
-        setIsLoading(true);
-        const subjectData = await getSubjectById(subjectId);
-        setFormData({
-          name: subjectData.name || "",
-          description: subjectData.description || "",
-          maxTopics: subjectData.maxTopics || 0,
-          image: subjectData.image || "",
-        });
-} catch (error: any) {
-  console.warn(`Môn học với ID "${subjectId}" không tồn tại hoặc đã bị xóa.`);
-  setMessage("❌ Môn học không tồn tại hoặc đã bị xóa.");
-  setFormData({
+  const [errors, setErrors] = useState({
     name: "",
     description: "",
-    maxTopics: 0,
-    image: "",
+    maxTopics: "",
   });
-} finally {
-  setIsLoading(false);
-}
 
-    };
-    fetchSubject();
-  }, [subjectId]);
+  // 🟢 Lấy dữ liệu môn học khi load trang
+  useEffect(() => {
+    if (!id) return;
 
-  // 🔹 Cập nhật dữ liệu form
-  const handleChange = useCallback(
-    (field: keyof FormData, value: string | number) => {
-      setFormData((prev) => ({
-        ...prev,
-        [field]: value,
-      }));
-      if (errors[field]) {
-        setErrors((prev) => ({ ...prev, [field]: undefined }));
+    const fetchSubject = async () => {
+      try {
+        const subject = await getSubjectById(id as string);
+        setFormData({
+          name: subject.name || "",
+          description: subject.description || "",
+          image: subject.image || "",
+          maxTopics: subject.maxTopics || 0,
+        });
+      } catch (error) {
+        console.error("❌ Lỗi khi lấy dữ liệu môn học:", error);
+        setMessage("❌ Không thể tải dữ liệu môn học!");
+      } finally {
+        setLoading(false);
       }
-    },
-    [errors]
-  );
+    };
 
-  // 🔹 Nhận file từ Dropzone
-  const handleFileAccepted = (file: File) => {
-    setImageFile(file);
-    handleChange("image", file.name);
+    fetchSubject();
+  }, [id]);
+
+  // 🟡 Cập nhật giá trị form
+  const handleChange = (field: keyof typeof formData, value: string | number) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    if (field in errors) setErrors((prev) => ({ ...prev, [field]: "" }));
   };
 
-  // 🔹 Validate dữ liệu
-  const validateForm = () => {
-    const newErrors: Partial<Record<keyof FormData, string>> = {};
-    if (!formData.name) newErrors.name = "Tên môn học là bắt buộc.";
-    if (!formData.description) newErrors.description = "Mô tả là bắt buộc.";
-    if (formData.maxTopics <= 0)
-      newErrors.maxTopics = "Số chủ đề tối đa phải lớn hơn 0.";
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  // 🔹 Submit cập nhật
+  // 🟢 Gửi dữ liệu cập nhật
   const handleSubmit = async () => {
-    if (!validateForm()) {
+    const newErrors = {
+      name: formData.name ? "" : "Tên môn học là bắt buộc.",
+      description: formData.description ? "" : "Mô tả là bắt buộc.",
+      maxTopics:
+        formData.maxTopics > 0 ? "" : "Số lượng chủ đề tối đa phải lớn hơn 0.",
+    };
+
+    setErrors(newErrors);
+    if (Object.values(newErrors).some((err) => err)) {
       setMessage("⚠️ Vui lòng điền đầy đủ thông tin!");
       return;
     }
 
     try {
-      setIsSubmitting(true);
+      setLoading(true);
       setMessage("");
 
-      let imageUrl = formData.image;
-
-      // 🔸 Giả lập upload ảnh (nếu có file mới)
-      if (imageFile) {
-        console.log("Uploading image:", imageFile.name);
-        // Giả lập link ảnh mới (trong thực tế sẽ gọi API upload)
-        imageUrl = URL.createObjectURL(imageFile);
-      }
-
-      const payload = {
-        id: subjectId,
+      const updated = await updateSubject(id as string, {
         name: formData.name,
         description: formData.description,
+        image: formData.image,
         maxTopics: Number(formData.maxTopics),
-        image: imageUrl,
-      };
+      });
 
-      await updateSubject(subjectId, payload);
-
-      setMessage("✅ Cập nhật thành công! Đang chuyển hướng...");
-      setTimeout(() => {
-        router.push("/subjects");
-      }, 2000);
+      setMessage(`✅ Cập nhật thành công: ${updated.name}`);
     } catch (error) {
-      console.error("Error updating subject:", error);
+      console.error("[handleSubmit] Error updating subject:", error);
       setMessage("❌ Cập nhật môn học thất bại!");
     } finally {
-      setIsSubmitting(false);
+      setLoading(false);
     }
   };
 
-  // 🔹 Hiển thị form
-  if (isLoading) {
-    return (
-      <div>
-        <PageBreadcrumb pageTitle="Cập nhật môn học" />
-        <p className="mt-6 text-center">Đang tải dữ liệu môn học...</p>
-      </div>
-    );
-  }
+  // 🔴 Xóa môn học
+  const handleDelete = async () => {
+    if (!id) return;
+
+    if (!window.confirm("Bạn có chắc chắn muốn xóa môn học này không? Hành động này không thể hoàn tác.")) {
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setMessage("");
+      await deleteSubject(id as string);
+      setMessage("✅ Xóa môn học thành công! Đang chuyển hướng...");
+      setTimeout(() => {
+        router.push("/admin/subjects-list"); // Chuyển hướng về trang danh sách
+      }, 2000);
+    } catch (error) {
+      console.error("[handleDelete] Error deleting subject:", error);
+      setMessage("❌ Xóa môn học thất bại!");
+      setLoading(false); // Chỉ dừng loading khi có lỗi, vì thành công sẽ chuyển trang
+    }
+  };
 
   return (
     <div>
       <PageBreadcrumb pageTitle="Cập nhật môn học" />
       <div className="max-w-3xl mx-auto mt-6 space-y-6">
-        {/* Tên, mô tả, số chủ đề */}
+        {/* Tên môn học */}
         <div>
-          <h3 className="text-lg font-semibold mb-2">Tên môn học</h3>
+          <h3 className="text-lg font-semibold mb-2">
+            Tên môn học <span className="text-red-500">*</span>
+          </h3>
           <Input
             type="text"
             value={formData.name}
             placeholder="Nhập tên môn học"
+            maxLength={100}
             onChange={(e) => handleChange("name", e.target.value)}
             error={!!errors.name}
             hint={errors.name}
           />
         </div>
 
+        {/* Mô tả */}
         <div>
-          <h3 className="text-lg font-semibold mb-2">Mô tả</h3>
+          <h3 className="text-lg font-semibold mb-2">
+            Mô tả <span className="text-red-500">*</span>
+          </h3>
           <TextArea
-            rows={5}
-            value={formData.description}
+            rows={6}
             placeholder="Nhập mô tả môn học"
-            onChange={(value) => handleChange("description", value)}
+            value={formData.description}
+            onChange={(value: string) => handleChange("description", value)}
             error={!!errors.description}
             hint={errors.description}
           />
         </div>
 
+        {/* Hình ảnh (tùy chọn) */}
         <div>
-          <h3 className="text-lg font-semibold mb-2">Số chủ đề tối đa</h3>
+          <h3 className="text-lg font-semibold mb-2">Ảnh (tuỳ chọn)</h3>
+          <Input
+            type="text"
+            value={formData.image}
+            placeholder="Nhập URL hình ảnh (nếu có)"
+            onChange={(e) => handleChange("image", e.target.value)}
+          />
+        </div>
+
+        {/* Số lượng chủ đề tối đa */}
+        <div>
+          <h3 className="text-lg font-semibold mb-2">
+            Số lượng chủ đề tối đa <span className="text-red-500">*</span>
+          </h3>
           <Input
             type="number"
-            min="1"
             value={formData.maxTopics}
-            placeholder="Ví dụ: 10"
             onChange={(e) => handleChange("maxTopics", Number(e.target.value))}
             error={!!errors.maxTopics}
             hint={errors.maxTopics}
           />
         </div>
 
-        {/* Ảnh minh họa */}
-        <div>
-          <h3 className="text-lg font-semibold mb-2">Ảnh minh họa</h3>
-          <Input
-            type="text"
-            value={formData.image}
-            placeholder="Dán link ảnh hoặc upload"
-            onChange={(e) => handleChange("image", e.target.value)}
-          />
-          <div className="mt-4">
-            <DropzoneComponent onFileAccepted={handleFileAccepted} />
-          </div>
-
-          {/* Hiển thị preview ảnh */}
-          {formData.image && (
-            <div className="mt-4">
-              <img
-                src={formData.image}
-                alt="Preview"
-                className="w-48 h-32 object-cover rounded-lg shadow"
-              />
-            </div>
-          )}
-        </div>
-
         {/* Thông báo */}
         {message && (
           <p
-            className={`text-sm text-center ${
-              message.startsWith("✅")
-                ? "text-green-600"
-                : message.startsWith("❌")
-                ? "text-red-600"
-                : "text-yellow-600"
+            className={`text-sm mt-2 text-center ${
+              message.includes("❌") ? "text-red-600" : "text-green-600"
             }`}
           >
             {message}
@@ -229,18 +185,23 @@ const UpdateSubjectPage = () => {
         )}
 
         {/* Nút cập nhật */}
-        <div className="pt-4 text-center">
+        <div className="pt-4 flex justify-center gap-4">
           <button
             onClick={handleSubmit}
-            disabled={isSubmitting}
+            disabled={loading}
             className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
           >
-            {isSubmitting ? "Đang cập nhật..." : "Cập nhật môn học"}
+            {loading ? "Đang xử lý..." : "Cập nhật môn học"}
+          </button>
+          <button
+            onClick={handleDelete}
+            disabled={loading}
+            className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition disabled:opacity-50"
+          >
+            {loading ? "Đang xử lý..." : "Xóa môn học"}
           </button>
         </div>
       </div>
     </div>
   );
-};
-
-export default UpdateSubjectPage;
+}

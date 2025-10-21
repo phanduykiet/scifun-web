@@ -27,7 +27,7 @@ export const updateSubject = async (req: Request, res: Response) => {
     const { name, description, maxTopics, image } = req.body;
 
     const subject = await subjectService.updateSubjectSv(_id, req.body);
-
+    await subjectService.syncToES();
     res.status(200).json({
       status: 200,
       message: "Cập nhật môn học thành công",
@@ -48,14 +48,14 @@ export const deleteSubject = async (req: Request, res: Response) => {
 
     await subjectService.deleteSubjectSv(_id);
 
-    res.status(200).json({ 
-        status: 200,
-        message: "Xóa môn học thành công" 
+    res.status(200).json({
+      status: 200,
+      message: "Xóa môn học thành công",
     });
   } catch (err: any) {
-    res.status(400).json({ 
-        status: 400,
-        message: err.message 
+    res.status(400).json({
+      status: 400,
+      message: err.message,
     });
   }
 };
@@ -90,12 +90,12 @@ export const getSubjectById = async (req: Request, res: Response) => {
     res.status(200).json({
       status: 200,
       message: "Lấy chi tiết môn học thành công",
-      data: topic
+      data: topic,
     });
   } catch (err: any) {
-    res.status(400).json({ 
+    res.status(400).json({
       status: 400,
-      message: err.message 
+      message: err.message,
     });
   }
 };

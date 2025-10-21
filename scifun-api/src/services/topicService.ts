@@ -7,6 +7,7 @@ const TOPIC_INDEX = "topic";
 export const createTopicSv = async (data: Partial<ITopic>) => {
   const topic = new Topic(data);
   await topic.save();
+  await syncToES();
   return topic.populate("subject"); // populate để trả luôn thông tin Subject
 };
 
@@ -58,11 +59,11 @@ export const getTopicsSv = async (
       match: {
         name: {
           query: search.trim(),
-          operator: "AND",               // chặt chẽ hơn khi search
-          fuzziness: "AUTO",             // cho phép typo nhẹ
-          minimum_should_match: "75%"    // yêu cầu mức khớp tối thiểu
-        }
-      }
+          operator: "AND", // chặt chẽ hơn khi search
+          fuzziness: "AUTO", // cho phép typo nhẹ
+          minimum_should_match: "75%", // yêu cầu mức khớp tối thiểu
+        },
+      },
     });
   }
 
@@ -76,17 +77,17 @@ export const getTopicsSv = async (
     query: {
       bool: {
         must: must.length ? must : [{ match_all: {} }],
-        filter: filters
-      }
+        filter: filters,
+      },
     },
     // sort: [{ createdAt: { order: "desc" } }]
   });
 
   const hits = result.hits.hits.map((hit: any) => ({
     id: hit._id,
-    ...hit._source
+    ...hit._source,
   }));
-  
+
   let total = 0;
   if (typeof result.hits.total === "number") {
     total = result.hits.total;
@@ -99,7 +100,7 @@ export const getTopicsSv = async (
     total,
     page,
     totalPages: Math.ceil(total / limit),
-    topics: hits
+    topics: hits,
   };
 };
 
@@ -113,7 +114,7 @@ export const getTopicByIdSv = async (_id: string) => {
   return topic;
 };
 
-// Tạm thời 
+// Tạm thời
 export const syncToES = async (): Promise<void> => {
   try {
     // Xoá hết dữ liệu cũ trong index
@@ -121,11 +122,10 @@ export const syncToES = async (): Promise<void> => {
       index: TOPIC_INDEX,
       body: {
         query: {
-          match_all: {}   // xoá tất cả documents
-        }
-      }
+          match_all: {}, // xoá tất cả documents
+        },
+      },
     } as any); // ép kiểu any để TS không bắt lỗi
-
 
     // Lấy dữ liệu từ Mongo
     const topics = await Topic.find().lean();
@@ -137,7 +137,7 @@ export const syncToES = async (): Promise<void> => {
         index: TOPIC_INDEX,
         id: _id.toString(),
         document: doc,
-        refresh: true
+        refresh: true,
       });
     }
 

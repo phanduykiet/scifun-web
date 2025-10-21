@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import PageBreadcrumb from "@/components/common/PageBreadcrumb";
+import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import Input from "@/components/form/input/InputField";
 import TextArea from "@/components/form/input/TextArea";
 import DropzoneComponent from "@/components/form/form-elements/DropZone";
@@ -95,6 +95,7 @@ export default function CreateSubjectPage() {
             type="text"
             value={formData.name}
             placeholder="Nhập tên môn học, ví dụ: Hóa"
+            maxLength={100}
             onChange={(e) => handleChange("name", e.target.value)}
             error={!!errors.name}
             hint={errors.name}

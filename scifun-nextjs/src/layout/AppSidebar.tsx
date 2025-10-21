@@ -43,11 +43,26 @@ const navItems: NavItem[] = [
     name: "User Profile",
     path: "/profile",
   },
-
   {
+    icon: <UserCircleIcon />,
+    name: "Form Elements",
+    path: "/form-elements",
+  },
+
+    {
     name: "Subject",
     icon: <ListIcon />,
-    subItems: [{ name: "List Subjects", path: "/list-subjects", pro: false },{ name: "Form Elements", path: "/form-elements", pro: false }, { name: "Add Subject", path: "/add-subject", pro: false }],
+    subItems: [{ name: "List Subjects", path: "/list-subjects", pro: false }, { name: "Add Subject", path: "/add-subject", pro: false }],
+  },  
+  {
+    name: "Topics",
+    icon: <ListIcon />,
+    subItems: [{ name: "List Topics", path: "/list-topics", pro: false }, { name: "Add Topic", path: "/add-topics", pro: false }],
+  },
+  {
+    name: "Quizzes",
+    icon: <ListIcon />,
+    subItems: [{ name: "List Quizzes", path: "/list-quizzes", pro: false }, { name: "Add Quiz", path: "/add-quiz", pro: false }],
   },
   {
     name: "Tables",

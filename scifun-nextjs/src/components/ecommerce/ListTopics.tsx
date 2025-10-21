@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { getSubjects, Subject } from "@/services/subjectService";
+import { getTopics, Topic } from "@/services/topicsService";
 import {
   Table,
   TableBody,
@@ -9,11 +9,10 @@ import {
   TableRow,
 } from "../ui/table";
 import Badge from "../ui/badge/Badge";
-import Image from "next/image";
 import Link from "next/link";
 
-export default function RecentOrders() {
-  const [subjects, setSubjects] = useState<Subject[]>([]);
+export default function ListTopics() {
+  const [topics, setTopics] = useState<Topic[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -30,15 +29,15 @@ export default function RecentOrders() {
     };
   };
 
-  // Modify fetchSubjects to include search parameter
-  const fetchSubjects = async (page: number, searchQuery: string = '') => {
+  // Modify fetchTopics to include search parameter
+  const fetchTopics = async (page: number, searchQuery: string = '') => {
     setLoading(true);
     try {
-      const response = await getSubjects(page, limit, searchQuery);
-      setSubjects(response.subjects);
+      const response = await getTopics(page, limit, searchQuery);
+      setTopics(response.topics);
       setTotalPages(response.totalPages);
     } catch (error) {
-      console.error("Failed to fetch subjects:", error);
+      console.error("Failed to fetch topics:", error);
     } finally {
       setLoading(false);
     }
@@ -48,12 +47,12 @@ export default function RecentOrders() {
   const handleSearch = debounce((value: string) => {
     setSearchTerm(value);
     setCurrentPage(1); // Reset to first page when searching
-    fetchSubjects(1, value);
+    fetchTopics(1, value);
   }, 500);
 
   // Modify useEffect to include searchTerm
   useEffect(() => {
-    fetchSubjects(currentPage, searchTerm);
+    fetchTopics(currentPage, searchTerm);
   }, [currentPage]); // searchTerm is handled by handleSearch
 
   useEffect(() => {
@@ -121,7 +120,7 @@ export default function RecentOrders() {
       <div className="flex flex-col gap-2 mb-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
-            Danh sách môn học
+            Danh sách topics
           </h3>
         </div>
 
@@ -205,49 +204,37 @@ export default function RecentOrders() {
           {/* Table Body */}
 
           <TableBody className="divide-y divide-gray-100 dark:divide-gray-800">
-            {subjects.map((subject) => (
-              <TableRow key={subject.id} className="">
+            {topics.map((topic) => (
+              <TableRow key={topic.id} className="">
                 <TableCell className="py-3">
                   <div className="flex items-center gap-3">
-                    <div className="h-[50px] w-[50px] overflow-hidden rounded-md">
-                      <Image
-                        width={50}
-                        height={50}
-                        src={subject.image || "https://picsum.photos/id/1016/300/200"}
-                        className="h-[50px] w-[50px] object-cover"
-                        alt={subject.name}
-                      />
-                    </div>
                     <div>
-                      <Link href={`/update-subject/${subject.id}`}>
+                      <Link href={`/update-topic/${topic.id}`}>
                         <p className="font-medium text-gray-800 text-theme-sm dark:text-white/90 hover:text-blue-600 dark:hover:text-blue-400 cursor-pointer">
-                          {subject.name}
+                          {topic.name}
                         </p>
                       </Link>
                       <span className="text-gray-500 text-theme-xs dark:text-gray-400">
-                        {subject.description}
+                        {topic.description}
                       </span>
                     </div>
                   </div>
                 </TableCell>
                 <TableCell className="py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                  {subject.id}
-                </TableCell>
-                <TableCell className="py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                  {subject.maxTopics}
+                  {topic.id}
                 </TableCell>
                 <TableCell className="py-3 text-gray-500 text-theme-sm dark:text-gray-400">
                   <Badge
                     size="sm"
                     color={
-                      subject.name === "Delivered"
+                      topic.name === "Delivered"
                         ? "success"
-                        : subject.name === "Pending"
+                        : topic.name === "Pending"
                         ? "warning"
                         : "error"
                     }
                   >
-                    {subject.name}
+                    {topic.name}
                   </Badge>
                 </TableCell>
               </TableRow>
