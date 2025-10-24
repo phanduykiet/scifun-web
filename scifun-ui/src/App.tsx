@@ -12,6 +12,7 @@ import Test from "./pages/Test";
 import TestReview from "./pages/TestReview";
 import SubjectPage from "./pages/Subject";
 import TopicPage from "./pages/Topic";
+import StatisticsPage from "./pages/StatisticsPage";
 
 export default function App() {
   return (
@@ -29,6 +30,7 @@ export default function App() {
         <Route path="/test-review" element={<TestReview />} />
         <Route path="/subject/:id" element={<SubjectPage />} />
         <Route path="/topic/:topicId" element={<TopicPage />} />
+        <Route path="/statistic" element={<StatisticsPage />} />
       </Routes>
   );
 }

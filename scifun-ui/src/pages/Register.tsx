@@ -1,36 +1,58 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { createUserApi } from "../util/api";
-import { notification, Card } from "antd";
 import Button from "../components/ui/Button";
 import Input from "../components/ui/Input";
+import Toast from "../components/common/Toast";
 
 export default function Register() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [hasHint, setHasHint] = useState(false); // ✅ theo dõi lỗi từ input
+  const [toast, setToast] = useState<{
+    message: string;
+    subtitle?: string;
+    type: "success" | "error" | "info";
+  } | null>(null);
+
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // ✅ Kiểm tra nếu còn lỗi thì không cho đăng ký
+    if (hasHint) {
+      setToast({
+        message: "Thông tin chưa hợp lệ!",
+        subtitle: "Vui lòng kiểm tra lại email hoặc mật khẩu.",
+        type: "error",
+      });
+      return;
+    }
+
     try {
       const res = await createUserApi(email, password);
 
-      notification.success({
-        message: "Đăng ký thành công",
-        description: res.data?.message || "Tài khoản đã được tạo",
+      setToast({
+        message: "Đăng ký thành công!",
+        subtitle: res.data?.message || "Tài khoản của bạn đã được tạo.",
+        type: "success",
       });
 
-      navigate("/otp", { state: { email, flow: "register" } });
+      setTimeout(() => {
+        navigate("/otp", { state: { email, flow: "register" } });
+      }, 1500);
     } catch (err: any) {
-      notification.error({
-        message: "Đăng ký thất bại",
-        description: err.response?.data?.message || "Vui lòng thử lại",
+      setToast({
+        message: "Đăng ký thất bại!",
+        subtitle: err.response?.data?.message || "Vui lòng thử lại.",
+        type: "error",
       });
     }
   };
 
   const cardWidth = 400;
-  const cardHeight = 380; // giống Login
+  const cardHeight = 380;
 
   return (
     <div
@@ -42,7 +64,7 @@ export default function Register() {
         gap: "40px",
       }}
     >
-      {/* Bên trái: ảnh */}
+      {/* Bên trái */}
       <div
         style={{
           width: cardWidth,
@@ -55,24 +77,14 @@ export default function Register() {
         <img
           src="https://free.vector6.com/wp-content/uploads/2021/03/0000000643-tre-em-hoc-tap-hoc-bai-giao-duc-mam-non-tai-hinh-png-125.png"
           alt="Register Illustration"
-          style={{
-            width: "100%",
-            height: "100%",
-            objectFit: "cover",
-          }}
+          style={{ width: "100%", height: "100%", objectFit: "cover" }}
         />
       </div>
 
-      {/* Bên phải: form */}
-      <div
-        style={{
-          width: cardWidth,
-        }}
-      >
-        <Card
-          title={<div style={{ textAlign: "center" }}>Đăng ký</div>}
-          style={{ width: "100%", height: "390px", borderRadius: 12 }}
-        >
+      {/* Bên phải */}
+      <div style={{ width: cardWidth }}>
+        <div className="card p-4 rounded">
+          <h4 className="text-center mb-3">Đăng ký</h4>
           <form onSubmit={handleSubmit}>
             <Input
               label="Email"
@@ -80,6 +92,7 @@ export default function Register() {
               placeholder="Nhập email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              onHintChange={(hasHint) => setHasHint(hasHint)}
               required
             />
             <Input
@@ -88,17 +101,32 @@ export default function Register() {
               placeholder="Nhập mật khẩu"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              onHintChange={(hasHint) => setHasHint(hasHint)}
               required
             />
-            <Button type="submit" style={{ width: "100%", marginTop: "10px" }}>
+            <Button
+              type="submit"
+              style={{ width: "100%", marginTop: "10px" }}
+              disabled={hasHint} // ✅ nút bị khóa khi còn lỗi
+            >
               Đăng ký
             </Button>
-            <div style={{ marginTop: 12, textAlign: "center" }}>
-              Bạn đã có tài khoản? <a href="/login">Đăng nhập</a>
-            </div>
           </form>
-        </Card>
+
+          <div style={{ marginTop: 12, textAlign: "center" }}>
+            Bạn đã có tài khoản? <a href="/login">Đăng nhập</a>
+          </div>
+        </div>
       </div>
+
+      {toast && (
+        <Toast
+          message={toast.message}
+          subtitle={toast.subtitle}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
     </div>
   );
 }

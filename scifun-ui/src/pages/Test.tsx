@@ -6,7 +6,7 @@ import QuestionSidebar from "../components/layout/QuestionSidebar";
 import { useLocation, useNavigate } from "react-router-dom";
 import { getQuestionsByQuizApi, submitQuizApi } from "../util/api";
 
-const TEST_DURATION = 3; // 3 giây để test, sau đổi lại 15*60
+const TEST_DURATION = 60; // 3 giây để test, sau đổi lại 15*60
 
 const Test: React.FC = () => {
   const location = useLocation();

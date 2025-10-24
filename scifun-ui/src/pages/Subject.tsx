@@ -1,67 +1,119 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { notification } from "antd";
+import axios from "axios";
 import { Topic } from "../types/subject";
-import { getTopicsBySubjectApi, getQuizsByTopicApi } from "../util/api";
+import { Quiz } from "../types/quiz";
+import {
+  getQuizsByTopicApi,
+  getTopicsBySubjectApi,
+} from "../util/api";
 import TopicCard from "../components/layout/TopicCard";
 import QuizCard from "../components/layout/QuizCard";
-import { Quiz } from "../types/quiz";
 import Header from "../components/layout/Header";
+
+// === API riêng cho môn học ===
+const getLessonListApi = async (page: string, limit: string, search: string) => {
+  const res = await axios.get(`/api/v1/subject/get-subjects`, {
+    params: { page, limit, search },
+  });
+  return res.data;
+};
 
 const SubjectPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const location = useLocation();
-  const subjectNameFromState = (location.state as any)?.name || "Chi tiết môn học";
   const navigate = useNavigate();
+  const subjectNameFromState =
+    (location.state as any)?.name || "Chi tiết môn học";
 
+  // --- state ---
   const [topics, setTopics] = useState<Topic[]>([]);
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
-  const [loadingTopics, setLoadingTopics] = useState<boolean>(true);
-  const [loadingQuizzes, setLoadingQuizzes] = useState<boolean>(true);
+  const [loading, setLoading] = useState(true);
 
-  // Lấy danh sách chương
-  const fetchTopics = async () => {
-    if (!id) return;
-    setLoadingTopics(true);
+  const [subjects, setSubjects] = useState<any[]>([]);
+  const [selectedSubject, setSelectedSubject] = useState<string>(id || "");
+  const [selectedTopic, setSelectedTopic] = useState<string>("");
+  const [searchText, setSearchText] = useState("");
+
+  // === Gọi API lấy môn học ===
+  const fetchSubjects = async () => {
     try {
-      const res = await getTopicsBySubjectApi(id, 1, 10);
-      setTopics(res.data.topics ?? []);
+      const res = await getLessonListApi("1", "50", "");
+      setSubjects(res.data.subjects || res.subjects || []); // fallback cho định dạng khác
     } catch (err: any) {
-      console.error(err);
       notification.error({
-        message: "Lỗi",
-        description: err.response?.data?.message || "Không thể tải danh sách chương",
+        message: "Lỗi tải danh sách môn học",
+        description: err.response?.data?.message || "Không thể tải môn học",
       });
-    } finally {
-      setLoadingTopics(false);
     }
   };
 
-  // Lấy danh sách quiz
-  const fetchQuizzes = async () => {
-    if (!id) return;
-    setLoadingQuizzes(true);
+  // === Gọi API lấy chủ đề & quiz theo môn ===
+  const fetchData = async (
+    subjectId?: string,
+    topicId?: string,
+    search?: string
+  ) => {
+    if (!subjectId) return;
+    setLoading(true);
     try {
-      const res = await getQuizsByTopicApi(id, 1, 10);
-      setQuizzes(res.data.quizzes ?? []);
+      const [topicRes, quizRes] = await Promise.all([
+        getTopicsBySubjectApi(subjectId, 1, 20),
+        getQuizsByTopicApi(topicId || subjectId, 1, 20),
+      ]);
+  
+      const allTopics = topicRes.data.topics ?? [];
+      const allQuizzes = quizRes.data.quizzes ?? [];
+  
+      // Lọc thêm client-side
+      const filteredTopics = allTopics.filter((t: Topic) =>
+        t.name.toLowerCase().includes(search?.toLowerCase() || "")
+      );
+  
+      const filteredQuizzes = allQuizzes.filter((q: Quiz) =>
+        q.title.toLowerCase().includes(search?.toLowerCase() || "")
+      );
+  
+      setTopics(filteredTopics);
+      setQuizzes(filteredQuizzes);
     } catch (err: any) {
-      console.error(err);
       notification.error({
-        message: "Lỗi",
-        description: err.response?.data?.message || "Không thể tải danh sách quiz",
+        message: "Lỗi tải dữ liệu",
+        description:
+          err.response?.data?.message || "Không thể tải dữ liệu môn học",
       });
     } finally {
-      setLoadingQuizzes(false);
+      setLoading(false);
     }
-  };
+  };  
 
   useEffect(() => {
-    fetchTopics();
-    fetchQuizzes();
-  }, [id]);
+    fetchSubjects();
+    fetchData(selectedSubject);
+  }, [selectedSubject]);
 
-  // Loading chung
-  if (loadingTopics || loadingQuizzes) {
+  // === Khi chọn môn, reset chủ đề ===
+  useEffect(() => {
+    setSelectedTopic("");
+  }, [selectedSubject]);
+
+  // === Lọc dữ liệu ===
+  const filteredTopics = topics
+    .filter((t) =>
+      t.name.toLowerCase().includes(searchText.toLowerCase())
+    )
+    .filter((t) =>
+      selectedTopic ? t.id === selectedTopic : true
+    );
+
+  const filteredQuizzes = quizzes.filter((q) =>
+    q.title.toLowerCase().includes(searchText.toLowerCase())
+  );
+
+  // === Loading ===
+  if (loading) {
     return (
       <div className="text-center mt-5">
         <div className="spinner-border text-success" role="status">
@@ -76,53 +128,211 @@ const SubjectPage: React.FC = () => {
     <>
       <Header />
 
-      {/* Tiêu đề môn học */}
-      <h2 className="text-left mb-4" style={{ margin: "10px 0 0 20px" }}>
-        {subjectNameFromState}
-      </h2>
-
-      <div className="progress" style={{ margin: "0 20px 20px 20px", height: "15px" }}>
+      {/* Hero Section */}
+      <div
+        style={{
+          position: "relative",
+          width: "100%",
+          minHeight: "500px",
+          backgroundImage:
+            "url('https://img.pikbest.com/ai/illus_our/20230427/2a429cfbd5b5d12b9028cd858eb37ea2.jpg!w700wp')",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          display: "flex",
+          alignItems: "flex-start", // 🔥 đẩy khối lên trên
+          justifyContent: "center",
+          paddingTop: "100px", // 🔥 chỉnh khoảng cách từ trên xuống
+        }}
+      >
+        {/* Lớp phủ tối ảnh */}
         <div
-          className="progress-bar bg-success"
-          role="progressbar"
-          style={{ width: "25%", height: "15px" }}
-          aria-valuenow={25}
-          aria-valuemin={0}
-          aria-valuemax={100}
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(0, 0, 0, 0.45)", // 🔥 làm tối ảnh
+            zIndex: 1,
+          }}
+        ></div>
+
+        {/* Ô tìm kiếm + bộ lọc */}
+        <div
+          style={{
+            width: "90%",
+            maxWidth: "1100px",
+            background: "white",
+            borderRadius: "16px",
+            padding: "16px 24px",
+            boxShadow: "0 8px 24px rgba(0, 0, 0, 0.15)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: "16px",
+            flexWrap: "wrap",
+            position: "relative",
+            zIndex: 2, // 🔥 nổi lên trên lớp phủ tối
+          }}
         >
-          25%
+          {/* Ô tìm kiếm + nút tìm kiếm */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              flex: "1 1 500px",
+              gap: "10px",
+            }}
+          >
+            <input
+              type="text"
+              placeholder="Tìm kiếm chủ đề hoặc bài trắc nghiệm..."
+              style={{
+                flex: 1,
+                border: "1px solid #dcdcdc",
+                outline: "none",
+                fontSize: "15px",
+                padding: "10px 16px",
+                borderRadius: "10px",
+                background: "white",
+                color: "#333",
+                height: "45px",
+                transition: "all 0.3s ease",
+              }}
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              onFocus={(e) => (e.currentTarget.style.border = "1px solid #95d5b2")}
+              onBlur={(e) => (e.currentTarget.style.border = "1px solid #dcdcdc")}
+            />
+
+            <button
+              style={{
+                background: "white",
+                color: "#2d6a4f",
+                border: "1px solid #95d5b2",
+                padding: "10px 24px",
+                borderRadius: "10px",
+                fontSize: "15px",
+                fontWeight: 600,
+                cursor: "pointer",
+                transition: "all 0.3s ease",
+                height: "45px",
+              }}
+              onMouseOver={(e) => {
+                e.currentTarget.style.background = "#d8f3dc"; // xanh lá nhạt
+                e.currentTarget.style.border = "1px solid #74c69d";
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.background = "white";
+                e.currentTarget.style.border = "1px solid #95d5b2";
+              }}
+              onClick={() => fetchData(selectedSubject, selectedTopic, searchText)}
+            >
+              Tìm kiếm
+            </button>
+          </div>
+
+          {/* Lọc môn học */}
+          <select
+            value={selectedSubject}
+            onChange={(e) => setSelectedSubject(e.target.value)}
+            style={{
+              background: "white",
+              color: "black",
+              border: "1px solid #dcdcdc",
+              borderRadius: "10px",
+              padding: "10px 16px",
+              fontSize: "15px",
+              cursor: "pointer",
+              fontWeight: 500,
+              transition: "all 0.3s ease",
+              marginLeft: "12px",
+              height: "45px",
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.background = "#d8f3dc";
+              e.currentTarget.style.border = "1px solid #95d5b2";
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.background = "white";
+              e.currentTarget.style.border = "1px solid #dcdcdc";
+            }}
+          >
+            <option value="">Tất cả môn học</option>
+            {subjects.map((s) => (
+              <option key={s.id} value={s.id} style={{ color: "#333", background: "white" }}>
+                {s.name}
+              </option>
+            ))}
+          </select>
+
+          {/* Lọc chủ đề */}
+          <select
+            value={selectedTopic}
+            onChange={(e) => setSelectedTopic(e.target.value)}
+            style={{
+              background: "white",
+              color: "black",
+              border: "1px solid #dcdcdc",
+              borderRadius: "10px",
+              padding: "10px 16px",
+              fontSize: "15px",
+              cursor: "pointer",
+              fontWeight: 500,
+              transition: "all 0.3s ease",
+              marginLeft: "12px",
+              height: "45px",
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.background = "#d8f3dc";
+              e.currentTarget.style.border = "1px solid #95d5b2";
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.background = "white";
+              e.currentTarget.style.border = "1px solid #dcdcdc";
+            }}
+          >
+            <option value="">Tất cả chủ đề</option>
+            {topics.map((t) => (
+              <option key={t.id} value={t.id} style={{ color: "#333", background: "white" }}>
+                {t.name}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
 
-      {/* Danh sách chương */}
-      <div className="container mt-4">
-        <div className="mb-4">
-          <h3
-            className="fw-bold d-inline-block"
-            style={{
-              color: "#000000",
-              paddingLeft: "10px",
-              borderLeft: "4px solid #28a745",
-            }}
-          >
-            Ôn tập theo chủ đề
-          </h3>
-        </div>
+
+
+      {/* ===== DANH SÁCH CHỦ ĐỀ ===== */}
+      <div className="container mt-5">
+        <h3
+          className="fw-bold mb-3"
+          style={{
+            borderLeft: "5px solid #28a745",
+            paddingLeft: "10px",
+          }}
+        >
+          🧩 Ôn tập theo chủ đề
+        </h3>
+
         <div className="row">
-          {topics.length === 0 ? (
-            <p>Chưa có chủ đề nào cho môn học này.</p>
+          {filteredTopics.length === 0 ? (
+            <p>Không tìm thấy chủ đề phù hợp.</p>
           ) : (
-            topics.map((topic) => (
-              <div className="col-md-4 mb-4 d-flex justify-content-start" key={topic.id}>
+            filteredTopics.map((topic) => (
+              <div className="col-md-4 mb-4" key={topic.id}>
                 <TopicCard
                   topic={topic}
-                  onClick={() => navigate(`/topic/${topic.id}`, { 
-                    state: { 
-                      ...topic,
-                      subjectId: id,
-                      subjectName: subjectNameFromState
-                    }
-                  })}
+                  onClick={() =>
+                    navigate(`/topic/${topic.id}`, {
+                      state: {
+                        ...topic,
+                        subjectId: selectedSubject,
+                        subjectName: subjectNameFromState,
+                      },
+                    })
+                  }
                 />
               </div>
             ))
@@ -130,34 +340,30 @@ const SubjectPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Danh sách quiz */}
-      <div className="container mt-4">
-        {/* Heading */}
-        <div className="mb-4">
-          <h3
-            className="fw-bold d-inline-block"
-            style={{
-              color: "#000000",
-              paddingLeft: "15px",
-              borderLeft: "4px solid #28a745",
-            }}
-          >
-            Đề trắc nghiệm
-          </h3>
-        </div>
+      {/* ===== DANH SÁCH QUIZ ===== */}
+      <div className="container mt-5 mb-5">
+        <h3
+          className="fw-bold mb-3"
+          style={{
+            borderLeft: "5px solid #28a745",
+            paddingLeft: "10px",
+          }}
+        >
+          📝 Đề trắc nghiệm
+        </h3>
 
-        {/* Quiz grid */}
-        {quizzes.length === 0 ? (
-          <p>Chưa có quiz nào cho môn học này.</p>
+        {filteredQuizzes.length === 0 ? (
+          <p>Không có đề trắc nghiệm nào phù hợp.</p>
         ) : (
           <div className="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
-            {quizzes.map((quiz) => (
-              <div className="col d-flex flex-column" key={quiz.id}>
-                {/* Card chiếm toàn bộ chiều cao col, các card cùng hàng cao bằng nhau */}
+            {filteredQuizzes.map((quiz) => (
+              <div className="col d-flex" key={quiz.id}>
                 <QuizCard
                   className="flex-fill"
                   quiz={quiz}
-                  onClick={() => navigate("/test", { state: { quizId: quiz.id } })}
+                  onClick={() =>
+                    navigate("/test", { state: { quizId: quiz.id } })
+                  }
                 />
               </div>
             ))}

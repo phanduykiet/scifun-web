@@ -12,7 +12,7 @@ const Lessons: React.FC = () => {
   const fetchSubjects = async () => {
     setLoading(true);
     try {
-      const json: GetSubjectResponse = await getLessonListApi("1", "4", "");
+      const json: GetSubjectResponse = await getLessonListApi("1", "3", "");
       setSubjects(json.data.subjects ?? []);
     } catch (err) {
       console.error("Lỗi khi gọi API:", err);
@@ -72,7 +72,7 @@ const Lessons: React.FC = () => {
       <div className="row justify-content-center">
         {subjects.map((subject) => (
           <div
-            className="col-md-3 mb-4 d-flex justify-content-center"
+            className="col-md-4 mb-4 d-flex justify-content-center"
             key={subject.id}
           >
             <LessonCard
