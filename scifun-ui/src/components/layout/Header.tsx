@@ -21,122 +21,215 @@ const Header: React.FC = () => {
     navigate("/login");
   };
 
-  // Detect scroll để thay đổi màu navbar
+  const handleStatisticClick = () => {
+    if (auth.isAuthenticated) navigate("/statistic");
+    else navigate("/login");
+  };
+
+  // Khi cuộn xuống một chút thì đổi màu navbar
   useEffect(() => {
-  
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 50);
-    };
+    const handleScroll = () => setScrolled(window.scrollY > 10);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [location.pathname]);  
-
-  // Breadcrumb
-  const renderBreadcrumb = () => {
-    const path = location.pathname;
-    const state = location.state as any;
-    if (path === "/") return null;
-
-    return (
-      <nav className="bg-light px-3 py-2 border-bottom" style={{ fontSize: "14px" }}>
-        <Link to="/" className="text-secondary text-decoration-none">
-          Trang chủ
-        </Link>
-        {path.startsWith("/subject") && (
-          <span className="text-muted"> &gt; <b>{state?.name || "Môn học"}</b></span>
-        )}
-        {path.startsWith("/topic") && (
-          <>
-            <span className="text-muted">
-              {" "}
-              &gt;{" "}
-              <Link
-                to={`/subject/${state?.subjectId}`}
-                state={{ name: state?.subjectName }}
-                className="text-secondary text-decoration-none"
-              >
-                {state?.subjectName || "Môn học"}
-              </Link>
-            </span>
-            {state?.name && <span className="text-muted"> &gt; <b>{state.name}</b></span>}
-          </>
-        )}
-      </nav>
-    );
-  };
+  }, [location.pathname]);
 
   return (
     <>
-      {/* Navbar */}
       <nav
-        className={`navbar navbar-expand-lg fixed-top px-3 ${
-          location.pathname === "/"
-            ? "transparent-navbar navbar-dark"
-            : "scrolled-navbar navbar-light"
+        className={`navbar navbar-expand-lg fixed-top px-4 py-2 ${
+          location.pathname === "/" && !scrolled
+            ? "transparent-navbar"
+            : "white-navbar"
         }`}
       >
-        <Link className="navbar-brand" to="/">
+        {/* Logo */}
+        <Link
+          className={`navbar-brand fw-bold fs-4 ${
+            location.pathname === "/" && !scrolled ? "text-white" : "text-success"
+          }`}
+          to="/"
+        >
           Scifun
         </Link>
 
-        <div className="ms-auto d-flex align-items-center">
-          <input
-            type="text"
-            placeholder="Tìm kiếm..."
-            className="form-control me-2"
-            style={{ width: "200px" }}
-          />
-          {!auth.isAuthenticated ? (
-            <Link to="/login" className="btn btn-primary">
-              Đăng nhập
-            </Link>
-          ) : (
-            <div className="dropdown">
-              <button
-                className="btn btn-secondary dropdown-toggle d-flex align-items-center"
-                type="button"
+        {/* Nút toggle (mobile) */}
+        <button
+          className="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+          aria-controls="navbarNav"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span className="navbar-toggler-icon"></span>
+        </button>
+
+        {/* Menu chính */}
+        <div className="collapse navbar-collapse" id="navbarNav">
+          <ul className="navbar-nav mx-auto fw-semibold">
+            <li className="nav-item">
+              <Link
+                to="/"
+                className={`nav-link ${
+                  location.pathname === "/" && !scrolled
+                    ? "text-white"
+                    : "text-success"
+                }`}
+              >
+                Trang chủ
+              </Link>
+            </li>
+
+            {/* Dropdown Môn học */}
+            <li className="nav-item dropdown">
+              <a
+                className={`nav-link dropdown-toggle ${
+                  location.pathname === "/" && !scrolled
+                    ? "text-white"
+                    : "text-success"
+                }`}
+                href="#"
+                id="subjectDropdown"
+                role="button"
                 data-bs-toggle="dropdown"
                 aria-expanded="false"
               >
-                {auth.user.avatar && (
-                  <img
-                    src={auth.user.avatar}
-                    alt="avatar"
-                    style={{
-                      width: "30px",
-                      height: "30px",
-                      borderRadius: "50%",
-                      marginRight: "8px",
-                      objectFit: "cover",
-                    }}
-                  />
-                )}
-                {auth.user.fullname || auth.user.email}
-              </button>
-
-              <ul className="dropdown-menu dropdown-menu-end">
+                Môn học
+              </a>
+              <ul className="dropdown-menu">
                 <li>
-                  <Link className="dropdown-item" to="/profile">
-                    Hồ sơ
+                  <Link className="dropdown-item" to="/subject/math">
+                    Toán học
                   </Link>
                 </li>
                 <li>
-                  <a className="dropdown-item" href="#" onClick={handleLogout}>
-                    Đăng xuất
-                  </a>
+                  <Link className="dropdown-item" to="/subject/physics">
+                    Vật lý
+                  </Link>
+                </li>
+                <li>
+                  <Link className="dropdown-item" to="/subject/chemistry">
+                    Hóa học
+                  </Link>
+                </li>
+                <li>
+                  <Link className="dropdown-item" to="/subject/biology">
+                    Sinh học
+                  </Link>
+                </li>
+                <li>
+                  <Link className="dropdown-item" to="/subject/english">
+                    Tiếng Anh
+                  </Link>
                 </li>
               </ul>
-            </div>
-          )}
+            </li>
+
+            {/* Các trang phụ */}
+            <li className="nav-item">
+              <Link
+                to="/highlight-lessons"
+                className={`nav-link ${
+                  location.pathname === "/" && !scrolled
+                    ? "text-white"
+                    : "text-success"
+                }`}
+              >
+                Bài học nổi bật
+              </Link>
+            </li>
+
+            <li className="nav-item">
+              <Link
+                to="/quiz"
+                className={`nav-link ${
+                  location.pathname === "/" && !scrolled
+                    ? "text-white"
+                    : "text-success"
+                }`}
+              >
+                Kiểm tra kiến thức
+              </Link>
+            </li>
+
+            <li className="nav-item">
+              <Link
+                to={auth.isAuthenticated ? "/statistic" : "/login"}
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleStatisticClick();
+                }}
+                className={`nav-link ${
+                  location.pathname === "/" && !scrolled
+                    ? "text-white"
+                    : "text-success"
+                }`}
+                style={{ cursor: "pointer" }}
+              >
+                Thống kê
+              </Link>
+            </li>
+          </ul>
+
+          {/* Khu vực đăng nhập / tài khoản */}
+          <div className="d-flex align-items-center">
+            {!auth.isAuthenticated ? (
+              <Link
+                to="/login"
+                className={`btn fw-semibold ${
+                  location.pathname === "/" && !scrolled
+                    ? "btn-light text-success"
+                    : "btn-success text-white"
+                }`}
+              >
+                Đăng nhập
+              </Link>
+            ) : (
+              <div className="dropdown">
+                <button
+                  className={`btn dropdown-toggle d-flex align-items-center fw-semibold ${
+                    location.pathname === "/" && !scrolled
+                      ? "btn-outline-light text-white border-white"
+                      : "btn-outline-success"
+                  }`}
+                  type="button"
+                  data-bs-toggle="dropdown"
+                  aria-expanded="false"
+                >
+                  {auth.user.avatar && (
+                    <img
+                      src={auth.user.avatar}
+                      alt="avatar"
+                      style={{
+                        width: "30px",
+                        height: "30px",
+                        borderRadius: "50%",
+                        marginRight: "8px",
+                        objectFit: "cover",
+                      }}
+                    />
+                  )}
+                  {auth.user.fullname || auth.user.email}
+                </button>
+
+                <ul className="dropdown-menu dropdown-menu-end">
+                  <li>
+                    <Link className="dropdown-item" to="/profile">
+                      Hồ sơ
+                    </Link>
+                  </li>
+                  <li>
+                    <a className="dropdown-item" href="#" onClick={handleLogout}>
+                      Đăng xuất
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            )}
+          </div>
         </div>
       </nav>
-
-      {/* Breadcrumb */}
-      {renderBreadcrumb() && (
-        <div style={{ paddingTop: "70px" }}>
-          {renderBreadcrumb()}
-        </div>
-      )}
     </>
   );
 };

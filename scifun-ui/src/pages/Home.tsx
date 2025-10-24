@@ -1,6 +1,7 @@
-import React, { useEffect } from "react";
+import React from "react";
 import Header from "../components/layout/Header";
 import Lessons from "../components/layout/Lessons";
+import TopicList from "../components/layout/TopicList"; // 🔹 import TopicList
 import Footer from "../components/layout/Footer";
 
 const Home: React.FC = () => {
@@ -29,7 +30,7 @@ const Home: React.FC = () => {
             left: 0,
             width: "100%",
             height: "100%",
-            backgroundColor: "rgba(0,0,0,0.4)", // overlay đen mờ
+            backgroundColor: "rgba(0,0,0,0.4)",
           }}
         />
 
@@ -48,11 +49,18 @@ const Home: React.FC = () => {
             padding: "0 20px",
           }}
         >
-          <h1 style={{ fontSize: "3rem", fontWeight: "bold", marginBottom: "1rem" }}>
+          <h1
+            style={{
+              fontSize: "3rem",
+              fontWeight: "bold",
+              marginBottom: "1rem",
+            }}
+          >
             Chào mừng đến với SciFun
           </h1>
           <p style={{ fontSize: "1.5rem", maxWidth: "700px" }}>
-            Khám phá các bài học, quiz, và trải nghiệm học tập trực tuyến thú vị!
+            Khám phá các bài học, quiz, và trải nghiệm học tập trực tuyến thú
+            vị!
           </p>
         </div>
       </div>
@@ -60,6 +68,11 @@ const Home: React.FC = () => {
       {/* Lessons Section */}
       <div id="lessons-section">
         <Lessons />
+      </div>
+
+      {/* Topics Section */}
+      <div id="topics-section">
+        <TopicList /> {/* 🔹 Thêm TopicList dưới Lessons */}
       </div>
 
       <Footer />

@@ -1,14 +1,20 @@
 import { useState, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { loginApi } from "../util/api";
-import { notification, Card } from "antd";
 import { AuthContext } from "../components/context/auth.context";
 import Button from "../components/ui/Button";
 import Input from "../components/ui/Input";
+import Toast from "../components/common/Toast";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [toast, setToast] = useState<{
+    message: string;
+    subtitle?: string;
+    type: "success" | "error" | "info";
+  } | null>(null);
+
   const navigate = useNavigate();
   const authContext = useContext(AuthContext);
 
@@ -41,22 +47,27 @@ export default function Login() {
         },
       });
 
-      notification.success({
-        message: "Đăng nhập thành công",
+      // ✅ Hiển thị Toast thành công
+      setToast({
+        message: "Đăng nhập thành công!",
+        subtitle: `Chào mừng ${res.data.fullname}`,
+        type: "success",
       });
 
-      navigate("/");
+      // Chờ 1.5 giây rồi chuyển trang
+      setTimeout(() => navigate("/"), 1500);
     } catch (err: any) {
-      notification.error({
-        message: "Đăng nhập thất bại",
-        description: err.response?.data?.message || "Vui lòng thử lại",
+      // ✅ Hiển thị Toast thất bại
+      setToast({
+        message: "Đăng nhập thất bại!",
+        subtitle: err.response?.data?.message || "Vui lòng thử lại.",
+        type: "error",
       });
     }
   };
 
-  // Kích thước Card form
   const cardWidth = 400;
-  const cardHeight = 380; // bạn có thể tăng/giảm theo nhu cầu
+  const cardHeight = 380;
 
   return (
     <div
@@ -90,15 +101,9 @@ export default function Login() {
       </div>
 
       {/* Bên phải: form */}
-      <div
-        style={{
-          width: cardWidth,
-        }}
-      >
-        <Card
-          title={<div style={{ textAlign: "center" }}>Đăng nhập</div>}
-          style={{ width: "100%", borderRadius: 12 }}
-        >
+      <div style={{ width: cardWidth }}>
+        <div className="card p-4 rounded">
+          <h4 className="text-center mb-3">Đăng nhập</h4>
           <form onSubmit={handleSubmit}>
             <Input
               label="Email"
@@ -127,8 +132,18 @@ export default function Login() {
           <div style={{ marginTop: 8, textAlign: "center" }}>
             Bạn chưa có tài khoản? <Link to="/register">Đăng ký ngay</Link>
           </div>
-        </Card>
+        </div>
       </div>
+
+      {/* ✅ Hiển thị Toast nếu có */}
+      {toast && (
+        <Toast
+          message={toast.message}
+          subtitle={toast.subtitle}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
     </div>
   );
 }
