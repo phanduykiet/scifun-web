@@ -1,9 +1,15 @@
 import React, { useEffect, useState } from "react";
 import type { Quiz } from "../../types/quiz";
-import { FaClock, FaQuestionCircle } from "react-icons/fa";
-import { CiHeart, CiBookmark } from "react-icons/ci";
-import { getQuestionsByQuizApi } from "../../util/api";
+import { FaClock, FaQuestionCircle, FaBookmark } from "react-icons/fa";
+import { CiBookmark } from "react-icons/ci";
+import {
+  getQuestionsByQuizApi,
+  saveQuizApi,
+  delSavedQuizApi,
+  getSavedQuizzesApi,
+} from "../../util/api";
 import ConfirmModal from "../common/ConfirmModal";
+import Toast from "../common/Toast";
 
 interface QuizCardProps {
   quiz: Quiz;
@@ -16,7 +22,23 @@ const QuizCard: React.FC<QuizCardProps> = ({ quiz, onClick }) => {
   const [durationMinutes, setDurationMinutes] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [bookmarked, setBookmarked] = useState(false);
+  const [toast, setToast] = useState<{
+    message: string;
+    subtitle?: string;
+    type?: "success" | "error" | "info";
+  } | null>(null);
 
+  // ✅ Lấy userId từ localStorage
+  const userId = (() => {
+    try {
+      const user = JSON.parse(localStorage.getItem("user") || "{}");
+      return user._id || null;
+    } catch {
+      return null;
+    }
+  })();
+  // ✅ Lấy thông tin quiz (số câu, thời lượng)
   useEffect(() => {
     const fetchQuizStats = async () => {
       try {
@@ -34,6 +56,59 @@ const QuizCard: React.FC<QuizCardProps> = ({ quiz, onClick }) => {
     fetchQuizStats();
   }, [quiz.id, quiz.durationMinutes]);
 
+  // ✅ Lấy danh sách quiz đã lưu để fill màu bookmark sẵn
+  useEffect(() => {
+    const fetchSaved = async () => {
+      if (!userId) return;
+      try {
+        const res = await getSavedQuizzesApi(userId, quiz.topic);
+        const savedQuizzes = res.data?.data?.map(
+          (item: any) => item.quiz?._id ?? item.quizId
+        );
+        if (savedQuizzes?.includes(quiz.id)) setBookmarked(true);
+      } catch (err) {
+        console.error("Lỗi khi lấy danh sách quiz đã lưu:", err);
+      }
+    };
+    fetchSaved();
+  }, [quiz.id, userId]);
+
+  // ✅ Lưu hoặc xóa quiz khỏi kho
+  const handleBookmark = async () => {
+    if (!userId) {
+      setToast({
+        message: "Bạn cần đăng nhập để lưu bài kiểm tra!",
+        type: "info",
+      });
+      return;
+    }
+
+    try {
+      if (bookmarked) {
+        await delSavedQuizApi(quiz.id, userId);
+        setBookmarked(false);
+        setToast({
+          message: "Đã xóa khỏi kho bài kiểm tra!",
+          type: "info",
+        });
+      } else {
+        await saveQuizApi(userId, quiz.id);
+        setBookmarked(true);
+        setToast({
+          message: "Đã thêm vào kho bài kiểm tra!",
+          type: "success",
+        });
+      }
+    } catch (err) {
+      console.error("Lỗi khi lưu/xóa quiz:", err);
+      setToast({
+        message: "Không thể lưu bài kiểm tra.",
+        subtitle: "Vui lòng thử lại sau.",
+        type: "error",
+      });
+    }
+  };
+
   return (
     <>
       <div
@@ -46,23 +121,27 @@ const QuizCard: React.FC<QuizCardProps> = ({ quiz, onClick }) => {
           backgroundColor: "#f8f9fa",
         }}
         onMouseEnter={(e) => {
-          (e.currentTarget as HTMLDivElement).style.transform = "translateY(-4px)";
-          (e.currentTarget as HTMLDivElement).style.boxShadow =
-            "0 8px 20px rgba(0,0,0,0.15)";
+          e.currentTarget.style.transform = "translateY(-4px)";
+          e.currentTarget.style.boxShadow = "0 8px 20px rgba(0,0,0,0.15)";
         }}
         onMouseLeave={(e) => {
-          (e.currentTarget as HTMLDivElement).style.transform = "translateY(0)";
-          (e.currentTarget as HTMLDivElement).style.boxShadow =
-            "0 2px 6px rgba(0,0,0,0.1)";
+          e.currentTarget.style.transform = "translateY(0)";
+          e.currentTarget.style.boxShadow = "0 2px 6px rgba(0,0,0,0.1)";
         }}
       >
-        <h5 className="fw-bold mb-2 text-truncate" title={quiz.title} style={{ color: "#192137" }}>
+        <h5
+          className="fw-bold mb-2 text-truncate"
+          title={quiz.title}
+          style={{ color: "#192137" }}
+        >
           {quiz.title}
         </h5>
 
         {quiz.description && (
           <p className="text-muted mb-3" style={{ fontSize: "0.9rem", flexGrow: 1 }}>
-            {quiz.description.length > 100 ? quiz.description.slice(0, 100) + "..." : quiz.description}
+            {quiz.description.length > 100
+              ? quiz.description.slice(0, 100) + "..."
+              : quiz.description}
           </p>
         )}
 
@@ -85,12 +164,28 @@ const QuizCard: React.FC<QuizCardProps> = ({ quiz, onClick }) => {
           <button className="btn btn-success flex-grow-1" onClick={() => setShowModal(true)}>
             Bắt đầu
           </button>
-          <CiHeart size={24} className="text-danger" style={{ cursor: "pointer" }} />
-          <CiBookmark size={24} className="text-primary" style={{ cursor: "pointer" }} />
+
+          {bookmarked ? (
+            <FaBookmark
+              size={22}
+              className="text-warning"
+              style={{ cursor: "pointer" }}
+              onClick={handleBookmark}
+              title="Xóa khỏi kho"
+            />
+          ) : (
+            <CiBookmark
+              size={28}
+              className="text-warning"
+              style={{ cursor: "pointer" }}
+              onClick={handleBookmark}
+              title="Lưu vào kho"
+            />
+          )}
         </div>
       </div>
 
-      {/* Modal */}
+      {/* ✅ Modal xác nhận */}
       <ConfirmModal
         show={showModal}
         message={
@@ -106,6 +201,16 @@ const QuizCard: React.FC<QuizCardProps> = ({ quiz, onClick }) => {
         }}
         onCancel={() => setShowModal(false)}
       />
+
+      {/* ✅ Toast thông báo */}
+      {toast && (
+        <Toast
+          message={toast.message}
+          subtitle={toast.subtitle}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
     </>
   );
 };
