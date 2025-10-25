@@ -6,7 +6,7 @@ import Footer from "../components/layout/Footer";
 
 const Home: React.FC = () => {
   const heroImage =
-    "https://img.lovepik.com/photo/60225/6908.jpg_wh860.jpg";
+    "https://previews.123rf.com/images/wavebreakmediamicro/wavebreakmediamicro1708/wavebreakmediamicro170804443/83312177-kids-as-business-executives-interacting-while-meeting-in-conference-room.jpg";
 
   return (
     <>
