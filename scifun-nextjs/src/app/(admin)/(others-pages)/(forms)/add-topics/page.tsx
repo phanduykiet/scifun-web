@@ -73,7 +73,7 @@ export default function CreateTopicPage() {
 
       const created = await addTopic(payload);
 
-      toast.success(`✅ Đã tạo thành công chủ đề: ${created.name}`);
+      toast.success(`Đã tạo thành công chủ đề: ${created.name}`);
 
       // Reset form sau 0.5s để toast hiển thị trước
       setTimeout(() => {
@@ -81,7 +81,7 @@ export default function CreateTopicPage() {
       }, 500);
     } catch (error: any) {
       console.error("[handleSubmit] Error creating topic:", error);
-      toast.error("❌ Tạo chủ đề thất bại!");
+      toast.error("Tạo chủ đề thất bại!");
     } finally {
       setLoading(false);
     }

@@ -1,13 +1,15 @@
 // src/services/quizzService.ts
 
+import { getToken } from "./authService";
 import { Topic } from "./topicsService";
 
 export interface Quiz {
   id: string;
   title: string;
-  description?: string;
-  topic: string | Topic; // Can be just an ID or a populated Topic object
+  description?: string | null; // description can be null
+  topic: string | Topic | null; // Can be just an ID, a populated Topic object, or null
   uniqueUserCount: number;
+  duration: number; // Added duration field
   lastAttemptAt?: Date | string | null;
   favoriteCount: number;
   createdAt?: Date | string;
@@ -23,6 +25,23 @@ export interface QuizAPIResponse {
 }
 
 const BASE_URL = "http://localhost:5000/api/v1/quiz";
+
+/**
+ * Helper để lấy headers kèm token
+ */
+const getAuthHeaders = (isFormData = false) => {
+  const token = getToken();
+  const headers: HeadersInit = {};
+
+  if (!isFormData) {
+    headers["Content-Type"] = "application/json";
+  }
+
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+  return headers;
+};
 
 /**
  * Lấy danh sách quiz (phân trang, lọc, tìm kiếm)
@@ -41,15 +60,30 @@ export const getQuizzes = async (
   if (topicId) params.append('topicId', topicId);
   if (search) params.append('search', search);
 
-  const res = await fetch(`${BASE_URL}/get-quizzes?${params.toString()}`);
+  const res = await fetch(`${BASE_URL}/get-quizzes?${params.toString()}`, {
+    headers: getAuthHeaders(),
+  });
   if (!res.ok) {
     const errorText = await res.text();
     throw new Error(`Failed to fetch quizzes: ${errorText}`);
   }
 
   const json = await res.json();
-  // The backend already maps _id to id, so we can use the data directly.
-  return json.data as QuizAPIResponse;
+  // Map _id from backend to id on frontend for each quiz
+  const mappedQuizzes = json.data.quizzes.map((quiz: any) => {
+    const { _id, ...rest } = quiz;
+    return {
+      ...rest,
+      id: _id,
+      topic: rest.topic ?? null, // Ensure topic is null if not provided
+      description: rest.description ?? null, // Ensure description is null if not provided
+    };
+  });
+
+  return {
+    ...json.data,
+    quizzes: mappedQuizzes,
+  };
 };
 
 // /**
@@ -57,7 +91,9 @@ export const getQuizzes = async (
 //  * Endpoint: GET /api/v1/quiz/get-quizById/:id
 //  */
 export const getQuizById = async (id: string): Promise<Quiz> => {
-  const res = await fetch(`${BASE_URL}/get-quizById/${id}`);
+  const res = await fetch(`${BASE_URL}/get-quizById/${id}`, {
+    headers: getAuthHeaders(),
+  });
 
   if (!res.ok) {
     const errorText = await res.text();
@@ -70,16 +106,16 @@ export const getQuizById = async (id: string): Promise<Quiz> => {
   return {
     id: quizData._id,
     title: quizData.title,
-    description: quizData.description,
+    description: quizData.description ?? null,
     topic: quizData.topic ?? null, // Handle null topic
     uniqueUserCount: quizData.uniqueUserCount,
+    duration: quizData.duration, // Map duration
     lastAttemptAt: quizData.lastAttemptAt,
     favoriteCount: quizData.favoriteCount,
     createdAt: quizData.createdAt,
     updatedAt: quizData.updatedAt
   };
 };
-
 /**
  * Tạo mới quiz
  * Endpoint: POST /api/v1/quiz/create-quiz
@@ -87,11 +123,12 @@ export const getQuizById = async (id: string): Promise<Quiz> => {
 export const addQuiz = async (quiz: {
   title: string;
   description: string;
+  duration: number; // Added duration to input type
   topic: string;
 }): Promise<Quiz> => {
   const res = await fetch(`${BASE_URL}/create-quiz`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: getAuthHeaders(),
     body: JSON.stringify(quiz),
   });
 
@@ -102,14 +139,27 @@ export const addQuiz = async (quiz: {
 
   const json = await res.json();
   const createdQuiz = json.data;
+
+  // Chuẩn hóa topic trả về từ backend
+  let normalizedTopic: string | Topic | null = null;
+  if (createdQuiz.topic) {
+    if (typeof createdQuiz.topic === 'object' && createdQuiz.topic._id) {
+      const { _id, ...restOfTopic } = createdQuiz.topic;
+      normalizedTopic = { id: _id, ...restOfTopic };
+    } else {
+      normalizedTopic = createdQuiz.topic; // Giữ nguyên nếu nó là string (ID)
+    }
+  }
+
   // Explicitly map properties from the backend response to the frontend Quiz interface
   // to ensure consistency and handle potential _id to id conversion.
   return {
     id: createdQuiz._id,
     title: createdQuiz.title,
-    description: createdQuiz.description,
-    topic: createdQuiz.topic,
+    description: createdQuiz.description ?? null,
+    topic: normalizedTopic,
     uniqueUserCount: createdQuiz.uniqueUserCount,
+    duration: createdQuiz.duration, // Map duration
     lastAttemptAt: createdQuiz.lastAttemptAt ?? null, // Ensure null if not provided
     favoriteCount: createdQuiz.favoriteCount,
     createdAt: createdQuiz.createdAt,
@@ -127,7 +177,7 @@ export const updateQuiz = async (
 ): Promise<Quiz> => {
   const res = await fetch(`${BASE_URL}/update-quiz/${id}`, {
     method: "PUT",
-    headers: { "Content-Type": "application/json" },
+    headers: getAuthHeaders(),
     body: JSON.stringify(quiz),
   });
 
@@ -142,9 +192,10 @@ export const updateQuiz = async (
   return {
     id: updatedQuiz._id,
     title: updatedQuiz.title,
-    description: updatedQuiz.description,
-    topic: updatedQuiz.topic,
+    description: updatedQuiz.description ?? null,
+    topic: updatedQuiz.topic ?? null,
     uniqueUserCount: updatedQuiz.uniqueUserCount,
+    duration: updatedQuiz.duration, // Map duration
     lastAttemptAt: updatedQuiz.lastAttemptAt,
     favoriteCount: updatedQuiz.favoriteCount,
     createdAt: updatedQuiz.createdAt,
@@ -161,6 +212,7 @@ export const deleteQuiz = async (
 ): Promise<{ message: string; quiz: Quiz }> => {
   const res = await fetch(`${BASE_URL}/delete-quiz/${id}`, {
     method: "DELETE",
+    headers: getAuthHeaders(),
   });
 
   if (!res.ok) {
@@ -176,9 +228,10 @@ export const deleteQuiz = async (
     quiz: {
       id: deletedQuiz._id,
       title: deletedQuiz.title,
-      description: deletedQuiz.description,
+      description: deletedQuiz.description ?? null,
       topic: deletedQuiz.topic ?? null,
       uniqueUserCount: deletedQuiz.uniqueUserCount,
+      duration: deletedQuiz.duration, // Map duration
       lastAttemptAt: deletedQuiz.lastAttemptAt ? new Date(deletedQuiz.lastAttemptAt) : null,
       favoriteCount: deletedQuiz.favoriteCount,
       createdAt: deletedQuiz.createdAt ? new Date(deletedQuiz.createdAt) : undefined,

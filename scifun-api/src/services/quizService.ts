@@ -14,14 +14,17 @@ export const createQuizSv = async (data: Partial<IQuiz>) => {
 export const updateQuizSv = async (_id: string, updateData: Partial<IQuiz>) => {
   if (!_id) throw new Error("ID quiz không hợp lệ");
 
-  const quiz = await Quiz.findByIdAndUpdate(
+  // Bước 1: Cập nhật quiz
+  const updatedQuiz = await Quiz.findByIdAndUpdate(
     _id,
     { $set: updateData },
     { new: true, runValidators: true }
-  ).populate("topic");
+  );
 
-  if (!quiz) throw new Error("Quiz không tồn tại");
-  return quiz;
+  if (!updatedQuiz) throw new Error("Quiz không tồn tại");
+
+  // Bước 2: Tìm lại quiz đã cập nhật và populate topic
+  return await Quiz.findById(updatedQuiz._id).populate("topic");
 };
 
 // Xóa Quiz
@@ -75,7 +78,7 @@ export const getQuizzesSv = async (
         ? { bool: { must, filter: filters } }
         : filters.length
         ? { bool: { filter: filters } }
-        : { match_all: {} }
+        : { match_all: {} },
     });
 
     const quizzes = (result.hits.hits as any[]).map((hit) => ({
@@ -109,7 +112,7 @@ export const getQuizzesSv = async (
       ? { bool: { must, filter: filters } }
       : filters.length
       ? { bool: { filter: filters } }
-      : { match_all: {} }
+      : { match_all: {} },
   });
 
   const quizzes = (result.hits.hits as any[]).map((hit) => ({

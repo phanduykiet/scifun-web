@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
@@ -13,10 +13,10 @@ export default function CreateSubjectPage() {
   const [formData, setFormData] = useState({
     name: "",
     description: "",
-    maxTopics: 0,
-    image: "",
+    maxTopics: 0
   });
 
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
@@ -41,8 +41,11 @@ export default function CreateSubjectPage() {
   };
 
   const handleFileAccepted = (file: File) => {
+    if (imagePreview) {
+      URL.revokeObjectURL(imagePreview);
+    }
     setImageFile(file);
-    handleChange("image", file.name);
+    setImagePreview(URL.createObjectURL(file));
   };
 
   const handleSubmit = async () => {
@@ -64,13 +67,11 @@ export default function CreateSubjectPage() {
     setMessage("");
 
     try {
-      let imageUrl = formData.image;
-
       const payload = {
         name: formData.name,
         description: formData.description,
         maxTopics: Number(formData.maxTopics),
-        image: imageUrl,
+        image: imageFile,
       };
 
       const created = await addSubject(payload);
@@ -79,16 +80,26 @@ export default function CreateSubjectPage() {
 
       // Đợi một chút để toast hiển thị rồi mới reset form
       setTimeout(() => {
-        setFormData({ name: "", description: "", maxTopics: 0, image: "" });
+        setFormData({ name: "", description: "", maxTopics: 0 });
         setImageFile(null);
+        setImagePreview(null);
       }, 500);
     } catch (error: any) {
       console.error("[handleSubmit] Error creating subject:", error);
-      toast.error("❌ Tạo môn học thất bại!");
+      toast.error("Tạo môn học thất bại!");
     } finally {
       setLoading(false);
     }
   };
+
+  // Cleanup effect để tránh memory leak từ URL.createObjectURL
+  useEffect(() => {
+    return () => {
+      if (imagePreview) {
+        URL.revokeObjectURL(imagePreview);
+      }
+    };
+  }, [imagePreview]);
 
   return (
     <div>
@@ -154,15 +165,18 @@ export default function CreateSubjectPage() {
         {/* Ảnh minh họa */}
         <div>
           <h3 className="text-lg font-semibold mb-2">
-            Ảnh minh họa (link hoặc upload)
+            Ảnh minh họa
           </h3>
-          <Input
-            type="text"
-            value={formData.image}
-            placeholder="Dán link ảnh hoặc upload bên dưới"
-            onChange={(e) => handleChange("image", e.target.value)}
-          />
-          <div className="mt-4">
+          {imagePreview && (
+            <div className="mt-4 mb-4">
+              <img
+                src={imagePreview}
+                alt="Xem trước ảnh"
+                className="max-h-60 w-auto rounded-lg object-cover"
+              />
+            </div>
+          )}
+          <div className="mt-2">
             <DropzoneComponent onFileAccepted={handleFileAccepted} />
           </div>
         </div>

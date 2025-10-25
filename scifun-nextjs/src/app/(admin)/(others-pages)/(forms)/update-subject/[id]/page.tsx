@@ -7,6 +7,7 @@ import "react-toastify/dist/ReactToastify.css";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import Input from "@/components/form/input/InputField";
 import TextArea from "@/components/form/input/TextArea";
+import DropzoneComponent from "@/components/form/form-elements/DropZone";
 import { getSubjectById, updateSubject, deleteSubject } from "@/services/subjectService";
 
 export default function UpdateSubjectPage() {
@@ -19,6 +20,9 @@ export default function UpdateSubjectPage() {
     image: "",
     maxTopics: 0,
   });
+
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   // Tách riêng loading cho update và delete
   const [loadingUpdate, setLoadingUpdate] = useState(false);
@@ -43,6 +47,7 @@ export default function UpdateSubjectPage() {
           image: subject.image || "",
           maxTopics: subject.maxTopics || 0,
         });
+        if (subject.image) setImagePreview(subject.image);
       } catch (error) {
         console.error("❌ Lỗi khi lấy dữ liệu môn học:", error);
         toast.error("❌ Không thể tải dữ liệu môn học!");
@@ -51,11 +56,26 @@ export default function UpdateSubjectPage() {
 
     fetchSubject();
   }, [id]);
+  
+  // Cleanup effect for object URL
+  useEffect(() => {
+    return () => {
+      if (imagePreview && imagePreview.startsWith("blob:")) {
+        URL.revokeObjectURL(imagePreview);
+      }
+    };
+  }, [imagePreview]);
 
   // Update giá trị form
   const handleChange = (field: keyof typeof formData, value: string | number) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     if (field in errors) setErrors((prev) => ({ ...prev, [field]: "" }));
+  };
+
+  const handleFileAccepted = (file: File) => {
+    if (imagePreview && imagePreview.startsWith("blob:")) URL.revokeObjectURL(imagePreview);
+    setImageFile(file);
+    setImagePreview(URL.createObjectURL(file));
   };
 
   // Submit cập nhật
@@ -74,12 +94,14 @@ export default function UpdateSubjectPage() {
 
     try {
       setLoadingUpdate(true);
-      const updated = await updateSubject(id as string, {
+      const payload = {
         name: formData.name,
         description: formData.description,
-        image: formData.image,
         maxTopics: Number(formData.maxTopics),
-      });
+        image: imageFile, // Gửi file mới nếu có
+      };
+
+      const updated = await updateSubject(id as string, payload);
       toast.success(`✅ Cập nhật thành công môn học: ${updated.name}`);
     } catch (error) {
       console.error("[handleSubmit] Error updating subject:", error);
@@ -153,13 +175,22 @@ export default function UpdateSubjectPage() {
 
         {/* Hình ảnh */}
         <div>
-          <h3 className="text-lg font-semibold mb-2">Ảnh (tuỳ chọn)</h3>
-          <Input
-            type="text"
-            value={formData.image}
-            placeholder="Nhập URL hình ảnh (nếu có)"
-            onChange={(e) => handleChange("image", e.target.value)}
-          />
+          <h3 className="text-lg font-semibold mb-2">Ảnh minh họa (tuỳ chọn)</h3>
+          {imagePreview && (
+            <div className="mt-4 mb-4">
+              <p className="text-sm mb-2 text-gray-600">
+                {imageFile ? "Ảnh mới:" : "Ảnh hiện tại:"}
+              </p>
+              <img
+                src={imagePreview}
+                alt="Xem trước ảnh"
+                className="max-h-60 w-auto rounded-lg object-cover"
+              />
+            </div>
+          )}
+          <div className="mt-2">
+            <DropzoneComponent onFileAccepted={handleFileAccepted} />
+          </div>
         </div>
 
         {/* Số lượng chủ đề */}

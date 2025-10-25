@@ -47,11 +47,11 @@ export default function ListQuizzes() {
   const handleSearch = debounce((value: string) => {
     setSearchTerm(value);
     setCurrentPage(1);
-    fetchQuizzes(1, value); // Call fetchQuizzes
+    // The useEffect below will handle fetching when searchTerm or currentPage changes
   }, 500);
 
   useEffect(() => {
-    fetchQuizzes(currentPage, searchTerm); // Call fetchQuizzes
+    fetchQuizzes(currentPage, searchTerm);
   }, [currentPage, searchTerm]); // Added searchTerm to dependency array
 
   useEffect(() => {
@@ -203,6 +203,30 @@ export default function ListQuizzes() {
               >
                 Favorites
               </TableCell>
+              <TableCell
+                isHeader
+                className="py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+              >
+                Duration
+              </TableCell>
+              <TableCell
+                isHeader
+                className="py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+              >
+                Last Attempt At
+              </TableCell>
+              <TableCell
+                isHeader
+                className="py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+              >
+                Created At
+              </TableCell>
+              <TableCell
+                isHeader
+                className="py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+              >
+                Updated At
+              </TableCell>
             </TableRow>
           </TableHeader>
 
@@ -237,20 +261,71 @@ export default function ListQuizzes() {
                 <TableCell className="py-3 text-gray-500 text-theme-sm dark:text-gray-400">
                   <Badge
                     size="sm"
-                    // color={
-                    //   quiz.favoriteCount > 0
-                    //     ? "success"
-                    //     : "neutral"
-                    // }
+                    color={
+                      quiz.favoriteCount > 0
+                        ? "success"
+                        : "neutral"
+                    }
                   >
                     {quiz.favoriteCount} {/* Display favorite count */}
                   </Badge>
                 </TableCell>
+                <TableCell className="py-3 text-gray-500 text-theme-sm dark:text-gray-400">
+                  {quiz.duration} minutes
+                </TableCell>
+                <TableCell className="py-3 text-gray-500 text-theme-sm dark:text-gray-400">
+                  {quiz.lastAttemptAt
+                    ? new Date(quiz.lastAttemptAt).toLocaleString()
+                    : "N/A"}
+                </TableCell>
+                <TableCell className="py-3 text-gray-500 text-theme-sm dark:text-gray-400">
+                  {quiz.createdAt
+                    ? new Date(quiz.createdAt).toLocaleString()
+                    : "N/A"}
+                </TableCell>
+                <TableCell className="py-3 text-gray-500 text-theme-sm dark:text-gray-400">
+                  {quiz.updatedAt
+                    ? new Date(quiz.updatedAt).toLocaleString()
+                    : "N/A"}
+                </TableCell>
               </TableRow>
             ))}
+            {quizzes.length === 0 && !loading && (
+              <TableRow>
+                <TableCell colSpan={9} className="py-6 text-center text-gray-500 dark:text-gray-400">
+                  Không tìm thấy quiz nào.
+                </TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
       </div>
+      {/* Loading state */}
+      {loading && (
+        <div className="flex flex-col items-center justify-center py-10">
+          <svg
+            className="animate-spin h-6 w-6 text-blue-500 mb-3"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
+            <circle
+              className="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              strokeWidth="4"
+            ></circle>
+            <path
+              className="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+            ></path>
+          </svg>
+          <p className="text-gray-600 dark:text-gray-400">Đang tải dữ liệu...</p>
+        </div>
+      )}
       {/* Pagination Controls */}
       <div className="flex items-center justify-end gap-4 mt-4">
         <span className="text-sm text-gray-500 dark:text-gray-400">

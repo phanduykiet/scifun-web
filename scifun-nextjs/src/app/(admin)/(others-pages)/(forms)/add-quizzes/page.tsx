@@ -14,6 +14,7 @@ export default function CreateQuizPage() {
     title: "",
     description: "",
     topic: "",
+    duration: 0,
   });
 
   const [loading, setLoading] = useState(false);
@@ -21,6 +22,7 @@ export default function CreateQuizPage() {
     title: "",
     description: "",
     topic: "",
+    duration: "",
   });
 
   const [topics, setTopics] = useState<{ id: string; name: string }[]>([]);
@@ -43,7 +45,10 @@ export default function CreateQuizPage() {
     fetchTopics();
   }, []);
 
-  const handleChange = (field: keyof typeof formData, value: string) => {
+  const handleChange = (
+    field: keyof typeof formData,
+    value: string | number
+  ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     if (field in errors) setErrors((prev) => ({ ...prev, [field]: "" }));
   };
@@ -53,6 +58,8 @@ export default function CreateQuizPage() {
       title: formData.title ? "" : "Tiêu đề quiz là bắt buộc.",
       description: formData.description ? "" : "Mô tả là bắt buộc.",
       topic: formData.topic ? "" : "Chủ đề là bắt buộc.",
+      duration:
+        formData.duration > 0 ? "" : "Thời lượng phải là một số dương.",
     };
 
     setErrors(newErrors);
@@ -68,16 +75,17 @@ export default function CreateQuizPage() {
       const payload = {
         title: formData.title,
         description: formData.description,
+        duration: Number(formData.duration),
         topic: formData.topic,
       };
 
       const created = await addQuiz(payload);
 
       toast.success(`✅ Đã tạo thành công quiz: ${created.title}`);
-
+      
       // Reset form sau 0.5s
       setTimeout(() => {
-        setFormData({ title: "", description: "", topic: "" });
+        setFormData({ title: "", description: "", topic: "", duration: 0 });
       }, 500);
     } catch (error: any) {
       console.error("[handleSubmit] Error creating quiz:", error);
@@ -170,6 +178,24 @@ export default function CreateQuizPage() {
             onChange={(value: string) => handleChange("description", value)}
             error={!!errors.description}
             hint={errors.description}
+          />
+        </div>
+
+        {/* Thời lượng */}
+        <div>
+          <h3 className="text-lg font-semibold mb-2">
+            Thời lượng (phút) <span className="text-red-500">*</span>
+          </h3>
+          <Input
+            type="number"
+            value={formData.duration}
+            placeholder="Nhập thời lượng quiz (phút)"
+            min={1}
+            onChange={(e) =>
+              handleChange("duration", parseInt(e.target.value, 10) || 0)
+            }
+            error={!!errors.duration}
+            hint={errors.duration}
           />
         </div>
 

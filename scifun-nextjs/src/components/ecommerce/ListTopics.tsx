@@ -8,7 +8,6 @@ import {
   TableHeader,
   TableRow,
 } from "../ui/table";
-import Badge from "../ui/badge/Badge";
 import Link from "next/link";
 
 export default function ListTopics() {
@@ -33,7 +32,7 @@ export default function ListTopics() {
   const fetchTopics = async (page: number, searchQuery: string = '') => {
     setLoading(true);
     try {
-      const response = await getTopics(page, limit, searchQuery);
+      const response = await getTopics(page, limit, undefined, searchQuery); // Pass undefined for topicId, searchQuery for searchName
       setTopics(response.topics);
       setTotalPages(response.totalPages);
     } catch (error) {
@@ -102,7 +101,7 @@ export default function ListTopics() {
           <input
             ref={inputRef}
             type="text"
-            placeholder="Tìm kiếm môn học..."
+            placeholder="Tìm kiếm chủ đề..." // Updated placeholder
             onChange={(e) => handleSearch(e.target.value)}
             className="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-200 bg-transparent py-2.5 pl-12 pr-14 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-800 dark:bg-gray-900 dark:bg-white/[0.03] dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
           />
@@ -187,16 +186,16 @@ export default function ListTopics() {
                 Id
               </TableCell>
               <TableCell
-                isHeader
+                isHeader // Added Subject ID column
                 className="py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
               >
-                MaxTopics
+                Subject ID
               </TableCell>
               <TableCell
-                isHeader
+                isHeader // Added Actions column for editing
                 className="py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
               >
-                Name
+                Actions
               </TableCell>
             </TableRow>
           </TableHeader>
@@ -224,21 +223,20 @@ export default function ListTopics() {
                   {topic.id}
                 </TableCell>
                 <TableCell className="py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                  <Badge
-                    size="sm"
-                    color={
-                      topic.name === "Delivered"
-                        ? "success"
-                        : topic.name === "Pending"
-                        ? "warning"
-                        : "error"
-                    }
-                  >
-                    {topic.name}
-                  </Badge>
+                  {topic.subject} {/* Display subject ID */}
                 </TableCell>
+                <TableCell className="py-3 text-theme-sm">
+                  <Link href={`/update-topic/${topic.id}`} className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200">
+                    Edit
+                  </Link>
+                  {/* A delete button could be added here if desired */}
+                </TableCell>
+
               </TableRow>
             ))}
+            {topics.length === 0 && !loading && (
+              <TableRow><TableCell colSpan={4} className="py-6 text-center text-gray-500 dark:text-gray-400">Không tìm thấy chủ đề nào.</TableCell></TableRow>
+            )}
           </TableBody>
         </Table>
       </div>
