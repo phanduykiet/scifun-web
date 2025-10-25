@@ -1,3 +1,4 @@
+import cloudinary from "../config/cloudinary";
 import Subject, { ISubject } from "../models/Subject";
 import { esClient } from "../config/elasticSearch";
 
@@ -30,9 +31,7 @@ export const deleteSubjectSv = async (_id: string) => {
 };
 
 // Lấy danh sách môn học với phân trang + tìm kiếm theo tên môn học
-export const getSubjectsSv = async (page: number, limit: number, search?: string) => {
-  const from = (page - 1) * limit;
-
+export const getSubjectsSv = async (page?: number, limit?: number, search?: string) => {
   const must: any[] = [];
 
   // Search theo tên / mô tả / code
@@ -48,6 +47,37 @@ export const getSubjectsSv = async (page: number, limit: number, search?: string
     });
   }
 
+  // Nếu không có page và limit thì lấy tất cả
+  if (!page || !limit) {
+    const result = await esClient.search({
+      index: SUBJECT_INDEX,
+      size: 10000, // Giới hạn tối đa của Elasticsearch
+      track_total_hits: true,
+      query: must.length ? { bool: { must } } : { match_all: {} }
+    });
+
+    const total =
+      typeof result.hits.total === "number"
+        ? result.hits.total
+        : result.hits.total?.value || 0;
+
+    const subjects = result.hits.hits.map((hit: any) => ({
+      _id: hit._id,
+      ...hit._source
+    }));
+
+    return {
+      page: 1,
+      limit: total,
+      total,
+      totalPages: 1,
+      subjects
+    };
+  }
+
+  // Nếu có page và limit thì phân trang
+  const from = (page - 1) * limit;
+
   const result = await esClient.search({
     index: SUBJECT_INDEX,
     from,
@@ -56,14 +86,13 @@ export const getSubjectsSv = async (page: number, limit: number, search?: string
     query: must.length ? { bool: { must } } : { match_all: {} }
   });
 
-  // Lấy total (ES 8 trả về number hoặc object)
   const total =
     typeof result.hits.total === "number"
       ? result.hits.total
       : result.hits.total?.value || 0;
 
   const subjects = result.hits.hits.map((hit: any) => ({
-    id: hit._id,
+    _id: hit._id,
     ...hit._source
   }));
 
