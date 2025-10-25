@@ -9,6 +9,8 @@ export interface IUser extends Document {
   isVerified: boolean;
   avatar: string;
   role: "USER" | "ADMIN";
+  dob: Date;
+  sex: 0 | 1;
 }
 
 const UserSchema = new Schema<IUser>({
@@ -24,6 +26,15 @@ const UserSchema = new Schema<IUser>({
     enum: ["USER", "ADMIN"],
     default: "USER",
     required: true,
+  },
+  dob: { 
+    type: Date, 
+    default: () => new Date("2000-01-01") 
+  },
+  sex: { 
+    type: Number, 
+    enum: [0, 1],
+    default: 1 
   },
 });
 

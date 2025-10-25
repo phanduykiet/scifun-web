@@ -1,11 +1,27 @@
 import { Request, Response } from "express";
 import * as subjectService from "../services/subjectService";
+import cloudinary from "../config/cloudinary";
 
 //  Tao môn học
 export const createSubject = async (req: Request, res: Response) => {
   try {
-    const { name, description, maxTopics, image } = req.body;
-    const subject = await subjectService.createSubjectSv(req.body);
+    const data = req.body;
+    // Nếu có file ảnh (từ form-data)
+        if (req.file) {
+          const uploadResult = await new Promise((resolve, reject) => {
+            const upload = cloudinary.uploader.upload_stream(
+              { folder: "Subject" },
+              (error, result) => {
+                if (error) reject(error);
+                else resolve(result);
+              }
+            );
+            upload.end(req.file.buffer); // đưa buffer ảnh vào stream
+          });
+    
+          data.image = (uploadResult as any).secure_url;
+        }
+    const subject = await subjectService.createSubjectSv(data);
     await subjectService.syncToES();
     res.status(200).json({
       status: 200,
@@ -63,8 +79,8 @@ export const deleteSubject = async (req: Request, res: Response) => {
 // Lấy danh sách môn học với phân trang + tìm kiếm theo tên môn học
 export const getSubjects = async (req: Request, res: Response) => {
   try {
-    const page = parseInt(req.query.page as string) || 1;
-    const limit = parseInt(req.query.limit as string) || 10;
+    const page = req.query.page ? parseInt(req.query.page as string) : undefined;
+    const limit = req.query.limit ? parseInt(req.query.limit as string) : undefined;
     const search = req.query.search as string | undefined;
 
     const result = await subjectService.getSubjectsSv(page, limit, search);

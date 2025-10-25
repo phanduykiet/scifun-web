@@ -6,23 +6,7 @@ const SUBJECT_INDEX = "subject";
 
 // Tạo môn học
 export const createSubjectSv = async (data: Partial<ISubject>) => {
-  let imageUrl = data.image;
-
-  // Nếu có ảnh được chọn thì upload lên Cloudinary
-  if (data.image && typeof data.image === "string" && data.image.startsWith("uploads/")) {
-    const uploadResult = await cloudinary.uploader.upload(data.image, {
-      folder: "cb62bef7a80946b11f47eb3f10294c4410", // thư mục bạn tạo trong Cloudinary
-    });
-    imageUrl = uploadResult.secure_url;
-  }
-
-  const subject = new Subject({
-    name: data.name,
-    description: data.description,
-    maxTopics: data.maxTopics,
-    image: imageUrl || "https://images-na.ssl-images-amazon.com/images/I/51T8OXMiB5L._SX329_BO1,204,203,200_.jpg",
-  });
-
+  const subject = new Subject(data);
   await subject.save();
   return subject;
 };
@@ -47,9 +31,7 @@ export const deleteSubjectSv = async (_id: string) => {
 };
 
 // Lấy danh sách môn học với phân trang + tìm kiếm theo tên môn học
-export const getSubjectsSv = async (page: number, limit: number, search?: string) => {
-  const from = (page - 1) * limit;
-
+export const getSubjectsSv = async (page?: number, limit?: number, search?: string) => {
   const must: any[] = [];
 
   // Search theo tên / mô tả / code
@@ -65,6 +47,37 @@ export const getSubjectsSv = async (page: number, limit: number, search?: string
     });
   }
 
+  // Nếu không có page và limit thì lấy tất cả
+  if (!page || !limit) {
+    const result = await esClient.search({
+      index: SUBJECT_INDEX,
+      size: 10000, // Giới hạn tối đa của Elasticsearch
+      track_total_hits: true,
+      query: must.length ? { bool: { must } } : { match_all: {} }
+    });
+
+    const total =
+      typeof result.hits.total === "number"
+        ? result.hits.total
+        : result.hits.total?.value || 0;
+
+    const subjects = result.hits.hits.map((hit: any) => ({
+      _id: hit._id,
+      ...hit._source
+    }));
+
+    return {
+      page: 1,
+      limit: total,
+      total,
+      totalPages: 1,
+      subjects
+    };
+  }
+
+  // Nếu có page và limit thì phân trang
+  const from = (page - 1) * limit;
+
   const result = await esClient.search({
     index: SUBJECT_INDEX,
     from,
@@ -73,7 +86,6 @@ export const getSubjectsSv = async (page: number, limit: number, search?: string
     query: must.length ? { bool: { must } } : { match_all: {} }
   });
 
-  // Lấy total (ES 8 trả về number hoặc object)
   const total =
     typeof result.hits.total === "number"
       ? result.hits.total
