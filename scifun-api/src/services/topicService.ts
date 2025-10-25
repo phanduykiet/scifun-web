@@ -39,8 +39,8 @@ export const deleteTopicSv = async (_id: string) => {
 
 // Lấy danh sách có phân trang + lọc + tìm kiếm
 export const getTopicsSv = async (
-  page: number,
-  limit: number,
+  page?: number,
+  limit?: number,
   subjectId?: string,
   search?: string
 ) => {
@@ -66,6 +66,42 @@ export const getTopicsSv = async (
     });
   }
 
+  // Nếu không có page và limit thì lấy tất cả
+  if (!page || !limit) {
+    const result = await esClient.search({
+      index: TOPIC_INDEX,
+      size: 10000, // Giới hạn tối đa của Elasticsearch
+      track_total_hits: true,
+      query: {
+        bool: {
+          must: must.length ? must : [{ match_all: {} }],
+          filter: filters
+        }
+      }
+    });
+
+    const hits = result.hits.hits.map((hit: any) => ({
+      _id: hit._id,
+      ...hit._source
+    }));
+    
+    let total = 0;
+    if (typeof result.hits.total === "number") {
+      total = result.hits.total;
+    } else {
+      total = result.hits.total.value;
+    }
+
+    return {
+      page: 1,
+      limit: total,
+      total,
+      totalPages: 1,
+      topics: hits
+    };
+  }
+
+  // Nếu có page và limit thì phân trang
   const from = (page - 1) * limit;
 
   const result = await esClient.search({
@@ -78,12 +114,11 @@ export const getTopicsSv = async (
         must: must.length ? must : [{ match_all: {} }],
         filter: filters
       }
-    },
-    // sort: [{ createdAt: { order: "desc" } }]
+    }
   });
 
   const hits = result.hits.hits.map((hit: any) => ({
-    id: hit._id,
+    _id: hit._id,
     ...hit._source
   }));
   
@@ -95,9 +130,9 @@ export const getTopicsSv = async (
   }
 
   return {
+    page,
     limit,
     total,
-    page,
     totalPages: Math.ceil(total / limit),
     topics: hits
   };

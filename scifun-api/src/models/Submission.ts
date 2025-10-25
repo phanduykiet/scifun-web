@@ -3,7 +3,7 @@ import { IQuiz } from "./Quiz";
 import { IQuestion } from "./Question";
 
 export interface ISubmission extends Document {
-userId: string;
+userId: Types.ObjectId;
 quiz: Types.ObjectId | IQuiz;
 answers: {
     question: Types.ObjectId | IQuestion;
@@ -15,7 +15,7 @@ createdAt: Date;
 }
 
 const SubmissionSchema = new Schema<ISubmission>({
-userId: { type: String, required: true },
+userId: { type: Schema.Types.ObjectId, required: true },
 quiz: { type: Schema.Types.ObjectId, ref: "Quiz", required: true },
 answers: [
     {
