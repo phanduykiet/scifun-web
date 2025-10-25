@@ -4,7 +4,10 @@ import User, { IUser } from "../models/User";
 import { generateOTP, sendMail } from "../utils/otp";
 
 // Đăng ký với OTP
-export const registerUserSv = async (email: string, password: string) => {
+export const registerUserSv = async (infoUser: Partial<IUser>) => {
+  // Validate email
+  const { email, password, fullname } = infoUser;
+  // Tìm user
   let existingUser = await User.findOne({ email });
   if (existingUser) {
     if (existingUser.isVerified) {
@@ -18,6 +21,7 @@ export const registerUserSv = async (email: string, password: string) => {
     existingUser = new User({
       email,
       password: hashedPassword,
+      fullname,
       otp: generateOTP(),
       otpExpires: new Date(Date.now() + 5 * 60 * 1000),
     });
@@ -31,7 +35,8 @@ export const registerUserSv = async (email: string, password: string) => {
 };
 
 // Xác thực OTP
-export const verifyUserOtpSv = async (email: string, otp: string) => {
+export const verifyUserOtpSv = async (email: string, otp: string) => {;
+  // Tìm user
   const user = await User.findOne({ email });
   if (!user) throw new Error("Người dùng không tồn tại");
   if (user.otp !== otp || user.otpExpires < new Date()) {
@@ -45,9 +50,11 @@ export const verifyUserOtpSv = async (email: string, otp: string) => {
 
 // Đăng nhập với JWT
 export const loginUserSv = async (email: string, password: string) => {
+  // Tìm user
   const user = await User.findOne({ email }).select("-otp -otpExpires -__v");
   if (!user) throw new Error("Email không tồn tại");
   if (!user.isVerified) throw new Error("Tài khoản chưa xác thực OTP");
+  // Kiểm tra mật khẩu
   const isMatch = await bcrypt.compare(password, user.password);
   if (!isMatch) throw new Error("Sai mật khẩu");
   const token = jwt.sign(
@@ -60,28 +67,12 @@ export const loginUserSv = async (email: string, password: string) => {
   return { token, user };
 };
 
-// Hàm kiểm tra email có đúng định dạng
-const isValidEmailStrict = (email: string): boolean => {
-  const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-  return emailRegex.test(email) && email.length <= 254;
-};
-
-// Hàm kiểm tra OTP có được tạo thành công
-const isOTPGenerated = (otp: string | null | undefined): boolean => {
-  return otp !== null && otp !== undefined && otp.length > 0;
-};
-
 // Quên mật khẩu với OTP
 export const forgotPasswordSv = async (email: string) => {
-  if (!email || email.trim() === "")
-    throw new Error("Email không được để trống");
-  if (!isValidEmailStrict(email.trim()))
-    throw new Error("Email không đúng định dạng");
+  // Tìm user
   const user = await User.findOne({ email });
   if (!user) throw new Error("Email không tồn tại");
   const otp = generateOTP();
-  if (!isOTPGenerated(otp))
-    throw new Error("Không thể tạo mã OTP. Vui lòng thử lại sau");
   user.otp = otp;
   user.otpExpires = new Date(Date.now() + 5 * 60 * 1000);
   await user.save();
@@ -91,6 +82,7 @@ export const forgotPasswordSv = async (email: string) => {
 
 // Xác thực OTP để đặt lại mật khẩu
 export const verifyResetOtpSv = async (email: string, otp: string) => {
+  // Tìm user
   const user = await User.findOne({ email });
   if (!user) throw new Error("Email không tồn tại");
   if (!user.otp || !user.otpExpires) throw new Error("OTP không hợp lệ");
@@ -102,6 +94,7 @@ export const verifyResetOtpSv = async (email: string, otp: string) => {
 
 // Đặt lại mật khẩu (Khi quên mật khẩu)
 export const resetPasswordSv = async (email: string, newPassword: string) => {
+  // Tìm user
   const user = await User.findOne({ email });
   if (!user) throw new Error("Email không tồn tại");
   user.password = await bcrypt.hash(newPassword, 10);
@@ -112,8 +105,11 @@ export const resetPasswordSv = async (email: string, newPassword: string) => {
 };
 
 // Cập nhật thông tin người dùng
-export const updateUserSv = async (_id: string, updateData: Partial<IUser>) => {
-  if (!_id) throw new Error("ID người dùng không hợp lệ");
+export const updateUserSv = async (_id: string, updateData: Partial<IUser>, authenticatedUserId: string) => {
+  // Chỉ cho phép người dùng lấy thông tin của chính họ
+  if (_id !== authenticatedUserId) {
+    throw new Error("Bạn không có quyền truy cập thông tin này");
+  }
   const user = await User.findByIdAndUpdate(
     _id,
     { $set: updateData },
@@ -123,28 +119,24 @@ export const updateUserSv = async (_id: string, updateData: Partial<IUser>) => {
   return user;
 };
 
-// Cập nhât mật khẩu
-export const updatePasswordSv = async (
-  _id: string,
-  oldPassword: string,
-  newPassword: string,
-  confirmPassword: string
-) => {
-  if (!_id) throw new Error("ID người dùng không hợp lệ");
-  if (newPassword !== confirmPassword)
-    throw new Error("Mật khẩu xác nhận không khớp");
-  const check = await bcrypt.compare(
-    oldPassword,
-    (
-      await User.findById(_id)
-    ).password
-  );
-  if (!check) throw new Error("Mật khẩu cũ không đúng");
-  await User.updateMany(
-    { _id },
-    { $set: { password: await bcrypt.hash(newPassword, 10) } },
-    { runValidators: true }
-  );
+// Cập nhật mật khẩu 
+export const updatePasswordSv = async ( 
+  _id: string, 
+  oldPassword: string, 
+  newPassword: string, 
+  confirmPassword: string 
+) => { 
+  // Kiểm tra mật khẩu cũ
+  const user = await User.findById(_id);
+  if (!user) throw new Error("Không tìm thấy người dùng");
+  const check = await bcrypt.compare(oldPassword, user.password); 
+  if (!check) throw new Error("Mật khẩu cũ không đúng"); 
+  // Cập nhật mật khẩu mới
+  await User.updateOne( 
+    { _id }, 
+    { $set: { password: await bcrypt.hash(newPassword, 10) } }, 
+    { runValidators: true } 
+  ); 
 };
 
 // Xoá người dùng
@@ -155,11 +147,101 @@ export const deleteUserSv = async (userId: string) => {
 };
 
 // Lấy chi tiết thông tin người dùng
-export const getInfoUserSv = async (_id: string) => {
-  if (!_id) throw new Error("ID người dùng không hợp lệ");
+export const getInfoUserSv = async (_id: string, authenticatedUserId: string) => {
+  // Chỉ cho phép người dùng lấy thông tin của chính họ
+  if (_id !== authenticatedUserId) {
+    throw new Error("Bạn không có quyền truy cập thông tin này");
+  }
   const infoUser = await User.findById(_id).select(
-    "-otp -otpExpires -isVerified"
+    "-otp -otpExpires -isVerified -password -__v"
   );
   if (!infoUser) throw new Error("Người dùng không tồn tại");
   return infoUser;
+};
+
+// Lấy danh sách người dùng với phân trang + tìm kiếm theo email hoặc fullname
+export const getUserListSv = async (
+  page?: number,
+  limit?: number,
+  search?: string
+) => {
+  try {
+    // Nếu không truyền page và limit thì lấy tất cả
+    if (!page || !limit) {
+      const query: any = {};
+      
+      // Nếu có search thì tìm theo email hoặc fullname
+      if (search) {
+        query.$or = [
+          { email: { $regex: search, $options: "i" } },
+          { fullname: { $regex: search, $options: "i" } }
+        ];
+      }
+      
+      const users = await User.find(query)
+        .select("-password -otp -otpExpires")
+        .sort({ createdAt: -1 });
+      
+      return {
+        users,
+        total: users.length,
+        page: 1,
+        limit: users.length,
+        totalPages: 1
+      };
+    }
+    
+    // Nếu có page và limit thì phân trang
+    const skip = (page - 1) * limit;
+    const query: any = {};
+    
+    // Nếu có search thì tìm theo email hoặc fullname
+    if (search) {
+      query.$or = [
+        { email: { $regex: search, $options: "i" } },
+        { fullname: { $regex: search, $options: "i" } }
+      ];
+    }
+    
+    const [users, total] = await Promise.all([
+      User.find(query)
+        .select("-password -otp -otpExpires")
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit),
+      User.countDocuments(query)
+    ]);
+    
+    return {
+      users,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit)
+    };
+  } catch (error: any) {
+    throw new Error(error.message || "Lỗi lấy danh sách người dùng");
+  }
+};
+
+// Service thêm user mới bởi ADMIN
+export const createUserByAdminSv = async (userData: Partial<IUser>) => {
+  // Kiểm tra email đã tồn tại chưa
+  const existingUser = await User.findOne({ email: userData.email });
+  if (existingUser) {
+    throw new Error("Email đã tồn tại trong hệ thống");
+  }
+  // Hash password
+  const hashedPassword = await bcrypt.hash(userData.password, 10)
+  // Tạo user mới với isVerified = true (vì admin tạo)
+  const newUser = await User.create({
+    email: userData.email,
+    password: hashedPassword,
+    role: userData.role,
+    isVerified: true, // Tự động verify
+    otp: "", 
+    otpExpires: ""
+  });
+
+  return newUser;
 };
