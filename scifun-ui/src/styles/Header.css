@@ -1,0 +1,39 @@
+/* Header.css */
+
+/* Navbar trong suốt khi ở đầu trang */
+.transparent-navbar {
+  background-color: transparent !important;
+  transition: all 0.3s ease;
+}
+
+/* Navbar nền trắng khi cuộn hoặc ở trang khác */
+.white-navbar {
+  background-color: #ffffff !important;
+  border-bottom: 1px solid #e0e0e0;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+}
+
+/* Khi ở navbar trắng */
+.white-navbar .navbar-brand,
+.white-navbar .nav-link {
+  color: #198754 !important;
+}
+
+/* Khi navbar trong suốt */
+.transparent-navbar .nav-link,
+.transparent-navbar .navbar-brand {
+  color: #ffffff !important;
+}
+
+/* Nút hover */
+.navbar .btn:hover {
+  opacity: 0.9;
+}
+
+/* Dropdown */
+.dropdown-menu {
+  background-color: #fff;
+  border: 1px solid #ddd;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+}

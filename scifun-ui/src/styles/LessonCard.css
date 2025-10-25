@@ -1,9 +1,91 @@
-.hover-underline {
-    text-decoration: none; /* mặc định không gạch chân */
-    transition: text-decoration 0.2s ease-in-out;
-  }
-  
-  .hover-underline:hover {
-    text-decoration: underline; /* hover mới gạch chân */
-  }
-  
+.lesson-card {
+  width: 400px;
+  height: 300px;
+  margin: auto;
+  position: relative;
+  border-radius: 20px;
+  overflow: hidden;
+  cursor: pointer;
+  border: 2px solid rgba(60, 179, 113, 0.4); /* xanh lá nhạt */
+  box-shadow: 0 0 20px rgba(60, 179, 113, 0.25), inset 0 0 25px rgba(60, 179, 113, 0.12);
+  transition: transform 250ms ease, box-shadow 250ms ease;
+  transform-origin: center;
+}
+
+/* Hover: phóng to nhẹ và viền sáng hơn */
+.lesson-card:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 30px rgba(60, 179, 113, 0.6), 0 10px 30px rgba(0, 0, 0, 0.25);
+}
+
+/* Ảnh nền */
+.lesson-card__img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 450ms cubic-bezier(.2, .8, .2, 1);
+  transform-origin: center;
+  filter: saturate(1.05) contrast(0.98);
+}
+
+.lesson-card:hover .lesson-card__img {
+  transform: scale(1.08);
+}
+
+/* overlay ánh sáng xanh lá nhạt */
+.lesson-card__overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 20% 30%, rgba(144, 238, 144, 0.12) 0%, transparent 40%),
+    radial-gradient(circle at 80% 70%, rgba(60, 179, 113, 0.12) 0%, transparent 40%);
+}
+
+/* gradient ở dưới */
+.lesson-card__gradient {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 32%;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(20, 40, 20, 0.9) 100%);
+  pointer-events: none;
+}
+
+/* --- 🔹 Phần tiêu đề chỉnh sang màu xám nhạt --- */
+.lesson-card__title-wrap {
+  position: absolute;
+  bottom: 22px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 85%;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: rgba(200, 200, 200, 0.3); /* xám nhạt trong suốt */
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 0 12px rgba(60, 179, 113, 0.25);
+  backdrop-filter: blur(4px);
+}
+
+/* Tiêu đề text */
+.lesson-card__title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #fff;
+  text-align: center;
+  text-shadow: 0 0 8px rgba(0, 128, 0, 0.6);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Focus style cho keyboard users */
+.lesson-card:focus {
+  outline: none;
+  box-shadow: 0 0 40px rgba(60, 179, 113, 0.65);
+}
