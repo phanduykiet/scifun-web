@@ -2,7 +2,7 @@ import mongoose, { Schema, Document, Types } from "mongoose";
 import { IQuiz } from "./Quiz";
 
 export interface IResult extends Document {
-  userId: string;
+  userId: Types.ObjectId;
   quiz: Types.ObjectId | IQuiz;
   bestScore: number;
   attempts: number;        // số lần làm quiz
@@ -12,7 +12,7 @@ export interface IResult extends Document {
 }
 
 const ResultSchema = new Schema<IResult>({
-  userId: { type: String, required: true },
+  userId: { type: Schema.Types.ObjectId, required: true },
   quiz: { type: Schema.Types.ObjectId, ref: "Quiz", required: true },
   bestScore: { type: Number, required: true },
   attempts: { type: Number, required: true, default: 0 },

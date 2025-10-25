@@ -36,13 +36,11 @@ export const deleteQuizSv = async (_id: string) => {
 
 // Lấy danh sách Quiz có phân trang + lọc theo topic
 export const getQuizzesSv = async (
-  page: number,
-  limit: number,
+  page?: number,
+  limit?: number,
   topicId?: string,
   search?: string
 ) => {
-  const from = (page - 1) * limit;
-
   const filters: any[] = [];
   const must: any[] = [];
 
@@ -67,6 +65,41 @@ export const getQuizzesSv = async (
     });
   }
 
+  // Nếu không có page và limit thì lấy tất cả
+  if (!page || !limit) {
+    const result = await esClient.search({
+      index: QUIZ_INDEX,
+      size: 10000, // Giới hạn tối đa của Elasticsearch
+      track_total_hits: true,
+      query: must.length
+        ? { bool: { must, filter: filters } }
+        : filters.length
+        ? { bool: { filter: filters } }
+        : { match_all: {} }
+    });
+
+    const quizzes = (result.hits.hits as any[]).map((hit) => ({
+      _id: hit._id,
+      ...hit._source,
+    }));
+
+    const total =
+      typeof result.hits.total === "number"
+        ? result.hits.total
+        : result.hits.total?.value || 0;
+
+    return {
+      page: 1,
+      limit: total,
+      total,
+      totalPages: 1,
+      quizzes,
+    };
+  }
+
+  // Nếu có page và limit thì phân trang
+  const from = (page - 1) * limit;
+
   const result = await esClient.search({
     index: QUIZ_INDEX,
     from,
@@ -76,12 +109,11 @@ export const getQuizzesSv = async (
       ? { bool: { must, filter: filters } }
       : filters.length
       ? { bool: { filter: filters } }
-      : { match_all: {} },
-    // sort: [{ createdAt: { order: "desc" } }],
+      : { match_all: {} }
   });
 
   const quizzes = (result.hits.hits as any[]).map((hit) => ({
-    id: hit._id,
+    _id: hit._id,
     ...hit._source,
   }));
 
