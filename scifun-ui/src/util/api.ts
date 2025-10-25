@@ -119,6 +119,22 @@ const submitQuizApi = async (userId: string, quizId: string, answers: { question
   });
   return res;
 };
+const saveQuizApi = async (userId: string, quizId: string) => {
+  const res = await axios.post("/api/v1/favorite-quiz/add", { userId, quizId });
+  return res;
+};
+const delSavedQuizApi = async (quizId: string, userId: string) => {
+  const res = await axios.delete(`/api/v1/favorite-quiz/remove/${quizId}`, {
+    data: { userId },
+  });
+  return res;
+};
+const getSavedQuizzesApi = async (userId: string, topicId?: string) => {
+  const res = await axios.get(`/api/v1/favorite-quiz/list`, {
+    params: { userId, topicId, page: 1, limit: 100 },
+  });
+  return res;
+};
 
 export { createUserApi, loginApi, otpVerify, getLessonListApi, updateProfileApi, forgotPasswordApi, resetPasswordApi, changePasswordApi,
-  getTopicsBySubjectApi, getQuizsByTopicApi, getQuestionsByQuizApi, submitQuizApi };
+  getTopicsBySubjectApi, getQuizsByTopicApi, getQuestionsByQuizApi, submitQuizApi, saveQuizApi, delSavedQuizApi, getSavedQuizzesApi };
