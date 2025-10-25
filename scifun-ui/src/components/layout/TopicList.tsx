@@ -21,41 +21,19 @@ const TopicList: React.FC = () => {
   const fetchAllTopics = async () => {
     setLoading(true);
     try {
-      const subjectRes = await getLessonListApi("1", "10", "");
-  
-      const subjects = subjectRes.data.subjects ?? subjectRes.data ?? [];
-      if (subjects.length === 0) {
-        console.warn("⚠️ Không có môn học nào để lấy chủ đề.");
-        setTopics([]);
-        return;
-      }
-  
-      // Xóa hết trước khi load mới
-      setTopics([]);
-  
-      for (const subject of subjects) {
-        try {
-          const res = await getTopicsBySubjectApi(subject.id, 1, 10);
-  
-          const list = (res.data.topics ?? res.data ?? []).map((t: Topic) => ({
-            ...t,
-            subjectId: subject.id,
-            subjectName: subject.name,
-          }));
-  
-          // ⬇️ Cập nhật dần dần mỗi lần load xong 1 môn
-          setTopics((prev) => [...prev, ...list]);
-        } catch (err) {
-          console.error(`❌ Lỗi khi load topic của môn ${subject.name}:`, err);
-        }
-      }
+      // 🔹 Chỉ cần 1 API call duy nhất!
+      const res = await getTopicsBySubjectApi("", 1, 10);
+      const topics = res.data.topics ?? res.data ?? [];
+      
+      setTopics(topics);
+      console.debug(`🎯 Đã load ${topics.length} topics`);
     } catch (err) {
       console.error("❌ Lỗi khi tải danh sách chủ đề:", err);
       setTopics([]);
     } finally {
       setLoading(false);
     }
-  };  
+  };   
 
   useEffect(() => {
     fetchAllTopics();

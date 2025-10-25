@@ -220,6 +220,11 @@ const Header: React.FC = () => {
                     </Link>
                   </li>
                   <li>
+                    <Link className="dropdown-item" to="/save-quiz">
+                      Bài đã lưu
+                    </Link>
+                  </li>
+                  <li>
                     <a className="dropdown-item" href="#" onClick={handleLogout}>
                       Đăng xuất
                     </a>

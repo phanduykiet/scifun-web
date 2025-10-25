@@ -13,6 +13,7 @@ import TestReview from "./pages/TestReview";
 import SubjectPage from "./pages/Subject";
 import TopicPage from "./pages/Topic";
 import StatisticsPage from "./pages/StatisticsPage";
+import SavedQuizsPage from "./pages/SavedQuizsPage";
 
 export default function App() {
   return (
@@ -31,6 +32,7 @@ export default function App() {
         <Route path="/subject/:id" element={<SubjectPage />} />
         <Route path="/topic/:topicId" element={<TopicPage />} />
         <Route path="/statistic" element={<StatisticsPage />} />
+        <Route path="/save-quiz" element={<SavedQuizsPage />} />
       </Routes>
   );
 }
