@@ -20,7 +20,7 @@ const UserSchema = new Schema<IUser>({
   otp: { type: String },
   otpExpires: { type: Date },
   isVerified: { type: Boolean, default: false },
-  avatar: { type: String, default: "https://i.pravatar.cc/150?img=5" },
+  avatar: { type: String, default: "https://res.cloudinary.com/dglm2f7sr/image/upload/v1761373988/default_awmzq0.jpg" },
   role: {
     type: String,
     enum: ["USER", "ADMIN"],

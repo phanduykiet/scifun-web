@@ -217,3 +217,22 @@ export const getUserList = async (req: Request, res: Response) => {
     });
   }
 };
+
+// Tạo user mới (chỉ ADMIN)
+export const createUser = async (req: Request, res: Response) => {
+  try {
+    const data = req.body;
+    const newUser = await authService.createUserByAdminSv(data);
+
+    res.status(200).json({
+      status: 200,
+      message: "Tạo tài khoản thành công",
+      data: newUser
+    });
+  } catch (err: any) {
+    res.status(400).json({
+      status: 400,
+      message: err.message
+    });
+  }
+};

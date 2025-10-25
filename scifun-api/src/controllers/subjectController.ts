@@ -40,10 +40,8 @@ export const createSubject = async (req: Request, res: Response) => {
 export const updateSubject = async (req: Request, res: Response) => {
   try {
     const { _id } = req.params;
-    const { name, description, maxTopics, image } = req.body;
-
     const subject = await subjectService.updateSubjectSv(_id, req.body);
-
+    await subjectService.syncToES();
     res.status(200).json({
       status: 200,
       message: "Cập nhật môn học thành công",
@@ -61,9 +59,8 @@ export const updateSubject = async (req: Request, res: Response) => {
 export const deleteSubject = async (req: Request, res: Response) => {
   try {
     const { _id } = req.params;
-
     await subjectService.deleteSubjectSv(_id);
-
+    await subjectService.syncToES();
     res.status(200).json({ 
         status: 200,
         message: "Xóa môn học thành công" 

@@ -224,4 +224,24 @@ export const getUserListSv = async (
   }
 };
 
+// Service thêm user mới bởi ADMIN
+export const createUserByAdminSv = async (userData: Partial<IUser>) => {
+  // Kiểm tra email đã tồn tại chưa
+  const existingUser = await User.findOne({ email: userData.email });
+  if (existingUser) {
+    throw new Error("Email đã tồn tại trong hệ thống");
+  }
+  // Hash password
+  const hashedPassword = await bcrypt.hash(userData.password, 10)
+  // Tạo user mới với isVerified = true (vì admin tạo)
+  const newUser = await User.create({
+    email: userData.email,
+    password: hashedPassword,
+    role: userData.role,
+    isVerified: true, // Tự động verify
+    otp: "", 
+    otpExpires: ""
+  });
 
+  return newUser;
+};
