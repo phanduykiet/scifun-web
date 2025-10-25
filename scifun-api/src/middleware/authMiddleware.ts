@@ -25,7 +25,8 @@ export const authMiddleware = (
     
     // Kiểm tra header tồn tại
     if (!authHeader) {
-      return res.status(401).json({ 
+      return res.status(400).json({ 
+        status: 400,
         success: false,
         message: "Vui lòng đăng nhập để tiếp tục" 
       });
@@ -33,7 +34,8 @@ export const authMiddleware = (
     
     // Kiểm tra format "Bearer <token>"
     if (!authHeader.startsWith("Bearer ")) {
-      return res.status(401).json({ 
+      return res.status(400).json({ 
+        status: 400,
         success: false,
         message: "Token không đúng định dạng" 
       });
@@ -43,7 +45,8 @@ export const authMiddleware = (
     
     // Kiểm tra token có tồn tại sau "Bearer "
     if (!token || token.trim().length === 0) {
-      return res.status(401).json({ 
+      return res.status(400).json({
+        status: 400, 
         success: false,
         message: "Token không tồn tại" 
       });
@@ -66,7 +69,8 @@ export const authMiddleware = (
     
     // Validate decoded data
     if (!decoded.userId || !decoded.email || !decoded.role) {
-      return res.status(401).json({ 
+      return res.status(400).json({ 
+        status: 400,
         success: false,
         message: "Token không hợp lệ" 
       });
@@ -83,21 +87,24 @@ export const authMiddleware = (
   } catch (error) {
     // Xử lý các loại lỗi JWT cụ thể
     if (error instanceof jwt.TokenExpiredError) {
-      return res.status(401).json({
+      return res.status(400).json({
+        status: 400,
         success: false,
         message: "Token đã hết hạn, vui lòng đăng nhập lại"
       });
     }
     
     if (error instanceof jwt.JsonWebTokenError) {
-      return res.status(401).json({
+      return res.status(400).json({
+        status: 400,
         success: false,
         message: "Token không hợp lệ"
       });
     }
     
     if (error instanceof jwt.NotBeforeError) {
-      return res.status(401).json({
+      return res.status(400).json({
+        status: 400,
         success: false,
         message: "Token chưa có hiệu lực"
       });
@@ -106,6 +113,7 @@ export const authMiddleware = (
     // Lỗi khác
     console.error("Auth middleware error:", error);
     return res.status(500).json({
+      status: 500,
       success: false,
       message: "Lỗi xác thực người dùng"
     });

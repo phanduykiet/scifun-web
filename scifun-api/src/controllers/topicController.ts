@@ -4,7 +4,6 @@ import * as topicService from "../services/topicService";
 //  Tao chủ đề
 export const createTopic = async (req: Request, res: Response) => {
   try {
-    const { name, description, subject } = req.body;
     const topic = await topicService.createTopicSv(req.body);
     res.status(200).json({
       status: 200,
@@ -23,8 +22,6 @@ export const createTopic = async (req: Request, res: Response) => {
 export const updateTopic = async (req: Request, res: Response) => {
   try {
     const { _id } = req.params;
-    const { name, description, subject } = req.body;
-
     const topic = await topicService.updateTopicSv(_id, req.body);
 
     res.status(200).json({
@@ -62,8 +59,8 @@ export const deleteTopic = async (req: Request, res: Response) => {
 // Lấy danh sách chủ đề với phân trang
 export const getTopics = async (req: Request, res: Response) => {
   try {
-    const page = parseInt(req.query.page as string) || 1;
-    const limit = parseInt(req.query.limit as string) || 10;
+    const page = req.query.page ? parseInt(req.query.page as string) : undefined;
+    const limit = req.query.limit ? parseInt(req.query.limit as string) : undefined;
     const subjectId = req.query.subjectId as string | undefined;
     const search = req.query.search as string | undefined;
 
