@@ -7,7 +7,6 @@ const TOPIC_INDEX = "topic";
 export const createTopicSv = async (data: Partial<ITopic>) => {
   const topic = new Topic(data);
   await topic.save();
-  syncToES(); // đồng bộ lên ES
   return topic.populate("subject"); // populate để trả luôn thông tin Subject
 };
 

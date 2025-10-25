@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { register, verifyOTP, login, forgotPassword, verifyResetOtp, updateUser, resetPassword, deleteUser, getInfoUser, updatePassword, getUserList} from "../controllers/userController";
+import { register, verifyOTP, login, forgotPassword, verifyResetOtp, updateUser, resetPassword, deleteUser, getInfoUser, updatePassword, getUserList, createUser} from "../controllers/userController";
 import { createSubject, getSubjects, updateSubject, deleteSubject, getSubjectById } from "../controllers/subjectController";
 import { createTopic, getTopics, updateTopic, deleteTopic, getTopicById } from "../controllers/topicController";
 import { createQuiz, getQuizzes, updateQuiz, deleteQuiz, getQuizById, getTrendingQuizzes } from "../controllers/quizController";
@@ -10,6 +10,7 @@ import { createVideoLesson, updateVideoLesson, deleteVideoLesson, getVideoLesson
 import { authMiddleware } from "../middleware/authMiddleware";
 import { checkRole } from "../middleware/checkRole";
 import { upload } from "../middleware/upload";
+import { getUserProgress } from "../controllers/userProgressController";
 
 const router = Router();
 
@@ -24,6 +25,7 @@ router.put("/user/update-user/:_id", authMiddleware, checkRole("USER", "ADMIN"),
 router.put("/user/update-password/:_id", authMiddleware, checkRole("USER", "ADMIN"), updatePassword);
 router.get("/user/get-user/:_id", authMiddleware, checkRole("USER", "ADMIN"), getInfoUser);
 router.get("/user/get-user-list", authMiddleware, checkRole("ADMIN"), getUserList);
+router.post("/user/create-user", authMiddleware, checkRole("ADMIN"), createUser);
 router.delete("/delete-user/:_id", authMiddleware, checkRole("ADMIN"), deleteUser);
 
 // Subject routes
@@ -59,6 +61,9 @@ router.delete("/question/delete-question/:_id", authMiddleware, checkRole("ADMIN
 router.post("/submission/handle-submit", handleSubmitQuiz);
 router.get("/submission/get-submissionDetail/:submissionId", getSubmissionDetail)
 router.get("/submisstion/get-all", getResults)
+
+// User Progress routes
+router.get("/user-progress/:subjectId", authMiddleware, checkRole("ADMIN", "USER"), getUserProgress);
 
 // Favorite Quiz routes
 router.post("/favorite-quiz/add", authMiddleware, checkRole("ADMIN", "USER"), addFavoriteQuiz);

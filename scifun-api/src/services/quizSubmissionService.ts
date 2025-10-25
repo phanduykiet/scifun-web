@@ -12,7 +12,7 @@ export type SubmittedAnswer = {
 export interface SubmitQuizPayload {
   quizId: string;
   answers: SubmittedAnswer[];
-  userId: string;
+  userId?: string;
 }
 
 // Hàm cập nhật thông tin Quiz (uniqueUserCount và lastAttemptAt)
@@ -27,7 +27,7 @@ const updateQuizStatistics = async (quizId: string) => {
 // Nộp bài + chấm điểm
 export const handleSubmitQuizSv = async (payload: SubmitQuizPayload) => {
   const { quizId, answers, userId } = payload;
-  if (!quizId || !Array.isArray(answers) || !userId) {
+  if (!quizId || !Array.isArray(answers)) {
     throw new Error("Thiếu dữ liệu");
   }
 
@@ -68,7 +68,16 @@ export const handleSubmitQuizSv = async (payload: SubmitQuizPayload) => {
 
   // Tính điểm bài làm
   const totalQuestions = questionIds.length;
-  const score = correctCount * 10;
+  const score = correctCount * 100 / totalQuestions;
+
+  if(!userId){
+    return {
+    quizId,
+    score,
+    totalQuestions,
+    correctAnswers: correctCount,
+    };
+  }
 
   // Lưu submission
   const submission = await Submission.create({
@@ -146,6 +155,7 @@ export const getSubmissionDetailSv = async (submissionId: string) => {
         selectedAnswer: selectedAnswerText || a.selectedAnswer, // fallback nếu không tìm thấy
         correctAnswers, // array string
         isCorrect: a.isCorrect,
+        explanation: question.explanation,
       };
     }),
   };

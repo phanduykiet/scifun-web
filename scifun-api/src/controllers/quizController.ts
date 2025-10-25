@@ -6,7 +6,9 @@ export const createQuiz = async (req: Request, res: Response) => {
   try {
     const data = req.body;
     const quiz = await quizService.createQuizSv(data);
+
     await quizService.syncToES();
+
     res.status(200).json({
       status: 200,
       message: "Thêm thành công",
@@ -26,6 +28,9 @@ export const updateQuiz = async (req: Request, res: Response) => {
     const { _id } = req.params;
     const data = req.body;
     const quiz = await quizService.updateQuizSv(_id, data);
+
+    await quizService.syncToES();
+
     res.status(200).json({
       status: 200,
       message: "Cập nhật thành công",
@@ -44,6 +49,8 @@ export const deleteQuiz = async (req: Request, res: Response) => {
   try {
     const { _id } = req.params;
     const result = await quizService.deleteQuizSv(_id);
+
+    await quizService.syncToES();
     res.status(200).json({
       status: 200,
       message: "Xóa thành công",
@@ -64,8 +71,8 @@ export const getQuizzes = async (req: Request, res: Response) => {
     const limit = req.query.limit ? parseInt(req.query.limit as string) : undefined;
     const topicId = req.query.topicId as string;
     const search = req.query.search as string;
-
     const result = await quizService.getQuizzesSv(page, limit, topicId, search);
+
     res.status(200).json({
       status: 200,
       message: "Lấy danh sách thành công",
@@ -84,8 +91,9 @@ export const getTrendingQuizzes = async (req: Request, res: Response) => {
   try {
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
-    const timeWeight = parseFloat(req.query.timeWeight as string) || 0.6; // mặc định 0.6
-    const popularityWeight = parseFloat(req.query.timeWeight as string) || 0.4; // mặc định 0.6
+    const timeWeight = parseFloat(req.query.timeWeight as string) || 0.6; 
+    const popularityWeight = parseFloat(req.query.timeWeight as string) || 0.4; 
+
     const result = await quizService.getTrendingQuizzesSv(
       page,
       limit,
@@ -110,6 +118,7 @@ export const getQuizById = async (req: Request, res: Response) => {
   try {
     const { _id } = req.params;
     const quiz = await quizService.getQuizByIdSv(_id);
+    
     res.status(200).json({
       status: 200,
       message: "Lấy chi tiết thành công",
