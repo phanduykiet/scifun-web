@@ -10,7 +10,7 @@ export const createVideoLessonSv = async (data: Partial<IVideoLesson>) => {
 
   const videoLesson = new VideoLesson(data);
   await videoLesson.save();
-  return videoLesson.populate("topic");
+  return videoLesson.populate("topic", "-__v");
 };
 
 // Sửa video lesson
@@ -29,7 +29,7 @@ export const updateVideoLessonSv = async (
     _id,
     { $set: updateData },
     { new: true, runValidators: true }
-  ).populate("topic");
+  ).populate("topic", "-__v");
 
   if (!videoLesson) throw new Error("Video lesson không tồn tại");
   return videoLesson;
@@ -61,7 +61,8 @@ export const getVideoLessonsSv = async (
       .skip(skip)
       .limit(limit)
       .sort({ createdAt: -1 })
-      .populate("topic"),
+      .populate("topic", "-__v")
+      .select("-__v"),
     VideoLesson.countDocuments(filter),
   ]);
 

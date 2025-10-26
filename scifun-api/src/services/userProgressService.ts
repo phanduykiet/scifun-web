@@ -5,8 +5,8 @@ import Topic from "../models/Topic";
 import Quiz from "../models/Quiz";
 import Result from "../models/Result";
 
-// Khởi tạo UserProgress cho user khi họ bắt đầu học subject
-export const initializeUserProgressSv = async (
+// Khởi tạo hoặc cập nhật UserProgress
+export const initializeOrUpdateUserProgressSv = async (
   userId: string,
   subjectId: string
 ) => {
@@ -31,7 +31,6 @@ export const initializeUserProgressSv = async (
     for (const quiz of quizzes) {
       // Kiểm tra xem user đã làm quiz này chưa
       const result = await Result.findOne({ userId, quiz: quiz._id });
-      console.log("Quiz ID:", quiz._id, userId, "Result:", result);
 
       if (result) {
         topicCompletedQuizzes++;
@@ -96,8 +95,8 @@ export const initializeUserProgressSv = async (
     ? totalScoreSum / totalCompletedQuizzes 
     : 0;
 
-  // Tạo progress mới
-  const userProgress = await UserProgress.create({
+  // Dữ liệu để lưu/cập nhật
+  const progressData = {
     userId,
     subjectId,
     subjectName: subject.name,
@@ -109,7 +108,17 @@ export const initializeUserProgressSv = async (
     averageScore: Math.round(subjectAvgScore * 100) / 100,
     topics: topicsData,
     lastUpdatedAt: new Date()
-  });
+  };
+
+  const userProgress = await UserProgress.findOneAndUpdate(
+    { userId, subjectId }, 
+    { $set: progressData }, 
+    { 
+      new: true, 
+      upsert: true, 
+      setDefaultsOnInsert: true 
+    }
+  );
 
   return userProgress;
 };
@@ -119,13 +128,7 @@ export const getUserProgressSv = async (
   userId: string,
   subjectId: string
 ) => {
-  let userProgress = await UserProgress.findOne({ userId, subjectId });
-  
-  // Nếu chưa có thì khởi tạo
-  if (!userProgress) {
-    userProgress = await initializeUserProgressSv(userId, subjectId);
-  }
-
+  const userProgress = await initializeOrUpdateUserProgressSv(userId, subjectId);
   return userProgress;
 };
 
