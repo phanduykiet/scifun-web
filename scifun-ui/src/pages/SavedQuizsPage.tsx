@@ -39,7 +39,7 @@ export default function SavedQuizsPage() {
           name: item.quiz.title || "Không có tiêu đề",
           description: item.quiz.description || "",
           questions: item.quiz.questionCount || 0,
-          duration: item.quiz.durationMinutes || 0,
+          duration: item.quiz.duration || 0,
           savedDate: new Date(item.createdAt).toLocaleDateString("vi-VN"),
           category: item.quiz.topic?.name || "Khác",
         }));        
