@@ -8,26 +8,39 @@ const SUBJECT_INDEX = "subject";
 export const createSubjectSv = async (data: Partial<ISubject>) => {
   const subject = new Subject(data);
   await subject.save();
+
+  // Sync lên ES
+  await syncOneSubjectToES(subject._id.toString());
   return subject;
 };
 
 // Cập nhật môn học
 export const updateSubjectSv = async (_id: string, data: Partial<ISubject>) => {
-  if (!_id) throw new Error("ID môn học không hợp lệ");
+  if (!_id) throw new Error("ID subject không hợp lệ");
+
   const subject = await Subject.findByIdAndUpdate(
     _id,
     { $set: data },
     { new: true, runValidators: true }
   );
-  if (!subject) throw new Error("Môn học không tồn tại");
+
+  if (!subject) throw new Error("Subject không tồn tại");
+
+  // Sync lên ES
+  await syncOneSubjectToES(subject._id.toString());
   return subject;
 };
 
 //  Xóa môn học
 export const deleteSubjectSv = async (_id: string) => {
-  if (!_id) throw new Error("ID môn học không hợp lệ");
+  if (!_id) throw new Error("ID subject không hợp lệ");
+
   const subject = await Subject.findByIdAndDelete(_id);
-  if (!subject) throw new Error("Môn học không tồn tại");
+  if (!subject) throw new Error("Subject không tồn tại");
+
+  // Xoá khỏi ES
+  await deleteOneSubjectFromES(_id);
+  return { message: "Xóa subject thành công", subject };
 };
 
 // Lấy danh sách môn học với phân trang + tìm kiếm theo tên môn học
@@ -105,42 +118,6 @@ export const getSubjectsSv = async (page?: number, limit?: number, search?: stri
   };
 };
 
-// Tạm thời 
-export const syncToES = async (): Promise<void> => {
-  try {
-    // Xoá hết dữ liệu cũ trong index
-    await esClient.deleteByQuery({
-      index: SUBJECT_INDEX,
-      body: {
-        query: {
-          match_all: {}   // xoá tất cả documents
-        }
-      }
-    } as any); // ép kiểu any để TS không bắt lỗi
-
-
-    // Lấy dữ liệu từ Mongo
-    const subjects = await Subject.find().lean();
-
-    for (const subject of subjects) {
-      const { _id, __v, ...doc } = subject;
-
-      await esClient.index({
-        index: SUBJECT_INDEX,
-        id: _id.toString(),
-        document: doc,
-        refresh: true
-      });
-    }
-
-    console.log("✅ Sync to Elasticsearch completed!");
-  } catch (error) {
-    console.error("❌ Error syncing:", error);
-    throw error;
-  }
-};
-
-
 // Lấy chi tiết môn học
 export const getSubjectByIdSv = async (_id: string) =>{
   if (!_id) throw new Error("ID môn học không hợp lệ");
@@ -150,3 +127,43 @@ export const getSubjectByIdSv = async (_id: string) =>{
   
     return subject;
 }
+
+// Sync 1 subject lên ES (create/update)
+export const syncOneSubjectToES = async (subjectId: string) => {
+  try {
+    const subject = await Subject.findById(subjectId).lean();
+    if (!subject) throw new Error("Subject không tồn tại");
+
+    const esDocument = {
+      name: subject.name,
+      description: subject.description || "",
+      maxTopics: subject.maxTopics ?? 20,
+      image: subject.image || "https://res.cloudinary.com/dglm2f7sr/image/upload/v1761400287/default_gdfbhs.png"
+    };
+
+    await esClient.index({
+      index: SUBJECT_INDEX,
+      id: subjectId,
+      document: esDocument,
+      refresh: true
+    });
+  } catch (error) {
+    throw error;
+  }
+};
+
+// Xoá 1 subject khỏi ES
+export const deleteOneSubjectFromES = async (subjectId: string) => {
+  try {
+    await esClient.delete({
+      index: SUBJECT_INDEX,
+      id: subjectId,
+      refresh: true
+    });
+  } catch (error: any) {
+    if (error.meta?.statusCode === 404) {
+      throw new Error("Subject không tồn tại trong ES");
+    }
+    throw error;
+  }
+};
