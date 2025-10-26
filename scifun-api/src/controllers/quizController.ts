@@ -7,8 +7,6 @@ export const createQuiz = async (req: Request, res: Response) => {
     const data = req.body;
     const quiz = await quizService.createQuizSv(data);
 
-    await quizService.syncToES();
-
     res.status(200).json({
       status: 200,
       message: "Thêm thành công",
@@ -29,8 +27,6 @@ export const updateQuiz = async (req: Request, res: Response) => {
     const data = req.body;
     const quiz = await quizService.updateQuizSv(_id, data);
 
-    await quizService.syncToES();
-
     res.status(200).json({
       status: 200,
       message: "Cập nhật thành công",
@@ -50,7 +46,6 @@ export const deleteQuiz = async (req: Request, res: Response) => {
     const { _id } = req.params;
     const result = await quizService.deleteQuizSv(_id);
 
-    await quizService.syncToES();
     res.status(200).json({
       status: 200,
       message: "Xóa thành công",

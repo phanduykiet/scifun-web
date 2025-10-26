@@ -5,7 +5,6 @@ import * as topicService from "../services/topicService";
 export const createTopic = async (req: Request, res: Response) => {
   try {
     const topic = await topicService.createTopicSv(req.body);
-    await topicService.syncToES();
 
     res.status(200).json({
       status: 200,
@@ -25,7 +24,6 @@ export const updateTopic = async (req: Request, res: Response) => {
   try {
     const { _id } = req.params;
     const topic = await topicService.updateTopicSv(_id, req.body);
-    await topicService.syncToES();
 
     res.status(200).json({
       status: 200,
@@ -46,7 +44,6 @@ export const deleteTopic = async (req: Request, res: Response) => {
     const { _id } = req.params;
 
     await topicService.deleteTopicSv(_id);
-    await topicService.syncToES();
 
     res.status(200).json({
       status: 200,
