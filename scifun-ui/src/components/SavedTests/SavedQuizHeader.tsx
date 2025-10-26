@@ -1,11 +1,13 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Bookmark, Search, Filter } from "lucide-react";
+import { getTopicsBySubjectApi } from "../../util/api"; 
 
 interface SavedQuizHeaderProps {
   searchTerm: string;
   setSearchTerm: (v: string) => void;
   filterType: string;
   setFilterType: (v: string) => void;
+  subjectId?: string; // 👈 thêm nếu cần lọc theo môn học cụ thể
 }
 
 export default function SavedQuizHeader({
@@ -13,21 +15,30 @@ export default function SavedQuizHeader({
   setSearchTerm,
   filterType,
   setFilterType,
+  subjectId,
 }: SavedQuizHeaderProps) {
+  const [topics, setTopics] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchTopics = async () => {
+      try {
+        const res = await getTopicsBySubjectApi(subjectId, 1, 100);
+        const data = res.data?.topics || res.data || [];
+        setTopics(data);
+      } catch (err) {
+        console.error("Lỗi khi lấy danh sách chủ đề:", err);
+      }
+    };
+    fetchTopics();
+  }, [subjectId]);
   return (
     <div className="bg-white shadow-sm border-bottom">
       <div className="container" style={{ maxWidth: '1140px' }}>
         <div className="px-3 py-4">
           {/* Title */}
           <div className="d-flex align-items-center gap-3 mb-4">
-          <Bookmark 
-            size={32} 
-            className="text-warning" 
-            style={{ cursor: "pointer" }} 
-          />
-            <h1 className="fs-2 fw-bold text-dark mb-0">
-              Bài Kiểm Tra Đã Lưu
-            </h1>
+            <Bookmark size={32} className="text-warning" style={{ cursor: "pointer" }} />
+            <h1 className="fs-2 fw-bold text-dark mb-0">Bài Kiểm Tra Đã Lưu</h1>
           </div>
 
           {/* Search and Filter */}
@@ -62,11 +73,11 @@ export default function SavedQuizHeader({
                   style={{ paddingTop: '0.75rem', paddingBottom: '0.75rem' }}
                 >
                   <option value="all">Tất cả</option>
-                  <option value="Toán học">Toán học</option>
-                  <option value="Ngôn ngữ">Ngôn ngữ</option>
-                  <option value="Khoa học">Khoa học</option>
-                  <option value="Lịch sử">Lịch sử</option>
-                  <option value="Văn học">Văn học</option>
+                  {topics.map((topic) => (
+                    <option key={topic._id} value={topic._id}>
+                      {topic.name}
+                    </option>
+                  ))}
                 </select>
               </div>
             </div>
