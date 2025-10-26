@@ -5,12 +5,26 @@ import ConfirmModal from "../components/common/ConfirmModal";
 import QuestionSidebar from "../components/layout/QuestionSidebar";
 import { useLocation, useNavigate } from "react-router-dom";
 import { getQuestionsByQuizApi, submitQuizApi } from "../util/api";
-
-const TEST_DURATION = 60; // 3 giây để test, sau đổi lại 15*60
+import Toast from "../components/common/Toast";
 
 const Test: React.FC = () => {
   const location = useLocation();
-  const quizId = (location.state as any)?.quizId;
+  const navigate = useNavigate();
+
+  // 🔹 Đọc metadata lưu tạm trong localStorage (dành cho trường hợp reload)
+  const savedQuizMeta = JSON.parse(localStorage.getItem("quiz_meta") || "{}");
+
+  // 🔹 Ưu tiên lấy từ location.state (truyền qua navigate), fallback sang localStorage
+  const quizId = (location.state as any)?.quizId || savedQuizMeta.quizId;
+  const duration = (location.state as any)?.duration || savedQuizMeta.duration;
+  const topicId = (location.state as any)?.topicId || savedQuizMeta.topicId;
+
+  // Nếu chưa có dữ liệu nào thì báo lỗi để tránh crash
+  if (!quizId || !duration) {
+    console.warn("⚠️ Thiếu thông tin bài quiz — có thể do reload mà chưa có meta.");
+  }
+
+  const TEST_DURATION = duration ? duration * 60 : 0;
 
   const [questions, setQuestions] = useState<any[]>([]);
   const [answeredQuestions, setAnsweredQuestions] = useState<boolean[]>([]);
@@ -19,42 +33,113 @@ const Test: React.FC = () => {
   const [isOpen, setIsOpen] = useState(true);
   const [userAnswers, setUserAnswers] = useState<{ [key: string]: string }>({});
   const [showResultModal, setShowResultModal] = useState(false);
+  const [showConfirmSubmit, setShowConfirmSubmit] = useState(false);
   const [score, setScore] = useState<number | null>(null);
   const [correctCount, setCorrectCount] = useState<number>(0);
-  const [totalQuestions, setTotalQuestions] = useState<number>(0);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [submissionId, setSubmissionId] = useState(false);
+  const [toast, setToast] = useState<{
+    message: string;
+    type: "success" | "error" | "info";
+  } | null>(null);
+  const [isSessionRestored, setIsSessionRestored] = useState(false);
 
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const userId = user._id;
-  const navigate = useNavigate();
   const questionRefs = useRef<Array<HTMLDivElement | null>>([]);
+  const STORAGE_KEY = `quiz_session_${userId}_${quizId}`; // 🔹 Key lưu localStorage
 
   const isMobile = windowWidth <= 900;
   const questionMarginRight = !isMobile ? (isOpen ? "280px" : "60px") : "0";
 
-  // 🔹 Lấy câu hỏi
+  // 🔹 Lưu metadata khi có thông tin quiz hợp lệ
   useEffect(() => {
-    if (!quizId) return;
+    if (quizId && duration && topicId) {
+      localStorage.setItem(
+        "quiz_meta",
+        JSON.stringify({ quizId, duration, topicId })
+      );
+    }
+  }, [quizId, duration, topicId]);
+
+  // 🔹 Lấy câu hỏi + khôi phục session
+  useEffect(() => {
+    if (!quizId || !userId) return;
+
     const fetchQuestions = async () => {
       try {
+        // 1️⃣ Khôi phục session trước (nếu có)
+        const savedSession = localStorage.getItem(STORAGE_KEY);
+        let restoredAnswers: { [key: string]: string } = {};
+        let restoredTimeLeft = TEST_DURATION;
+
+        if (savedSession) {
+          try {
+            const { userAnswers, timeLeft, lastSaved } = JSON.parse(savedSession);
+            const elapsed = Math.floor((Date.now() - lastSaved) / 1000);
+            restoredTimeLeft = Math.max(timeLeft - elapsed, 0);
+            restoredAnswers = userAnswers || {};
+            
+            setUserAnswers(restoredAnswers);
+            setTimeLeft(restoredTimeLeft);
+            
+            setToast({
+              message: "📂 Đã khôi phục phiên làm bài trước đó",
+              type: "info",
+            });
+          } catch (err) {
+            console.error("Lỗi khi parse session:", err);
+          }
+        }
+
+        // 2️⃣ Tải câu hỏi từ API
         const res = await getQuestionsByQuizApi(quizId);
-        setQuestions(res.data.data);
-        setAnsweredQuestions(Array(res.data.data.length).fill(false));
+        const fetchedQuestions = res.data.data;
+        setQuestions(fetchedQuestions);
+
+        // 3️⃣ Cập nhật trạng thái câu đã trả lời dựa trên session đã khôi phục
+        const answered = fetchedQuestions.map((q: any) => 
+          restoredAnswers.hasOwnProperty(q._id) && restoredAnswers[q._id] !== ""
+        );
+        setAnsweredQuestions(answered);
+        setIsSessionRestored(true);
+
       } catch (err) {
         console.error("Lỗi tải câu hỏi:", err);
+        setToast({
+          message: "❌ Không thể tải câu hỏi. Vui lòng thử lại!",
+          type: "error",
+        });
       }
     };
-    fetchQuestions();
-  }, [quizId]);
 
-  // 🔹 Đồng hồ đếm ngược + tự động nộp khi hết giờ
+    fetchQuestions();
+  }, [quizId, userId, STORAGE_KEY, TEST_DURATION]);
+
+  // 🔹 Lưu session mỗi khi thay đổi đáp án hoặc thời gian
   useEffect(() => {
+    if (!quizId || !userId || isSubmitted || !isSessionRestored) return;
+    
+    const sessionData = {
+      userAnswers,
+      timeLeft,
+      lastSaved: Date.now(),
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(sessionData));
+  }, [userAnswers, timeLeft, isSubmitted, quizId, userId, STORAGE_KEY, isSessionRestored]);
+
+  // 🔹 Đồng hồ đếm ngược
+  useEffect(() => {
+    if (isSubmitted || !isSessionRestored) return;
+    
     if (timeLeft <= 0) {
       handleSubmit(true); // nộp tự động
       return;
     }
+    
     const timer = setInterval(() => setTimeLeft((prev) => prev - 1), 1000);
     return () => clearInterval(timer);
-  }, [timeLeft]);
+  }, [timeLeft, isSubmitted, isSessionRestored]);
 
   // 🔹 Resize
   useEffect(() => {
@@ -65,16 +150,31 @@ const Test: React.FC = () => {
 
   // 🔹 Cuộn đến câu hỏi
   const scrollToQuestion = (index: number) => {
-    questionRefs.current[index]?.scrollIntoView({ behavior: "smooth", block: "start" });
+    questionRefs.current[index]?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
   };
 
-  // 🔹 Nộp bài (autoSubmit = true khi hết giờ)
+  // 🔹 Nộp bài
   const handleSubmit = async (autoSubmit = false) => {
+    if (isSubmitted) return;
+
     if (!autoSubmit) {
-      if (!window.confirm("Bạn có chắc muốn nộp bài không?")) return;
-    } else {
-      alert("⏰ Đã hết giờ làm bài! Bài kiểm tra sẽ được nộp tự động.");
+      setShowConfirmSubmit(true);
+      return;
     }
+
+    if (autoSubmit && timeLeft <= 0) {
+      setToast({
+        message: "⏰ Hết giờ! Bài kiểm tra được nộp tự động.",
+        type: "info",
+      });
+    }
+
+    setIsSubmitted(true);
+    localStorage.removeItem(STORAGE_KEY); // 🔹 Xóa session sau khi nộp
+    localStorage.removeItem("quiz_meta");
 
     const answersPayload = questions.map((q) => ({
       questionId: q._id,
@@ -86,12 +186,23 @@ const Test: React.FC = () => {
       const data = res.data ?? {};
       setScore(data.score ?? 0);
       setCorrectCount(data.correctAnswers ?? 0);
-      setTotalQuestions(data.totalQuestions ?? questions.length);
+      setSubmissionId(data.submissionId);
       setShowResultModal(true);
+      setToast({ message: "✅ Nộp bài thành công!", type: "success" });
     } catch (err: any) {
       console.error("Lỗi khi nộp bài:", err.response?.data || err);
-      alert("Nộp bài thất bại, vui lòng thử lại!");
+      setToast({
+        message: "❌ Nộp bài thất bại, vui lòng thử lại!",
+        type: "error",
+      });
+      setIsSubmitted(false);
     }
+  };
+
+  // 🔹 Xác nhận nộp bài từ modal
+  const confirmSubmit = () => {
+    setShowConfirmSubmit(false);
+    handleSubmit(true);
   };
 
   const minutes = Math.floor(timeLeft / 60);
@@ -105,19 +216,24 @@ const Test: React.FC = () => {
 
       <div className="timer-fixed">
         Thời gian còn lại:{" "}
-        {minutes.toString().padStart(2, "0")}:{seconds.toString().padStart(2, "0")}
+        {minutes.toString().padStart(2, "0")}:
+        {seconds.toString().padStart(2, "0")}
       </div>
 
       <div className="test-main">
-        {/* 🔸 Danh sách câu hỏi */}
-        <div className="questions-container" style={{ marginRight: questionMarginRight }}>
+        <div
+          className="questions-container"
+          style={{ marginRight: questionMarginRight }}
+        >
           {questions.length === 0 ? (
             <p>Đang tải câu hỏi...</p>
           ) : (
             questions.map((q, idx) => (
               <TestQuestion
                 key={q._id}
-                ref={(el) => { questionRefs.current[idx] = el; }}
+                ref={(el) => {
+                  questionRefs.current[idx] = el;
+                }}
                 index={idx}
                 content={q.text}
                 options={q.answers}
@@ -135,7 +251,6 @@ const Test: React.FC = () => {
           )}
         </div>
 
-        {/* Sidebar / Bottom Grid */}
         <QuestionSidebar
           questions={questions}
           answeredQuestions={answeredQuestions}
@@ -144,12 +259,23 @@ const Test: React.FC = () => {
           mode="test"
           onToggle={() => setIsOpen(!isOpen)}
           onQuestionClick={(idx) => scrollToQuestion(idx)}
-          onSubmit={handleSubmit}
+          onSubmit={() => handleSubmit(false)}
           showSubmitButton={true}
         />
       </div>
 
-      {/* Modal hiển thị điểm */}
+      {/* Modal xác nhận nộp bài */}
+      <ConfirmModal
+        show={showConfirmSubmit}
+        title="Xác nhận nộp bài"
+        message="Bạn có chắc chắn muốn nộp bài kiểm tra này không?"
+        confirmText="Nộp bài"
+        cancelText="Hủy"
+        onConfirm={confirmSubmit}
+        onCancel={() => setShowConfirmSubmit(false)}
+      />
+
+      {/* Modal kết quả */}
       <ConfirmModal
         show={showResultModal}
         title="🎉 Kết quả bài kiểm tra"
@@ -168,8 +294,8 @@ const Test: React.FC = () => {
         onConfirm={() => {
           setShowResultModal(false);
           navigate("/test-review", {
-            state: { quizId, userAnswers, questions, score, correctCount },
-          });          
+            state: { submissionId, topicId, quizId, userAnswers, questions, score, correctCount },
+          });
         }}
         onCancel={() => {
           setShowResultModal(false);
@@ -177,6 +303,16 @@ const Test: React.FC = () => {
           if (topicId) navigate(`/topic/${topicId}`);
         }}
       />
+
+      {/* Toast */}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+          duration={3000}
+        />
+      )}
     </div>
   );
 };
