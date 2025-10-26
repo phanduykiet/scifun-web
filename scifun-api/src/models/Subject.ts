@@ -11,7 +11,7 @@ const SubjectSchema = new Schema<ISubject>({
   name: { type: String, required: true },
   description: { type: String },
   maxTopics: { type: Number, default: 20 },
-  image: { type: String, default: "https://images-na.ssl-images-amazon.com/images/I/51T8OXMiB5L._SX329_BO1,204,203,200_.jpg" }
+  image: { type: String, default: "https://res.cloudinary.com/dglm2f7sr/image/upload/v1761400287/default_gdfbhs.png" }
 });
 
 export default mongoose.model<ISubject>("Subject", SubjectSchema);

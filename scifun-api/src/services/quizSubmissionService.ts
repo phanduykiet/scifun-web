@@ -126,7 +126,7 @@ export const handleSubmitQuizSv = async (payload: SubmitQuizPayload) => {
 // Xem chi tiết bài làm + giải thích chi tiết
 export const getSubmissionDetailSv = async (submissionId: string) => {
   const submission = await Submission.findById(submissionId)
-    .populate("quiz")
+    .populate("quiz","-__v")
     .populate("answers.question");
 
   if (!submission) throw new Error("Không tìm thấy submission");
@@ -168,10 +168,11 @@ export const getResultsSV = async (page: number, limit: number) => {
   // query song song để tăng performance
   const [results, total] = await Promise.all([
     Result.find()
-      .populate("quiz") // populate quiz nếu muốn hiển thị thông tin quiz
+      .populate("quiz", "-__v") 
       .sort({ lastSubmissionAt: -1 })
       .skip(skip)
-      .limit(limit),
+      .limit(limit)
+      .select("-__v"),
     Result.countDocuments(),
   ]);
 

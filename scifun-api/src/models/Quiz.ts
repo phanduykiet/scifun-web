@@ -9,6 +9,7 @@ export interface IQuiz extends Document {
   lastAttemptAt?: Date;      
   favoriteCount: number;
   duration: number;
+  questionCount: number;
 }
 
 const QuizSchema = new Schema<IQuiz>(
@@ -19,7 +20,8 @@ const QuizSchema = new Schema<IQuiz>(
     uniqueUserCount: { type: Number, default: 0, index: true },
     lastAttemptAt: { type: Date, default: null, index: true },
     favoriteCount: { type: Number, default: 0, index: true },
-    duration: { type: Number, required: true, min: 1 }
+    duration: { type: Number, required: true, min: 1 },
+    questionCount: { type: Number, default: 0, min: 0 }
   },
   { timestamps: true }
 );
