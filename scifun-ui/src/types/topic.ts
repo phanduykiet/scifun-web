@@ -1,7 +1,7 @@
 // src/types/topic.ts
 
 export interface Topic {
-    id: string;
+    _id: string;
     name: string;
     description?: string;
     subjectId: string; // ID của môn học mà topic thuộc về

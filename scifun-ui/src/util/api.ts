@@ -3,8 +3,8 @@ import { LoginResponse, UpdateUserData } from "../types/auth";
 import { GetSubjectResponse, GetSubjectByIdResponse } from "../types/subject";
 
 // Đăng ký user
-const createUserApi = (email: string, password: string) => {
-  return axios.post("/api/v1/user/register", { email, password });
+const createUserApi = (email: string, password: string, fullname: string) => {
+  return axios.post("/api/v1/user/register", { email, password, fullname });
 };
 
 // Xác thực OTP
@@ -38,16 +38,27 @@ const getLessonListApi = async (
   );
   return res;
 };
-const updateProfileApi = async (userId: string, data: { fullname: string, avatar: string }) => {
+const updateProfileApi = async (
+  userId: string,
+  data: { fullname: string; avatar?: File; dob?: string; sex?: 0 | 1 }
+) => {
   const token = localStorage.getItem("token");
-  const res = await axios.put(`/api/v1/user/update-user/${userId}`, data, {
+
+  const formData = new FormData();
+  formData.append("fullname", data.fullname);
+  if (data.avatar) formData.append("avatar", data.avatar); // avatar là file
+  if (data.dob) formData.append("dob", data.dob);
+  if (data.sex !== undefined) formData.append("sex", String(data.sex)); // gửi dạng "0" hoặc "1"
+
+  const res = await axios.put(`/api/v1/user/update-user/${userId}`, formData, {
     headers: {
       Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
     },
   });
+
   return res;
 };
+
 
 
 // Quên mật khẩu (gửi OTP hoặc link reset)
@@ -82,12 +93,13 @@ const changePasswordApi = async (
   return res;
 };
 const getTopicsBySubjectApi = async (
-  subjectId: string,
-  page: number = 1,
-  limit: number = 10
+  subjectId?: string,
+  page?: number,
+  limit?: number,
+  search?: string
 ) => {
   const res = await axios.get(`/api/v1/topic/get-topics`, {
-    params: { subjectId, page, limit },
+    params: { subjectId, page, limit, search },
   });
   return res;
 };
@@ -135,6 +147,18 @@ const getSavedQuizzesApi = async (userId: string, topicId?: string) => {
   });
   return res;
 };
+const getVideoLessonApi = async (
+  topicId: string,
+  page?: number,
+  limit?: number
+) => {
+  const res = await axios.get(`/api/v1/video-lesson/list`, {
+    params: { topicId, page, limit },
+  });
+  return res;
+};
 
 export { createUserApi, loginApi, otpVerify, getLessonListApi, updateProfileApi, forgotPasswordApi, resetPasswordApi, changePasswordApi,
-  getTopicsBySubjectApi, getQuizsByTopicApi, getQuestionsByQuizApi, submitQuizApi, saveQuizApi, delSavedQuizApi, getSavedQuizzesApi };
+  getTopicsBySubjectApi, getQuizsByTopicApi, getQuestionsByQuizApi, submitQuizApi, saveQuizApi, delSavedQuizApi, getSavedQuizzesApi, 
+  getVideoLessonApi
+};

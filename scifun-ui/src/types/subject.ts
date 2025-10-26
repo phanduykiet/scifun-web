@@ -1,5 +1,5 @@
 export interface Subject {
-    id: string;
+    _id: string;
     name: string;
     description: string;
     maxTopics: number;
@@ -18,7 +18,7 @@ export interface Subject {
     };
   }
   export interface Topic {
-    id: string;
+    _id: string;
     name: string;
     description?: string;
     subjectId: string;
