@@ -48,40 +48,45 @@ export const getFavoriteQuizzesSv = async (
   limit: number,
   topicId?: string
 ) => {
-  const filter: any = { user: userId };
   const skip = (page - 1) * limit;
 
-  // Build populate options
-  const populateOptions: any = {
+  // Build filter - nếu có topicId, cần query quiz trước
+  let filter: any = { user: userId };
+  
+  if (topicId) {
+    // Tìm tất cả quiz có topic này
+    const quizIds = await Quiz.find({ topic: topicId }).distinct('_id');
+    filter.quiz = { $in: quizIds };
+  }
+
+  // Populate options
+  const populateOptions = {
     path: 'quiz',
+    select: '-__v',
     populate: {
       path: 'topic',
       select: 'name'
     }
   };
 
-  // Nếu có filter theo topic
-  if (topicId) {
-    populateOptions.match = { topic: topicId };
-  }
-
   const [favorites, total] = await Promise.all([
     FavoriteQuiz.find(filter)
       .skip(skip)
       .limit(limit)
       .sort({ createdAt: -1 })
-      .populate(populateOptions),
+      .populate(populateOptions)
+      .select('-__v'),
     FavoriteQuiz.countDocuments(filter)
   ]);
 
-  // Filter out null quiz (nếu topic không match)
+  // Filter out null quiz (phòng trường hợp quiz bị xóa)
   const filteredFavorites = favorites.filter(f => f.quiz !== null);
 
   return {
     page,
     limit,
-    total: topicId ? filteredFavorites.length : total,
-    totalPages: Math.ceil((topicId ? filteredFavorites.length : total) / limit),
+    total,
+    totalPages: Math.ceil(total / limit),
     data: filteredFavorites,
   };
 };

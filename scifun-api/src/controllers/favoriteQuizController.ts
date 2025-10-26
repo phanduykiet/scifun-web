@@ -5,8 +5,8 @@ import * as favoriteQuizService from "../services/favoriteQuizService";
 // Thêm vào yêu thích
 export const addFavoriteQuiz = async (req: Request, res: Response) => {
   try {
-    const { quizId, userId } = req.body; // Lấy cả userId và quizId từ body
-
+    const { quizId } = req.body; // Lấy cả userId và quizId từ body
+    const userId = req.user!.userId;
     // Validate
     if (!userId || !quizId) {
       return res.status(400).json({
@@ -40,7 +40,7 @@ export const addFavoriteQuiz = async (req: Request, res: Response) => {
 // Bỏ yêu thích
 export const removeFavoriteQuiz = async (req: Request, res: Response) => {
   try {
-    const { userId } = req.body; // Lấy từ body
+    const userId = req.user!.userId;
     const { quizId } = req.params; // Lấy từ params
 
     if (!userId) {
@@ -76,7 +76,7 @@ export const getFavoriteQuizzes = async (req: Request, res: Response) => {
   try {
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
-    const userId = req.query.userId as string | undefined;
+    const userId = req.user!.userId;
     const topicId = req.query.topicId as string | undefined;
 
     if (!userId) {
@@ -87,7 +87,7 @@ export const getFavoriteQuizzes = async (req: Request, res: Response) => {
     }
 
     const favorites = await favoriteQuizService.getFavoriteQuizzesSv(
-      userId as string,
+      userId,
       page,
       limit,
       topicId
