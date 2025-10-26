@@ -157,8 +157,12 @@ const getVideoLessonApi = async (
   });
   return res;
 };
+const getAnswersApi = async (submissionId: string) => {
+  const res = await axios.get(`/api/v1/submission/get-submissionDetail/${submissionId}`);
+  return res;
+};
 
 export { createUserApi, loginApi, otpVerify, getLessonListApi, updateProfileApi, forgotPasswordApi, resetPasswordApi, changePasswordApi,
   getTopicsBySubjectApi, getQuizsByTopicApi, getQuestionsByQuizApi, submitQuizApi, saveQuizApi, delSavedQuizApi, getSavedQuizzesApi, 
-  getVideoLessonApi
+  getVideoLessonApi, getAnswersApi
 };

@@ -10,43 +10,49 @@ import VideoCarousel from "../components/layout/VideoCarousel";
 import { FaBookOpen } from "react-icons/fa";
 
 const Topic: React.FC = () => {
-    const { topicId } = useParams<{ topicId: string }>();
-    const [quizzes, setQuizzes] = useState<Quiz[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [videos, setVideos] = useState<{ _id: string; url: string; title?: string }[]>([]);
-    const navigate = useNavigate();
-    const location = useLocation();
-    const topic = location.state as TopicType;
+  const { topicId } = useParams<{ topicId: string }>();
+  const [quizzes, setQuizzes] = useState<Quiz[]>([]);
+  const [topic, setTopic] = useState<TopicType | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [videos, setVideos] = useState<{ _id: string; url: string; title?: string }[]>([]);
+  const navigate = useNavigate();
 
-    useEffect(() => {
-      const fetchVideos = async () => {
-        if (!topicId) return;
-        try {
-          const res = await getVideoLessonApi(topicId, 1, 10); // page 1, limit 10
-          // Giả sử API trả về res.data.data = [{ _id, url, title }, ...]
-          setVideos(res.data.data || []);
-        } catch (err) {
-          console.error("Failed to fetch videos", err);
-        }
-      };
-      fetchVideos();
-    }, [topicId]);
-    
-    useEffect(() => {
-      const fetchQuizzes = async () => {
-        if (!topicId) return;
-        try {
-          setLoading(true);
-          const res = await getQuizsByTopicApi(topicId);
-          setQuizzes(res.data.quizzes || []);
-        } catch (error) {
-          console.error("Failed to fetch quizzes", error);
-        } finally {
-          setLoading(false);
-        }
-      };
-      fetchQuizzes();
-    }, [topicId]);
+  // Lấy video
+  useEffect(() => {
+    const fetchVideos = async () => {
+      if (!topicId) return;
+      try {
+        const res = await getVideoLessonApi(topicId, 1, 10);
+        setVideos(res.data.data || []);
+      } catch (err) {
+        console.error("Failed to fetch videos", err);
+      }
+    };
+    fetchVideos();
+  }, [topicId]);
+
+  // Lấy quiz + thông tin topic
+  useEffect(() => {
+    const fetchQuizzes = async () => {
+      if (!topicId) return;
+      try {
+        setLoading(true);
+        const res = await getQuizsByTopicApi(topicId);
+        const data = res.data;
+
+        setQuizzes(data.quizzes || []);
+
+        // ✅ Nếu API có trả về topic (ví dụ: data.topic hoặc từ data.quizzes[0].topic)
+        const topicInfo = data.topic || data.quizzes?.[0]?.topic;
+        if (topicInfo) setTopic(topicInfo);
+      } catch (error) {
+        console.error("Failed to fetch quizzes", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchQuizzes();
+  }, [topicId]);
   
     return (
       <>
@@ -98,7 +104,7 @@ const Topic: React.FC = () => {
                 <div className="col-md-3 mb-4" key={quiz._id}>
                   <QuizCard 
                     quiz={quiz} 
-                    onClick={() => navigate("/test", { state: { quizId: quiz._id } })} 
+                    onClick={() => navigate("/test", { state: { topicId: quiz.topic._id, quizId: quiz._id, duration: quiz.duration } })} 
                   />
                 </div>
               ))}

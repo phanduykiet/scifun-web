@@ -3,36 +3,41 @@ import "../styles/TestPage.css";
 import TestQuestion from "../components/layout/TestQuestion";
 import QuestionSidebar from "../components/layout/QuestionSidebar";
 import { useLocation, useNavigate } from "react-router-dom";
-import { getQuestionsByQuizApi } from "../util/api";
+import { getQuestionsByQuizApi, getAnswersApi } from "../util/api";
 
 const TestReview: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const { quizId, userAnswers, score, correctCount } =
+  const { submissionId, topicId, quizId, userAnswers, score, correctCount } =
     (location.state as any) || {};
 
   const [questions, setQuestions] = useState<any[]>([]);
   const [isOpen, setIsOpen] = useState(true);
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+  const [answers, setAnswers] = useState<any[]>([]);
   const questionRefs = useRef<Array<HTMLDivElement | null>>([]);
 
   const isMobile = windowWidth <= 900;
   const questionMarginRight = !isMobile ? (isOpen ? "280px" : "60px") : "0";
 
-  // 🔹 Lấy câu hỏi từ API
   useEffect(() => {
     if (!quizId) return;
-    const fetchQuestions = async () => {
+    const fetchData = async () => {
       try {
-        const res = await getQuestionsByQuizApi(quizId);
-        setQuestions(res.data.data);
+        // Lấy câu hỏi
+        const qRes = await getQuestionsByQuizApi(quizId);
+        setQuestions(qRes.data.data);
+  
+        // Lấy đáp án (có thể chứa giải thích)
+        const aRes = await getAnswersApi(submissionId);
+        setAnswers(aRes.data.answers);
       } catch (err) {
-        console.error("Lỗi tải câu hỏi:", err);
+        console.error("Lỗi tải dữ liệu review:", err);
       }
     };
-    fetchQuestions();
-  }, [quizId]);
+    fetchData();
+  }, [quizId]);  
 
   // 🔹 Resize
   useEffect(() => {
@@ -97,8 +102,7 @@ const TestReview: React.FC = () => {
           </div>
           <button
             onClick={() => {
-              const topicId = questions[0]?.quiz?.topic;
-              if (topicId) navigate(`/topic/${topicId}`);
+              navigate(`/topic/${topicId}`);
             }}
             style={{
               backgroundColor: "#f39c12",
@@ -126,6 +130,7 @@ const TestReview: React.FC = () => {
             questions.map((q, idx) => {
               const selectedAnswerId = userAnswers?.[q._id];
               const correctAnswerId = q.answers.find((a: any) => a.isCorrect)?._id;
+              const explanation = answers.find((a) => a.questionId === q._id)?.explanation || "";
 
               return (
                 <TestQuestion
@@ -137,6 +142,7 @@ const TestReview: React.FC = () => {
                   selectedAnswer={selectedAnswerId}
                   correctAnswer={correctAnswerId}
                   mode="review"
+                  explanation={explanation}
                 />
               );
             })
