@@ -50,7 +50,8 @@ export const getQuestionsSv = async (
       .skip(skip)
       .limit(limit)
       .sort({ createdAt: -1 })
-      .populate("quiz"),
+      .populate("quiz" , "-__v")
+      .select("-__v"),
     Question.countDocuments(filter),
   ]);
 
@@ -67,7 +68,7 @@ export const getQuestionsSv = async (
 export const getQuestionByIdSv = async (_id: string) => {
   if (!_id) throw new Error("ID câu hỏi không hợp lệ");
 
-  const question = await Question.findById(_id).populate("quiz");
+  const question = await Question.findById(_id).populate("quiz", "-__v").select("-__v");
 
   if (!question) throw new Error("Câu hỏi không tồn tại");
   return question;
