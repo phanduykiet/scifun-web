@@ -58,9 +58,9 @@ export const getTopicsSv = async (
   const filters: any[] = [];
 
   // lọc theo subject nếu có
-  filters.push({ term: { "subject._id": subjectId } });
-
-
+  if(subjectId){
+    filters.push({ term: { "subject._id": subjectId } });
+  }
 
   // tìm kiếm theo tên
   if (search && search.trim() !== "") {
