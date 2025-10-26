@@ -25,39 +25,53 @@ export default function Login() {
     e.preventDefault();
     try {
       const res = await loginApi(email, password);
+      console.log("user: ", res);
 
-      localStorage.setItem("token", res.token);
-      localStorage.setItem(
-        "user",
-        JSON.stringify({
-          _id: res.data._id,
-          email: res.data.email,
-          fullname: res.data.fullname,
-          avatar: res.data.avatar,
-        })
-      );
+      // ✅ Backend trả về res là object chứa _id, email, fullname...
+      // KHÔNG phải res.data nữa
+      const userData = res as any; // Tạm dùng any để tránh lỗi type
+      console.log("userData: ", userData);
 
+      // Parse sex từ backend (backend trả về 0 hoặc 1)
+      let sexValue: 0 | 1 | undefined = undefined;
+      if (userData.data.sex === 0 || userData.data.sex === "0") {
+        sexValue = 0;
+      } else if (userData.data.sex === 1 || userData.data.sex === "1") {
+        sexValue = 1;
+      }
+
+      const user = {
+        _id: userData.data._id,
+        email: userData.data.email,
+        fullname: userData.data.fullname,
+        avatar: userData.data.avatar || undefined,
+        dob: userData.data.dob || undefined, // ISO string từ backend
+        sex: sexValue,
+      };
+      console.log("userInfo: ", user);
+
+      // ⚠️ Lưu ý: token nằm ở đâu? Nếu backend trả res.token thì:
+      const token = (res as any).token;
+      if (token) {
+        localStorage.setItem("token", token);
+      }
+      
+      localStorage.setItem("user", JSON.stringify(user));
+
+      // Cập nhật context
       setAuth({
         isAuthenticated: true,
-        user: {
-          _id: res.data._id,
-          email: res.data.email,
-          fullname: res.data.fullname,
-          avatar: res.data.avatar,
-        },
+        user,
       });
 
-      // ✅ Hiển thị Toast thành công
       setToast({
         message: "Đăng nhập thành công!",
-        subtitle: `Chào mừng ${res.data.fullname}`,
+        subtitle: `Chào mừng ${user.fullname}`,
         type: "success",
       });
 
-      // Chờ 1.5 giây rồi chuyển trang
       setTimeout(() => navigate("/"), 1500);
     } catch (err: any) {
-      // ✅ Hiển thị Toast thất bại
       setToast({
         message: "Đăng nhập thất bại!",
         subtitle: err.response?.data?.message || "Vui lòng thử lại.",
@@ -67,7 +81,7 @@ export default function Login() {
   };
 
   const cardWidth = 400;
-  const cardHeight = 380;
+  const cardHeight = 520;
 
   return (
     <div
@@ -76,66 +90,83 @@ export default function Login() {
         minHeight: "100vh",
         justifyContent: "center",
         alignItems: "center",
-        gap: "40px",
+        backgroundColor: "#d1e7dd",
       }}
     >
-      {/* Bên trái: ảnh */}
       <div
         style={{
-          width: cardWidth,
-          height: cardHeight,
+          display: "flex",
           borderRadius: 12,
           overflow: "hidden",
           boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+          backgroundColor: "#fff",
         }}
       >
-        <img
-          src="https://free.vector6.com/wp-content/uploads/2021/03/0000000643-tre-em-hoc-tap-hoc-bai-giao-duc-mam-non-tai-hinh-png-125.png"
-          alt="Login Illustration"
+        {/* Bên trái - Ảnh */}
+        <div style={{ width: cardWidth, height: cardHeight }}>
+          <img
+            src="https://png.pngtree.com/thumb_back/fh260/background/20210902/pngtree-hand-gesture-handshake-cooperation-technology-business-photography-map-map-business-people-image_789752.jpg"
+            alt="Login Illustration"
+            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+          />
+        </div>
+
+        {/* Bên phải - Form */}
+        <div
+          className="p-4"
           style={{
-            width: "100%",
-            height: "100%",
-            objectFit: "cover",
+            width: cardWidth,
+            height: cardHeight,
+            display: "flex",
+            flexDirection: "column",
           }}
-        />
-      </div>
-
-      {/* Bên phải: form */}
-      <div style={{ width: cardWidth }}>
-        <div className="card p-4 rounded">
+        >
           <h4 className="text-center mb-3">Đăng nhập</h4>
-          <form onSubmit={handleSubmit}>
-            <Input
-              label="Email"
-              type="email"
-              placeholder="Nhập email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-            <Input
-              label="Mật khẩu"
-              type="password"
-              placeholder="Nhập mật khẩu"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-            <Button type="submit" style={{ width: "100%", marginTop: "10px" }}>
-              Đăng nhập
-            </Button>
-          </form>
+          <form
+            onSubmit={handleSubmit}
+            style={{
+              flex: 1,
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              gap: "20px",
+            }}
+          >
+            <div>
+              <Input
+                label="Email"
+                type="email"
+                placeholder="Nhập email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+              <Input
+                label="Mật khẩu"
+                type="password"
+                placeholder="Nhập mật khẩu"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
 
-          <div style={{ marginTop: 12, textAlign: "center" }}>
-            <Link to="/forgotpassword">Quên mật khẩu?</Link>
-          </div>
-          <div style={{ marginTop: 8, textAlign: "center" }}>
-            Bạn chưa có tài khoản? <Link to="/register">Đăng ký ngay</Link>
-          </div>
+            <div>
+              <Button type="submit" style={{ width: "100%", marginTop: "10px" }}>
+                Đăng nhập
+              </Button>
+
+              <div style={{ marginTop: 12, textAlign: "center" }}>
+                <Link to="/forgotpassword">Quên mật khẩu?</Link>
+              </div>
+              <div style={{ marginTop: 8, textAlign: "center" }}>
+                Bạn chưa có tài khoản? <Link to="/register">Đăng ký ngay</Link>
+              </div>
+            </div>
+          </form>
         </div>
       </div>
 
-      {/* ✅ Hiển thị Toast nếu có */}
       {toast && (
         <Toast
           message={toast.message}

@@ -13,6 +13,7 @@ const Lessons: React.FC = () => {
     setLoading(true);
     try {
       const json: GetSubjectResponse = await getLessonListApi("1", "3", "");
+      console.log("Môn học: ", json.data);
       setSubjects(json.data.subjects ?? []);
     } catch (err) {
       console.error("Lỗi khi gọi API:", err);
@@ -73,13 +74,13 @@ const Lessons: React.FC = () => {
         {subjects.map((subject) => (
           <div
             className="col-md-4 mb-4 d-flex justify-content-center"
-            key={subject.id}
+            key={subject._id}
           >
             <LessonCard
               title={subject.name}
               image={subject.image}
               onDetail={() => 
-                navigate(`/subject/${subject.id}`, { state: subject }) // ✅ Truyền state
+                navigate(`/subject/${subject._id}`, { state: subject }) // ✅ Truyền state
               }
             />
           </div>

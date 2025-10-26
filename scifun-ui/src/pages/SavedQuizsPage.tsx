@@ -35,14 +35,14 @@ export default function SavedQuizsPage() {
         
         // map sang định dạng để hiển thị
         const quizzes = data?.data?.data?.map((item: any) => ({
-          id: item.quiz?._id || item.quizId,
-          name: item.quiz?.title || "Không có tiêu đề",
-          description: item.quiz?.description || "",
-          questions: item.quiz?.questionCount || 0,
-          duration: item.quiz?.durationMinutes || 0,
+          id: item.quiz._id || item.quizId,
+          name: item.quiz.title || "Không có tiêu đề",
+          description: item.quiz.description || "",
+          questions: item.quiz.questionCount || 0,
+          duration: item.quiz.durationMinutes || 0,
           savedDate: new Date(item.createdAt).toLocaleDateString("vi-VN"),
-          category: item.quiz?.topic?.name || item.topicId?.name || "Khác",
-        }));
+          category: item.quiz.topic?.name || "Khác",
+        }));        
         
         setSavedTests(quizzes || []);
       } catch (err) {

@@ -43,10 +43,10 @@ const QuizCard: React.FC<QuizCardProps> = ({ quiz, onClick }) => {
     const fetchQuizStats = async () => {
       try {
         setLoading(true);
-        const res = await getQuestionsByQuizApi(quiz.id);
+        const res = await getQuestionsByQuizApi(quiz._id);
         const questions = res.data.data;
         setQuestionsCount(questions.length);
-        setDurationMinutes(quiz.durationMinutes ?? 0);
+        setDurationMinutes(quiz.duration ?? 0);
       } catch (err) {
         console.error("Failed to fetch quiz stats:", err);
       } finally {
@@ -54,24 +54,24 @@ const QuizCard: React.FC<QuizCardProps> = ({ quiz, onClick }) => {
       }
     };
     fetchQuizStats();
-  }, [quiz.id, quiz.durationMinutes]);
+  }, [quiz._id, quiz.duration]);
 
   // ✅ Lấy danh sách quiz đã lưu để fill màu bookmark sẵn
   useEffect(() => {
     const fetchSaved = async () => {
       if (!userId) return;
       try {
-        const res = await getSavedQuizzesApi(userId, quiz.topic);
+        const res = await getSavedQuizzesApi(userId, quiz.topic._id);
         const savedQuizzes = res.data?.data?.map(
           (item: any) => item.quiz?._id ?? item.quizId
         );
-        if (savedQuizzes?.includes(quiz.id)) setBookmarked(true);
+        if (savedQuizzes?.includes(quiz._id)) setBookmarked(true);
       } catch (err) {
         console.error("Lỗi khi lấy danh sách quiz đã lưu:", err);
       }
     };
     fetchSaved();
-  }, [quiz.id, userId]);
+  }, [quiz._id, userId]);
 
   // ✅ Lưu hoặc xóa quiz khỏi kho
   const handleBookmark = async () => {
@@ -85,14 +85,14 @@ const QuizCard: React.FC<QuizCardProps> = ({ quiz, onClick }) => {
 
     try {
       if (bookmarked) {
-        await delSavedQuizApi(quiz.id, userId);
+        await delSavedQuizApi(quiz._id, userId);
         setBookmarked(false);
         setToast({
           message: "Đã xóa khỏi kho bài kiểm tra!",
           type: "info",
         });
       } else {
-        await saveQuizApi(userId, quiz.id);
+        await saveQuizApi(userId, quiz._id);
         setBookmarked(true);
         setToast({
           message: "Đã thêm vào kho bài kiểm tra!",
@@ -167,7 +167,7 @@ const QuizCard: React.FC<QuizCardProps> = ({ quiz, onClick }) => {
 
           {bookmarked ? (
             <FaBookmark
-              size={22}
+              size={24}
               className="text-warning"
               style={{ cursor: "pointer" }}
               onClick={handleBookmark}
@@ -175,7 +175,7 @@ const QuizCard: React.FC<QuizCardProps> = ({ quiz, onClick }) => {
             />
           ) : (
             <CiBookmark
-              size={28}
+              size={24}
               className="text-warning"
               style={{ cursor: "pointer" }}
               onClick={handleBookmark}

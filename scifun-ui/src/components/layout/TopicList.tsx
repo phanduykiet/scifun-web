@@ -93,13 +93,13 @@ const TopicList: React.FC = () => {
         >
           {topics.map((topic) => (
             <div
-              key={topic.id}
+              key={topic._id}
               style={{ flex: `0 0 calc(${100 / topicsPerView}% - 1rem)` }}
             >
               <TopicCard
                 topic={topic}
                 onClick={() =>
-                  navigate(`/topic/${topic.id}`, {
+                  navigate(`/topic/${topic._id}`, {
                     state: {
                       ...topic,
                       subjectId: topic.subjectId,

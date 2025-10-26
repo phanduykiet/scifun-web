@@ -1,8 +1,12 @@
+export interface TopicMini {
+  _id: string;
+  name: string;
+}
 export interface Quiz {
-    id: string;
+    _id: string;
     title: string;
     description?: string;
-    topic: string;
+    topic: TopicMini;
     questionsCount?: number;  // số câu hỏi
-    durationMinutes?: number; // thời gian làm bài
+    duration?: number; // thời gian làm bài
   }

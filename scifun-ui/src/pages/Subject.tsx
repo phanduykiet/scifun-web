@@ -7,18 +7,11 @@ import { Quiz } from "../types/quiz";
 import {
   getQuizsByTopicApi,
   getTopicsBySubjectApi,
+  getLessonListApi
 } from "../util/api";
 import TopicCard from "../components/layout/TopicCard";
 import QuizCard from "../components/layout/QuizCard";
 import Header from "../components/layout/Header";
-
-// === API riêng cho môn học ===
-const getLessonListApi = async (page: string, limit: string, search: string) => {
-  const res = await axios.get(`/api/v1/subject/get-subjects`, {
-    params: { page, limit, search },
-  });
-  return res.data;
-};
 
 const SubjectPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -41,7 +34,8 @@ const SubjectPage: React.FC = () => {
   const fetchSubjects = async () => {
     try {
       const res = await getLessonListApi("1", "50", "");
-      setSubjects(res.data.subjects || res.subjects || []); // fallback cho định dạng khác
+      console.log("Môn học: ", res);
+      setSubjects(res.data.subjects || []); // fallback cho định dạng khác
     } catch (err: any) {
       notification.error({
         message: "Lỗi tải danh sách môn học",
@@ -63,6 +57,8 @@ const SubjectPage: React.FC = () => {
         getTopicsBySubjectApi(subjectId, 1, 20),
         getQuizsByTopicApi(topicId || subjectId, 1, 20),
       ]);
+      console.log("Topic: ", topicRes);
+      console.log("Quiz: ", quizRes);
   
       const allTopics = topicRes.data.topics ?? [];
       const allQuizzes = quizRes.data.quizzes ?? [];
@@ -105,7 +101,7 @@ const SubjectPage: React.FC = () => {
       t.name.toLowerCase().includes(searchText.toLowerCase())
     )
     .filter((t) =>
-      selectedTopic ? t.id === selectedTopic : true
+      selectedTopic ? t._id === selectedTopic : true
     );
 
   const filteredQuizzes = quizzes.filter((q) =>
@@ -294,7 +290,7 @@ const SubjectPage: React.FC = () => {
           >
             <option value="">Tất cả chủ đề</option>
             {topics.map((t) => (
-              <option key={t.id} value={t.id} style={{ color: "#333", background: "white" }}>
+              <option key={t._id} value={t._id} style={{ color: "#333", background: "white" }}>
                 {t.name}
               </option>
             ))}
@@ -321,11 +317,11 @@ const SubjectPage: React.FC = () => {
             <p>Không tìm thấy chủ đề phù hợp.</p>
           ) : (
             filteredTopics.map((topic) => (
-              <div className="col-md-4 mb-4" key={topic.id}>
+              <div className="col-md-4 mb-4" key={topic._id}>
                 <TopicCard
                   topic={topic}
                   onClick={() =>
-                    navigate(`/topic/${topic.id}`, {
+                    navigate(`/topic/${topic._id}`, {
                       state: {
                         ...topic,
                         subjectId: selectedSubject,
