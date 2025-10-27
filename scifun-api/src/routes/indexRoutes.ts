@@ -32,7 +32,7 @@ router.delete("/delete-user/:_id", authMiddleware, checkRole("ADMIN"), deleteUse
 router.post("/subject/create-subject", authMiddleware, checkRole("ADMIN"), upload.single("image"), createSubject);
 router.get("/subject/get-subjects", getSubjects);
 router.get("/subject/get-subjectById/:_id", getSubjectById)
-router.put("/subject/update-subject/:_id", authMiddleware, checkRole("ADMIN"), updateSubject);
+router.put("/subject/update-subject/:_id", authMiddleware, checkRole("ADMIN"), upload.single("image"), updateSubject);
 router.delete("/subject/delete-subject/:_id", authMiddleware, checkRole("ADMIN"), deleteSubject);
 
 // Topic routes

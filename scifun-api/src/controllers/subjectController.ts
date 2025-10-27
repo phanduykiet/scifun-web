@@ -7,22 +7,21 @@ export const createSubject = async (req: Request, res: Response) => {
   try {
     const data = req.body;
     // Nếu có file ảnh (từ form-data)
-        if (req.file) {
-          const uploadResult = await new Promise((resolve, reject) => {
-            const upload = cloudinary.uploader.upload_stream(
-              { folder: "Subject" },
-              (error, result) => {
-                if (error) reject(error);
-                else resolve(result);
-              }
-            );
-            upload.end(req.file.buffer); // đưa buffer ảnh vào stream
-          });
-    
-          data.image = (uploadResult as any).secure_url;
-        }
+    if (req.file) {
+      const uploadResult = await new Promise((resolve, reject) => {
+        const upload = cloudinary.uploader.upload_stream(
+          { folder: "Subject" },
+          (error, result) => {
+            if (error) reject(error);
+            else resolve(result);
+          }
+        );
+        upload.end(req.file.buffer); // đưa buffer ảnh vào stream
+      });
+
+      data.image = (uploadResult as any).secure_url;
+    }
     const subject = await subjectService.createSubjectSv(data);
-    await subjectService.syncToES();
     res.status(200).json({
       status: 200,
       message: "Tạo môn học thành công",
@@ -40,8 +39,23 @@ export const createSubject = async (req: Request, res: Response) => {
 export const updateSubject = async (req: Request, res: Response) => {
   try {
     const { _id } = req.params;
-    const subject = await subjectService.updateSubjectSv(_id, req.body);
-    await subjectService.syncToES();
+    const data = req.body;
+    // Nếu có file ảnh (từ form-data)
+    if (req.file) {
+      const uploadResult = await new Promise((resolve, reject) => {
+        const upload = cloudinary.uploader.upload_stream(
+          { folder: "Subject" },
+          (error, result) => {
+            if (error) reject(error);
+            else resolve(result);
+          }
+        );
+        upload.end(req.file.buffer); // đưa buffer ảnh vào stream
+      });
+
+      data.image = (uploadResult as any).secure_url;
+    }
+    const subject = await subjectService.updateSubjectSv(_id, data);
     res.status(200).json({
       status: 200,
       message: "Cập nhật môn học thành công",
@@ -60,7 +74,6 @@ export const deleteSubject = async (req: Request, res: Response) => {
   try {
     const { _id } = req.params;
     await subjectService.deleteSubjectSv(_id);
-    await subjectService.syncToES();
     res.status(200).json({ 
         status: 200,
         message: "Xóa môn học thành công" 

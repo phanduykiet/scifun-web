@@ -7,7 +7,16 @@ const QUIZ_INDEX = "quiz";
 export const createQuizSv = async (data: Partial<IQuiz>) => {
   const quiz = new Quiz(data);
   await quiz.save();
-  return quiz.populate("topic"); // trả về quiz kèm thông tin topic
+  await quiz.populate({
+    path: "topic",
+    populate: {
+      path: "subject",
+    },
+  });
+  // Sync lên ES
+  await syncOneQuizToES(quiz._id.toString());
+
+  return quiz;
 };
 
 // Sửa Quiz
@@ -19,12 +28,17 @@ export const updateQuizSv = async (_id: string, updateData: Partial<IQuiz>) => {
     _id,
     { $set: updateData },
     { new: true, runValidators: true }
-  );
+  ).populate({
+    path: "topic",
+    populate: {
+      path: "subject",
+    },
+  });
 
-  if (!updatedQuiz) throw new Error("Quiz không tồn tại");
+  if (!quiz) throw new Error("Quiz không tồn tại");
+  await syncOneQuizToES(quiz._id.toString());
 
-  // Bước 2: Tìm lại quiz đã cập nhật và populate topic
-  return await Quiz.findById(updatedQuiz._id).populate("topic");
+  return quiz;
 };
 
 // Xóa Quiz
@@ -34,6 +48,8 @@ export const deleteQuizSv = async (_id: string) => {
   const quiz = await Quiz.findByIdAndDelete(_id);
   if (!quiz) throw new Error("Quiz không tồn tại");
 
+  // Xóa khỏi ES
+  await deleteOneQuizFromES(_id);
   return { message: "Xóa thành công", quiz };
 };
 
@@ -47,11 +63,8 @@ export const getQuizzesSv = async (
   const filters: any[] = [];
   const must: any[] = [];
 
-  // Lọc theo topicId (ObjectId dạng string)
   if (topicId) {
-    // nếu mapping topic là keyword thì nên dùng "topic.keyword"
-    filters.push({ term: { topic: topicId } });
-    // hoặc: filters.push({ term: { "topic.keyword": topicId } });
+    filters.push({ term: { "topic._id": topicId } });
   }
 
   // Search theo tên
@@ -228,36 +241,75 @@ export const getTrendingQuizzesSv = async (
   };
 };
 
-// Tạm thời
-export const syncToES = async (): Promise<void> => {
+// Sync 1 quiz lên ES
+export const syncOneQuizToES = async (quizId: string) => {
   try {
-    // Xoá hết dữ liệu cũ trong index
-    await esClient.deleteByQuery({
-      index: QUIZ_INDEX,
-      body: {
-        query: {
-          match_all: {}, // xoá tất cả documents
+    const quiz = await Quiz.findById(quizId)
+      .populate({
+        path: "topic",
+        populate: {
+          path: "subject",
         },
-      },
-    } as any); // ép kiểu any để TS không bắt lỗi
+      })
+      .lean();
 
-    // Lấy dữ liệu từ Mongo
-    const quizzes = await Quiz.find().lean();
-
-    for (const quiz of quizzes) {
-      const { _id, __v, ...doc } = quiz;
-
-      await esClient.index({
-        index: QUIZ_INDEX,
-        id: _id.toString(),
-        document: doc,
-        refresh: true,
-      });
+    if (!quiz) {
+      throw new Error("Quiz không tồn tại");
     }
 
-    console.log("✅ Sync to Elasticsearch completed!");
+    const topic = quiz.topic as any;
+    const subject = topic?.subject as any;
+
+    const esDocument = {
+      title: quiz.title,
+      description: quiz.description || "",
+      duration: quiz.duration,
+      questionCount: quiz.questionCount,
+      uniqueUserCount: quiz.uniqueUserCount || 0,
+      favoriteCount: quiz.favoriteCount || 0,
+      lastAttemptAt: quiz.lastAttemptAt || null,
+      topic: topic
+        ? {
+            _id: topic._id.toString(),
+            name: topic.name || "",
+            description: topic.description || "",
+            subject: subject
+              ? {
+                  _id: subject._id.toString(),
+                  name: subject.name || "",
+                  code: subject.code || "",
+                  description: subject.description || "",
+                  image: subject.image || "",
+                }
+              : null,
+          }
+        : null,
+    };
+
+    await esClient.index({
+      index: QUIZ_INDEX,
+      id: quizId,
+      document: esDocument,
+      refresh: true,
+    });
   } catch (error) {
-    console.error("❌ Error syncing:", error);
     throw error;
+  }
+};
+
+// Xóa 1 quiz khỏi ES
+export const deleteOneQuizFromES = async (quizId: string) => {
+  try {
+    await esClient.delete({
+      index: QUIZ_INDEX,
+      id: quizId,
+      refresh: true,
+    });
+  } catch (error: any) {
+    if (error.meta?.statusCode === 404) {
+      throw new Error("Quiz không tồn tại trong ES");
+    } else {
+      throw error;
+    }
   }
 };

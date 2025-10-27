@@ -7,8 +7,12 @@ const TOPIC_INDEX = "topic";
 export const createTopicSv = async (data: Partial<ITopic>) => {
   const topic = new Topic(data);
   await topic.save();
-  await syncToES();
-  return topic.populate("subject"); // populate để trả luôn thông tin Subject
+  // Populate để trả về thông tin đầy đủ
+  await topic.populate("subject");
+  // Sync lên ES
+  await syncOneTopicToES(topic._id.toString());
+  
+  return topic;
 };
 
 // Sửa Topic
@@ -25,6 +29,9 @@ export const updateTopicSv = async (
   ).populate("subject");
 
   if (!topic) throw new Error("Topic không tồn tại");
+  // Sync lên ES
+  await syncOneTopicToES(topic._id.toString());
+  
   return topic;
 };
 
@@ -34,7 +41,9 @@ export const deleteTopicSv = async (_id: string) => {
 
   const topic = await Topic.findByIdAndDelete(_id);
   if (!topic) throw new Error("Topic không tồn tại");
-
+  // Xóa khỏi ES
+  await deleteOneTopicFromES(_id);
+  
   return { message: "Xóa thành công", topic };
 };
 
@@ -49,8 +58,8 @@ export const getTopicsSv = async (
   const filters: any[] = [];
 
   // lọc theo subject nếu có
-  if (subjectId) {
-    filters.push({ term: { "subject.keyword": subjectId } });
+  if(subjectId){
+    filters.push({ term: { "subject._id": subjectId } });
   }
 
   // tìm kiếm theo tên
@@ -149,36 +158,54 @@ export const getTopicByIdSv = async (_id: string) => {
   return topic;
 };
 
-// Tạm thời
-export const syncToES = async (): Promise<void> => {
-  try {
-    // Xoá hết dữ liệu cũ trong index
-    await esClient.deleteByQuery({
-      index: TOPIC_INDEX,
-      body: {
-        query: {
-          match_all: {}, // xoá tất cả documents
-        },
-      },
-    } as any); // ép kiểu any để TS không bắt lỗi
+  // Sync 1 topic lên ES (dùng cho create và update)
+  export const syncOneTopicToES = async (topicId: string) => {
+    try {
+      const topic = await Topic.findById(topicId).populate('subject').lean();
+      if (!topic) {
+        throw new Error("Topic không tồn tại");
+      }
 
-    // Lấy dữ liệu từ Mongo
-    const topics = await Topic.find().lean();
-
-    for (const topic of topics) {
-      const { _id, __v, ...doc } = topic;
+      const subject = topic.subject as any;
+      
+      const esDocument = {
+        name: topic.name,
+        description: topic.description || "",
+        subject: subject ? {
+          _id: subject._id.toString(),
+          name: subject.name || "",
+          code: subject.code || "",
+          description: subject.description || "",
+          image: subject.image || ""
+        } : null
+      };
 
       await esClient.index({
         index: TOPIC_INDEX,
-        id: _id.toString(),
-        document: doc,
-        refresh: true,
+        id: topicId,
+        document: esDocument,
+        refresh: true
       });
-    }
 
-    console.log("✅ Sync to Elasticsearch completed!");
-  } catch (error) {
-    console.error("❌ Error syncing:", error);
-    throw error;
-  }
-};
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  // Xóa 1 topic khỏi ES
+  export const deleteOneTopicFromES = async (topicId: string) => {
+    try {
+      await esClient.delete({
+        index: TOPIC_INDEX,
+        id: topicId,
+        refresh: true
+      });
+    } catch (error: any) {
+      // Nếu document không tồn tại trong ES thì bỏ qua
+      if (error.meta?.statusCode === 404) {
+        throw new Error("Topic không tồn tại trong ES");
+      } else {
+        throw error;
+      }
+    }
+  };
