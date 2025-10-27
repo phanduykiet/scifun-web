@@ -35,10 +35,11 @@ export const updateQuizSv = async (_id: string, updateData: Partial<IQuiz>) => {
     },
   });
 
-  if (!quiz) throw new Error("Quiz không tồn tại");
-  await syncOneQuizToES(quiz._id.toString());
+  if (!updatedQuiz) throw new Error("Quiz không tồn tại");
+  // Sync lên ES
+  await syncOneQuizToES(updatedQuiz._id.toString());
 
-  return quiz;
+  return updatedQuiz;
 };
 
 // Xóa Quiz
