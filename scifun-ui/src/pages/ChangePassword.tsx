@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { Input, Button, Card, Form, Modal } from "antd";
+import { Button, Card, Form, Modal } from "antd";
 import { changePasswordApi } from "../util/api";
 import { useNavigate } from "react-router-dom";
+import Input from "../components/ui/Input"; // ✅ dùng Input custom
 
 export default function ChangePassword() {
   const [loading, setLoading] = useState(false);
-  const [modal, contextHolder] = Modal.useModal(); // 👈 cần hook này
+  const [modal, contextHolder] = Modal.useModal();
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const navigate = useNavigate();
 
@@ -31,7 +32,6 @@ export default function ChangePassword() {
         values.confirmPassword
       );
 
-      // ✅ Hiện modal sau khi đổi mật khẩu
       modal.success({
         title: "Đổi mật khẩu",
         content: res.data?.message || "Đổi mật khẩu thành công!",
@@ -58,7 +58,7 @@ export default function ChangePassword() {
         padding: "20px",
       }}
     >
-      {contextHolder} {/* 👈 bắt buộc để modal hiển thị */}
+      {contextHolder}
       <Card title="Đổi mật khẩu" style={{ width: 400 }}>
         <Form layout="vertical" onFinish={handleSubmit}>
           <Form.Item
@@ -66,7 +66,7 @@ export default function ChangePassword() {
             name="currentPassword"
             rules={[{ required: true, message: "Vui lòng nhập mật khẩu hiện tại" }]}
           >
-            <Input.Password />
+            <Input type="password" placeholder="Nhập mật khẩu hiện tại" rounded />
           </Form.Item>
 
           <Form.Item
@@ -74,7 +74,11 @@ export default function ChangePassword() {
             name="newPassword"
             rules={[{ required: true, message: "Vui lòng nhập mật khẩu mới" }]}
           >
-            <Input.Password />
+            <Input
+              type="password"
+              placeholder="Mật khẩu mới (ít nhất 8 ký tự, có chữ hoa, số)"
+              rounded
+            />
           </Form.Item>
 
           <Form.Item
@@ -82,7 +86,7 @@ export default function ChangePassword() {
             name="confirmPassword"
             rules={[{ required: true, message: "Vui lòng xác nhận mật khẩu mới" }]}
           >
-            <Input.Password />
+            <Input type="password" placeholder="Nhập lại mật khẩu mới" rounded />
           </Form.Item>
 
           <Button type="primary" htmlType="submit" block loading={loading} danger>

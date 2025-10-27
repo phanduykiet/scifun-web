@@ -1,14 +1,15 @@
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { resetPasswordApi } from "../util/api";
-import { notification, Input, Button, Card } from "antd";
+import { notification, Button, Card } from "antd";
+import Input from "../components/ui/Input"; // ✅ dùng Input custom
 
 export default function ResetPassword() {
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
   const location = useLocation();
 
-  // ✅ Nhận email từ OTP page
+  // Nhận email từ OTP page
   const email = location.state?.email || "";
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -46,11 +47,13 @@ export default function ResetPassword() {
       <Card title="Đặt lại mật khẩu" style={{ width: 400 }}>
         <form onSubmit={handleSubmit}>
           <div style={{ marginBottom: 16 }}>
-            <label>Mật khẩu mới</label>
-            <Input.Password
+            <Input
+              label="Mật khẩu mới"
+              type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              required
+              placeholder="Nhập mật khẩu mới"
+              rounded
             />
           </div>
           <Button type="primary" htmlType="submit" block>

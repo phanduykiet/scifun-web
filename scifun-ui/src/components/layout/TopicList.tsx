@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import TopicCard from "./TopicCard";
 import { getLessonListApi, getTopicsBySubjectApi } from "../../util/api";
@@ -79,6 +79,9 @@ const TopicList: React.FC = () => {
         >
           Ôn tập theo chủ đề
         </h3>
+        <Link to="/subject/" className="text-decoration-none text-success fw-semibold">
+          Xem tất cả →
+        </Link>
       </div>
 
       {/* Carousel danh sách chủ đề */}

@@ -17,10 +17,11 @@ const Input: React.FC<InputProps> = ({
   style,
   type,
   onHintChange,
+  disabled,
   ...rest
 }) => {
   const [showPassword, setShowPassword] = useState(false);
-  const [hintText, setHintText] = useState<string | null>(null);
+  const [hintText, setHintText] = useState<string | null>(hint || null);
   const [touched, setTouched] = useState(false);
 
   const isPassword = type === "password";
@@ -34,7 +35,7 @@ const Input: React.FC<InputProps> = ({
       if (value && !value.includes("@gmail.com")) {
         setHintText("Email phải có đuôi @gmail.com");
       } else {
-        setHintText(null);
+        setHintText(hint || null);
       }
     }
 
@@ -47,14 +48,13 @@ const Input: React.FC<InputProps> = ({
       } else if (value && !/[0-9]/.test(value)) {
         setHintText("Mật khẩu phải chứa ít nhất 1 số");
       } else {
-        setHintText(null);
+        setHintText(hint || null);
       }
     }
 
     if (rest.onChange) rest.onChange(e);
   };
 
-  // ✅ Báo cho cha biết khi nào có hint lỗi
   useEffect(() => {
     if (onHintChange) {
       onHintChange(!!hintText);
@@ -63,9 +63,7 @@ const Input: React.FC<InputProps> = ({
 
   return (
     <div style={{ display: "flex", flexDirection: "column", marginBottom: "15px" }}>
-      {label && (
-        <label style={{ marginBottom: "5px", fontWeight: "bold" }}>{label}</label>
-      )}
+      {label && <label style={{ marginBottom: "5px", fontWeight: "bold" }}>{label}</label>}
 
       <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
         <input
@@ -73,6 +71,7 @@ const Input: React.FC<InputProps> = ({
           type={isPassword && showPassword ? "text" : type}
           onChange={handleChange}
           onBlur={() => setTouched(true)}
+          disabled={disabled}
           style={{
             padding: isPassword ? "10px 40px 10px 12px" : "10px 12px",
             border: error ? "1px solid red" : "1px solid #ccc",
@@ -107,7 +106,8 @@ const Input: React.FC<InputProps> = ({
         )}
       </div>
 
-      {touched && !error && hintText && (
+      {/* Hiển thị hint luôn, ngay cả khi disabled */}
+      {hintText && !error && (
         <span style={{ color: "red", fontSize: "12px", marginTop: "3px" }}>
           {hintText}
         </span>
@@ -121,5 +121,6 @@ const Input: React.FC<InputProps> = ({
     </div>
   );
 };
+
 
 export default Input;

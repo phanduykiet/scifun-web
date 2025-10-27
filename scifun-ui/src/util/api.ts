@@ -161,8 +161,12 @@ const getAnswersApi = async (submissionId: string) => {
   const res = await axios.get(`/api/v1/submission/get-submissionDetail/${submissionId}`);
   return res;
 };
+const getprogressApi = async (subjectId: string) => {
+  const res = await axios.get(`/api/v1/user-progress/${subjectId}`);
+  return res;
+};
 
 export { createUserApi, loginApi, otpVerify, getLessonListApi, updateProfileApi, forgotPasswordApi, resetPasswordApi, changePasswordApi,
   getTopicsBySubjectApi, getQuizsByTopicApi, getQuestionsByQuizApi, submitQuizApi, saveQuizApi, delSavedQuizApi, getSavedQuizzesApi, 
-  getVideoLessonApi, getAnswersApi
+  getVideoLessonApi, getAnswersApi, getprogressApi
 };

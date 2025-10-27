@@ -5,18 +5,7 @@ const ScrollRestoration = () => {
   const { pathname } = useLocation();
 
   useEffect(() => {
-    const scrollToLessons = () => {
-      const lessonsEl = document.getElementById("lessons-section");
-      if (lessonsEl) {
-        const y = lessonsEl.getBoundingClientRect().top + window.scrollY - 60;
-        window.scrollTo({ top: y, behavior: "smooth" });
-      }
-    };
-
-    // đợi DOM render xong
-    const timer = setTimeout(scrollToLessons, 100);
-
-    return () => clearTimeout(timer);
+    window.scrollTo(0, 0);
   }, [pathname]);
 
   return null;
