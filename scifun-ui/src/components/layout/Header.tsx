@@ -41,6 +41,7 @@ const Header: React.FC = () => {
             ? "transparent-navbar"
             : "white-navbar"
         }`}
+        style={{ zIndex: 1000 }}
       >
         {/* Logo */}
         <Link

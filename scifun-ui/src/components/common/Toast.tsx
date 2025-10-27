@@ -60,7 +60,7 @@ const Toast: React.FC<ToastProps> = ({
       className={`position-fixed top-0 end-0 m-3 p-3 border ${borderColor} bg-white rounded shadow d-flex align-items-start transition-all`}
       style={{
         width: "340px",
-        zIndex: 1055,
+        zIndex: 2001,
         opacity: visible ? 1 : 0,
         transform: visible ? "translateY(0)" : "translateY(10px)",
         transition: "all 0.3s ease-out",

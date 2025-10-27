@@ -60,13 +60,13 @@ const AllLessons: React.FC = () => {
           {subjects.map((subject) => (
             <div
               className="col-md-3 mb-4 d-flex justify-content-center"
-              key={subject.id}
+              key={subject._id}
             >
               <LessonCard
               title={subject.name}
               image={subject.image}
               onDetail={() => 
-                navigate(`/subject/${subject.id}`, { state: subject }) // ✅ Truyền state
+                navigate(`/subject/${subject._id}`, { state: subject }) // ✅ Truyền state
               }
             />
             </div>

@@ -7,7 +7,6 @@ interface SavedQuizHeaderProps {
   setSearchTerm: (v: string) => void;
   filterType: string;
   setFilterType: (v: string) => void;
-  subjectId?: string; // 👈 thêm nếu cần lọc theo môn học cụ thể
 }
 
 export default function SavedQuizHeader({
@@ -15,22 +14,30 @@ export default function SavedQuizHeader({
   setSearchTerm,
   filterType,
   setFilterType,
-  subjectId,
 }: SavedQuizHeaderProps) {
-  const [topics, setTopics] = useState<any[]>([]);
+  const [subjects, setSubjects] = useState<any[]>([]); // 🔹 danh sách môn học duy nhất
 
   useEffect(() => {
-    const fetchTopics = async () => {
+    const fetchSubjects = async () => {
       try {
-        const res = await getTopicsBySubjectApi(subjectId, 1, 100);
-        const data = res.data?.topics || res.data || [];
-        setTopics(data);
+        // 🔹 Lấy tất cả topic mà không cần subjectId
+        const res = await getTopicsBySubjectApi(undefined, 1, 100);
+        const topics = res.data?.topics || [];
+
+        // 🔹 Lấy danh sách môn học duy nhất
+        const uniqueSubjects = Array.from(
+          new Map(topics.map((t: any) => [t.subject._id, t.subject])).values()
+        );
+
+        setSubjects(uniqueSubjects);
       } catch (err) {
-        console.error("Lỗi khi lấy danh sách chủ đề:", err);
+        console.error("Lỗi khi lấy danh sách môn học:", err);
       }
     };
-    fetchTopics();
-  }, [subjectId]);
+
+    fetchSubjects();
+  }, []); // chỉ chạy 1 lần khi mount
+
   return (
     <div className="bg-white shadow-sm border-bottom">
       <div className="container" style={{ maxWidth: '1140px' }}>
@@ -73,9 +80,9 @@ export default function SavedQuizHeader({
                   style={{ paddingTop: '0.75rem', paddingBottom: '0.75rem' }}
                 >
                   <option value="all">Tất cả</option>
-                  {topics.map((topic) => (
-                    <option key={topic._id} value={topic._id}>
-                      {topic.name}
+                  {subjects.map((subject) => (
+                    <option key={subject._id} value={subject._id}>
+                      {subject.name}
                     </option>
                   ))}
                 </select>

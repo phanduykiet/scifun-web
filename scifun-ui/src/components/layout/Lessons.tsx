@@ -65,9 +65,6 @@ const Lessons: React.FC = () => {
             }}
           ></span>
         </h2>
-        <Link to="/all-lessons" className="text-decoration-none text-success fw-semibold">
-          Xem tất cả →
-        </Link>
       </div>
 
       <div className="row justify-content-center">

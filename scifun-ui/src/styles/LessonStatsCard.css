@@ -1,34 +1,100 @@
-.lesson-header {
-    transition: background-color 0.2s ease, transform 0.1s ease;
-  }
-  .lesson-header:hover {
-    background-color: #f8f9fa;
-    transform: translateY(-1px);
-  }
-  
-  .icon-box {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  
-  .lesson-body {
-    transition: all 0.3s ease;
-    max-height: 0;
-    opacity: 0;
-  }
-  .lesson-body.expanded {
-    max-height: 600px;
-    opacity: 1;
-    padding-top: 10px;
-  }
-  .lesson-item:last-child {
-    border-bottom: none !important;
-  }
-  .lesson-header:focus,
-  .lesson-header:focus-visible,
-  .lesson-header:active {
-    transform: scale(0.99);
-    background-color: #f8f9fa !important;
-  }
+/* Card Container */
+.lesson-stats-card {
+  background: white;
+  border-radius: 1rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
 
+/* Header Button */
+.lesson-stats-header {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.25rem;
+  background: white;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.lesson-stats-header:hover {
+  background-color: #f8f9fa;
+}
+
+.lesson-stats-header:active {
+  transform: scale(0.99);
+}
+
+/* Icon */
+.lesson-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background-color: rgba(25, 135, 84, 0.1);
+  border-radius: 50%;
+  color: #198754;
+}
+
+/* Title */
+.lesson-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #212529;
+}
+
+.lesson-subtitle {
+  color: #6c757d;
+  font-size: 0.875rem;
+}
+
+/* Badge */
+.lesson-badge {
+  padding: 0.25rem 0.75rem;
+  background-color: rgba(25, 135, 84, 0.1);
+  color: #198754;
+  border-radius: 1rem;
+  font-weight: 500;
+  font-size: 0.875rem;
+}
+
+/* Collapsible Body - Grid Method */
+.lesson-stats-body {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.3s ease;
+}
+
+.lesson-stats-body.expanded {
+  grid-template-rows: 1fr;
+}
+
+.lesson-stats-content {
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* Sub-lesson Items */
+.lesson-stats-item {
+  padding: 1rem 1.25rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  border-top: 1px solid #e9ecef;
+  background: white;
+}
+
+.lesson-stats-item.last {
+  border-bottom: none;
+}
+
+/* Empty State */
+.lesson-stats-empty {
+  padding: 1.5rem;
+  text-align: center;
+  color: #6c757d;
+  border-top: 1px solid #e9ecef;
+}
