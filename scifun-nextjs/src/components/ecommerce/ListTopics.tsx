@@ -223,7 +223,15 @@ export default function ListTopics() {
                   {topic.id}
                 </TableCell>
                 <TableCell className="py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                  {topic.subject} {/* Display subject ID */}
+                  {(() => {
+                    if (!topic.subject) {
+                      return "N/A";
+                    }
+                    if (typeof topic.subject === "object") {
+                      return topic.subject.name;
+                    }
+                    return topic.subject; // It's a string (ID)
+                  })()}
                 </TableCell>
                 <TableCell className="py-3 text-theme-sm">
                   <Link href={`/update-topic/${topic.id}`} className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200">

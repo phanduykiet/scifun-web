@@ -201,7 +201,7 @@ export default function RecentOrders() {
                   MaxTopics
                 </TableCell>
                 <TableCell isHeader className="py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">
-                  Name
+                  Actions
                 </TableCell>
               </TableRow>
             </TableHeader>
@@ -222,11 +222,9 @@ export default function RecentOrders() {
                           />
                         </div>
                         <div>
-                          <Link href={`/update-subject/${subject.id}`}>
-                            <p className="font-medium text-gray-800 text-theme-sm dark:text-white/90 hover:text-blue-600 dark:hover:text-blue-400 cursor-pointer">
-                              {subject.name}
-                            </p>
-                          </Link>
+                          <p className="font-medium text-gray-800 text-theme-sm dark:text-white/90">
+                            {subject.name}
+                          </p>
                           <span className="text-gray-500 text-theme-xs dark:text-gray-400">
                             {subject.description}
                           </span>
@@ -239,19 +237,10 @@ export default function RecentOrders() {
                     <TableCell className="py-3 text-gray-500 text-theme-sm dark:text-gray-400">
                       {subject.maxTopics}
                     </TableCell>
-                    <TableCell className="py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                      <Badge
-                        size="sm"
-                        color={
-                          subject.name === "Delivered"
-                            ? "success"
-                            : subject.name === "Pending"
-                            ? "warning"
-                            : "error"
-                        }
-                      >
-                        {subject.name}
-                      </Badge>
+                    <TableCell className="py-3 text-theme-sm">
+                      <Link href={`/update-subject/${subject.id}`} className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200">
+                        Edit
+                      </Link>
                     </TableCell>
                   </TableRow>
                 ))
