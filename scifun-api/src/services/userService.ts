@@ -2,6 +2,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import User, { IUser } from "../models/User";
 import { generateOTP, sendMail } from "../utils/otp";
+import { notifyWelcome, notifyAdminNewUser } from "./notificationService";
 
 // Đăng ký với OTP
 export const registerUserSv = async (infoUser: Partial<IUser>) => {
@@ -45,6 +46,11 @@ export const verifyUserOtpSv = async (email: string, otp: string) => {;
   user.isVerified = true;
   user.otp = "";
   await user.save();
+  // ✅ Gửi notification chào mừng
+  await notifyWelcome(user._id.toString(), user.fullname, user.email);
+
+  // ✅ Thông báo cho admin
+  await notifyAdminNewUser(user.fullname, user.email);
   return user;
 };
 

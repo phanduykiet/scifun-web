@@ -1,6 +1,4 @@
-// services/favoriteQuiz.service.ts
-import mongoose from "mongoose";
-import FavoriteQuiz, { IFavoriteQuiz } from "../models/FavoriteQuiz";
+import FavoriteQuiz from "../models/FavoriteQuiz";
 import Quiz from "../models/Quiz";
 
 // Thêm vào yêu thích (với transaction)
