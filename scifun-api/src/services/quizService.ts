@@ -1,5 +1,6 @@
 import Quiz, { IQuiz } from "../models/Quiz";
 import { esClient } from "../config/elasticSearch";
+import { notifyNewQuiz } from "./notificationService";
 
 const QUIZ_INDEX = "quiz";
 
@@ -15,6 +16,12 @@ export const createQuizSv = async (data: Partial<IQuiz>) => {
   });
   // Sync lên ES
   await syncOneQuizToES(quiz._id.toString());
+
+  await notifyNewQuiz(
+    quiz._id.toString(),
+    quiz.title,
+    data.topic!.toString()
+  );
 
   return quiz;
 };
