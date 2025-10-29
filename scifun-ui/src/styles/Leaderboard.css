@@ -1,0 +1,41 @@
+.leader-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 20px;
+    position: relative;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s;
+  }
+  
+  .leader-card:hover {
+    transform: translateY(-5px);
+  }
+  
+  .leader-card .avatar {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    border: 4px solid white;
+    margin-bottom: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
+  }
+  
+  .leader-card.first {
+    background: linear-gradient(135deg, #ffe259, #ffa751);
+    transform: scale(1.1);
+  }
+  
+  .leader-card.second {
+    background: linear-gradient(135deg, #d3d3d3, #c0c0c0);
+    margin-top: 40px;
+  }
+  
+  .leader-card.third {
+    background: linear-gradient(135deg, #cd7f32, #b87333);
+    margin-top: 60px;
+  }
+  
+  .score {
+    font-weight: 600;
+  }
+  
