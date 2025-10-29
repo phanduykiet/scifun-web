@@ -7,7 +7,7 @@ export interface IUser extends Document {
   otp: string;
   otpExpires: Date;
   isVerified: boolean;
-  avatar: string;
+  avatar: string;   
   role: "USER" | "ADMIN";
   dob: Date;
   sex: 0 | 1;
