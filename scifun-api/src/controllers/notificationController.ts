@@ -1,58 +1,134 @@
+// src/controllers/notificationController.ts
 import { Request, Response } from "express";
 import * as notificationService from "../services/notificationService";
 
-export const createNotification = async (req: Request, res: Response) => {
-  try {
-    const { userId, message, type } = req.body;
-    if (!userId || !message) {
-      return res.status(400).json({ error: "Thiếu userId hoặc message" });
-    }
-
-    const notification = await notificationService.createNotificationSv(userId, message, type);
-
-    res.status(201).json({
-      message: "Tạo thông báo thành công",
-      data: notification,
-    });
-  } catch (err) {
-    res.status(500).json({ error: "Server error" });
-  }
-};
-
+// Lấy danh sách notifications của user
 export const getNotifications = async (req: Request, res: Response) => {
   try {
-    const userId = req.params.userId; // hoặc lấy từ token
+    const userId = req.user!.userId;
     const page = parseInt(req.query.page as string) || 1;
-    const limit = parseInt(req.query.limit as string) || 10;
+    const limit = parseInt(req.query.limit as string) || 20;
 
-    const data = await notificationService.getNotificationsSv(userId, page, limit);
-    res.json(data);
-  } catch (err) {
-    res.status(500).json({ error: "Server error" });
+    const result = await notificationService.getUserNotificationsSv(userId, page, limit);
+
+    res.status(200).json({
+      status: 200,
+      success: true,
+      message: "Lấy danh sách thông báo thành công",
+      data: result
+    });
+  } catch (err: any) {
+    res.status(400).json({
+      status: 400,
+      success: false,
+      message: err.message
+    });
   }
 };
 
+// Đếm số thông báo chưa đọc
+export const getUnreadCount = async (req: Request, res: Response) => {
+  try {
+    const userId = req.user!.userId;
+    const unreadCount = await notificationService.getUnreadCountSv(userId);
+
+    res.status(200).json({
+      status: 200,
+      success: true,
+      data: { unreadCount }
+    });
+  } catch (err: any) {
+    res.status(400).json({
+      status: 400,
+      success: false,
+      message: err.message
+    });
+  }
+};
+
+// Đánh dấu 1 notification đã đọc
 export const markAsRead = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const updated = await notificationService.markAsReadSv(id);
-    if (!updated) return res.status(404).json({ error: "Notification not found" });
-    res.json(updated);
-  } catch (err) {
-    res.status(500).json({ error: "Server error" });
+    const userId = req.user!.userId;
+
+    const notification = await notificationService.markAsReadSv(id, userId);
+
+    res.status(200).json({
+      status: 200,
+      success: true,
+      message: "Đã đánh dấu đọc",
+      data: notification
+    });
+  } catch (err: any) {
+    res.status(400).json({
+      status: 400,
+      success: false,
+      message: err.message
+    });
   }
 };
 
+// Đánh dấu tất cả đã đọc
 export const markAllAsRead = async (req: Request, res: Response) => {
   try {
-    const userId = req.params.userId; // hoặc lấy từ token
-    const result = await notificationService.markAllAsReadSv(userId);
+    const userId = req.user!.userId;
 
-    res.json({
-      message: "Đã đánh dấu tất cả thông báo là đã đọc",
-      modifiedCount: result.modifiedCount,
+    await notificationService.markAllAsReadSv(userId);
+
+    res.status(200).json({
+      status: 200,
+      success: true,
+      message: "Đã đánh dấu tất cả đã đọc"
     });
-  } catch (err) {
-    res.status(500).json({ error: "Server error" });
+  } catch (err: any) {
+    res.status(400).json({
+      status: 400,
+      success: false,
+      message: err.message
+    });
+  }
+};
+
+// Xóa notification
+export const deleteNotification = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user!.userId;
+
+    await notificationService.deleteNotificationSv(id, userId);
+
+    res.status(200).json({
+      status: 200,
+      success: true,
+      message: "Xóa thông báo thành công"
+    });
+  } catch (err: any) {
+    res.status(400).json({
+      status: 400,
+      success: false,
+      message: err.message
+    });
+  }
+};
+
+// Xóa tất cả notifications đã đọc
+export const deleteAllRead = async (req: Request, res: Response) => {
+  try {
+    const userId = req.user!.userId;
+
+    await notificationService.deleteAllReadSv(userId);
+
+    res.status(200).json({
+      status: 200,
+      success: true,
+      message: "Xóa tất cả thông báo đã đọc thành công"
+    });
+  } catch (err: any) {
+    res.status(400).json({
+      status: 400,
+      success: false,
+      message: err.message
+    });
   }
 };

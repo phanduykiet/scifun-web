@@ -7,10 +7,12 @@ import { createQuestion, getQuestions, updateQuestion, deleteQuestion, getQuesti
 import { handleSubmitQuiz, getSubmissionDetail, getResults } from "../controllers/quizSubmissionController";
 import { addFavoriteQuiz, removeFavoriteQuiz, getFavoriteQuizzes } from "../controllers/favoriteQuizController";
 import { createVideoLesson, updateVideoLesson, deleteVideoLesson, getVideoLessons } from "../controllers/videoLessonController";
+import { rebuildSubjectLeaderboard, getSubjectLeaderboard } from "../controllers/leaderboardController";
 import { authMiddleware } from "../middleware/authMiddleware";
 import { checkRole } from "../middleware/checkRole";
 import { upload } from "../middleware/upload";
 import { getUserProgress } from "../controllers/userProgressController";
+import * as notificationController from "../controllers/notificationController";
 
 const router = Router();
 
@@ -75,6 +77,16 @@ router.post("/video-lesson/create", authMiddleware, checkRole("ADMIN"), createVi
 router.put("/video-lesson/update/:id", authMiddleware, checkRole("ADMIN"), updateVideoLesson);
 router.delete("/video-lesson/delete/:id", authMiddleware, checkRole("ADMIN"), deleteVideoLesson);
 router.get("/video-lesson/list", getVideoLessons);
+
+// Leaderboard routes
+router.post("/leaderboards/rebuild/:subjectId", authMiddleware, checkRole("ADMIN"), rebuildSubjectLeaderboard);
+router.get("/leaderboards/list/:subjectId", authMiddleware, checkRole("ADMIN", "USER"), getSubjectLeaderboard);
+
+// Notification routes
+router.get("/notifications", authMiddleware, checkRole("ADMIN", "USER"), notificationController.getNotifications);
+router.post("/notifications/mark-as-read/:notificationId", authMiddleware, checkRole("ADMIN", "USER"), notificationController.markAsRead);
+router.post("/notifications/mark-all-as-read", authMiddleware, checkRole("ADMIN", "USER"), notificationController.markAllAsRead);
+
 
 
 export default router;
