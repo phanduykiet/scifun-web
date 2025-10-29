@@ -1,18 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { useParams, useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { notification } from "antd";
 import { Topic } from "../types/subject";
-import { Quiz } from "../types/quiz";
-import {
-  getQuizsByTopicApi,
-  getTopicsBySubjectApi,
-  getLessonListApi
-} from "../util/api";
+import { getTopicsBySubjectApi, getLessonListApi } from "../util/api";
 import TopicCard from "../components/layout/TopicCard";
 import Header from "../components/layout/Header";
 
 const SubjectPage: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -20,14 +14,14 @@ const SubjectPage: React.FC = () => {
   const [subjects, setSubjects] = useState<any[]>([]);
   const [subject, setSubject] = useState<any>(null);
   const [topics, setTopics] = useState<Topic[]>([]);
-  const [quizzes, setQuizzes] = useState<Quiz[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loadingPage, setLoadingPage] = useState(true);
+  const [loadingTopics, setLoadingTopics] = useState(false);
+  const [searchInput, setSearchInput] = useState("");
 
   const [selectedSubject, setSelectedSubject] = useState<string>("");
   const [selectedTopic, setSelectedTopic] = useState<string>("");
-  const [searchText, setSearchText] = useState("");
 
-  // === Khởi tạo: load danh sách môn học và set môn học mặc định ===
+  // === Lấy danh sách môn học ban đầu ===
   useEffect(() => {
     const init = async () => {
       try {
@@ -35,75 +29,69 @@ const SubjectPage: React.FC = () => {
         const subjectList = res.data.subjects || [];
         setSubjects(subjectList);
 
-        // Lấy subject từ location.state nếu có
         if (location.state) {
           const s = location.state as any;
-          const found = subjectList.find((sub: any) => sub.id === s.id);
+          const found = subjectList.find((sub: any) => sub._id === s._id);
           if (found) {
             setSubject(found);
             setSelectedSubject(found._id);
           }
-        } else if (id) {
-          // fallback: URL param
-          const found = subjectList.find((sub: any) => sub.id === id);
-          if (found) {
-            setSubject(found);
-            setSelectedSubject(found._id);
-          }
+        } else {
+          // ✅ nếu không truyền state => hiện tất cả
+          setSubject(null);
+          setSelectedSubject("");
         }
       } catch (err: any) {
         notification.error({
           message: "Lỗi tải danh sách môn học",
-          description: err.response?.data?.message || "Không thể tải môn học",
+          description:
+            err.response?.data?.message || "Không thể tải môn học",
         });
+      } finally {
+        setLoadingPage(false);
       }
     };
 
     init();
-  }, [id, location.state]);
+  }, [location.state]);
 
-  // === Lấy chủ đề & quiz theo selectedSubject ===
+  // === Lấy chủ đề theo selectedSubject & searchInput ===
   useEffect(() => {
-    if (!selectedSubject) return;
-
-    const fetchData = async () => {
-      setLoading(true);
+    const fetchTopics = async () => {
+      setLoadingTopics(true);
       try {
-        const [topicRes, quizRes] = await Promise.all([
-          getTopicsBySubjectApi(selectedSubject, 1, 50),
-          getQuizsByTopicApi(selectedSubject, 1, 50)
-        ]);
-
+        const topicRes = await getTopicsBySubjectApi(
+          selectedSubject || undefined, // nếu rỗng thì lấy tất cả
+          1,
+          50,
+          searchInput.trim() || undefined // thêm search nếu có
+        );
         const allTopics = topicRes.data.topics ?? [];
-        const allQuizzes = quizRes.data.quizzes ?? [];
-
         setTopics(allTopics);
-        setQuizzes(allQuizzes);
-        setSelectedTopic(""); // reset topic khi đổi môn
+        setSelectedTopic("");
       } catch (err: any) {
         notification.error({
-          message: "Lỗi tải dữ liệu",
-          description: err.response?.data?.message || "Không thể tải dữ liệu môn học",
+          message: "Lỗi tải chủ đề",
+          description:
+            err.response?.data?.message || "Không thể tải chủ đề môn học",
         });
       } finally {
-        setLoading(false);
+        setLoadingTopics(false);
       }
     };
 
-    fetchData();
-  }, [selectedSubject]);
+    fetchTopics();
+  }, [selectedSubject, searchInput]); // ✅ chỉ cần 2 dependency này
 
-  // === Lọc dữ liệu cho hiển thị ===
-  const filteredTopics = topics
-    .filter(t => t.name.toLowerCase().includes(searchText.toLowerCase()))
-    .filter(t => (selectedTopic ? t._id === selectedTopic : true));
+  // === Lọc dữ liệu hiển thị ===
+  const filteredTopics = topics.filter((t) =>
+    selectedTopic ? t._id === selectedTopic : true
+  );
 
-  const filteredQuizzes = quizzes
-    .filter(q => q.title.toLowerCase().includes(searchText.toLowerCase()));
+  const subjectName = subject?.name || "Tất cả môn học";
 
-  const subjectName = subject?.name || "Chi tiết môn học";
-
-  if (loading) {
+  // ✅ Spinner khi tải trang lần đầu
+  if (loadingPage) {
     return (
       <div className="text-center mt-5">
         <div className="spinner-border text-success" role="status">
@@ -164,6 +152,7 @@ const SubjectPage: React.FC = () => {
             zIndex: 2,
           }}
         >
+          {/* Ô tìm kiếm */}
           <div
             style={{
               display: "flex",
@@ -174,7 +163,7 @@ const SubjectPage: React.FC = () => {
           >
             <input
               type="text"
-              placeholder="Tìm kiếm chủ đề hoặc bài trắc nghiệm..."
+              placeholder="Tìm kiếm chủ đề..."
               style={{
                 flex: 1,
                 border: "1px solid #dcdcdc",
@@ -185,34 +174,25 @@ const SubjectPage: React.FC = () => {
                 background: "white",
                 color: "#333",
                 height: "45px",
-                transition: "all 0.3s ease",
               }}
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
             />
-
-            <button
-              style={{
-                background: "white",
-                color: "#2d6a4f",
-                border: "1px solid #95d5b2",
-                padding: "10px 24px",
-                borderRadius: "10px",
-                fontSize: "15px",
-                fontWeight: 600,
-                cursor: "pointer",
-                height: "45px",
-              }}
-              onClick={() => {}}
-            >
-              Tìm kiếm
-            </button>
           </div>
 
           {/* Filter môn học */}
           <select
             value={selectedSubject}
-            onChange={(e) => setSelectedSubject(e.target.value)}
+            onChange={(e) => {
+              const newId = e.target.value;
+              setSelectedSubject(newId);
+              if (newId === "") {
+                setSubject(null);
+              } else {
+                const found = subjects.find((s) => s._id === newId);
+                setSubject(found || null);
+              }
+            }}
             style={{
               background: "white",
               color: "black",
@@ -222,14 +202,13 @@ const SubjectPage: React.FC = () => {
               fontSize: "15px",
               cursor: "pointer",
               fontWeight: 500,
-              transition: "all 0.3s ease",
               marginLeft: "12px",
               height: "45px",
             }}
           >
             <option value="">Tất cả môn học</option>
             {subjects.map((s) => (
-              <option key={s.id} value={s.id}>
+              <option key={s._id} value={s._id}>
                 {s.name}
               </option>
             ))}
@@ -248,7 +227,6 @@ const SubjectPage: React.FC = () => {
               fontSize: "15px",
               cursor: "pointer",
               fontWeight: 500,
-              transition: "all 0.3s ease",
               marginLeft: "12px",
               height: "45px",
             }}
@@ -265,32 +243,39 @@ const SubjectPage: React.FC = () => {
 
       {/* Chủ đề */}
       <div className="container mt-5">
-        <h3 className="fw-bold mb-3">
-          🧩 Ôn tập theo chủ đề: {subjectName}
-        </h3>
+        <h3 className="fw-bold mb-3">🧩 Ôn tập theo chủ đề {subjectName}:</h3>
 
-        <div className="row">
-          {filteredTopics.length === 0 ? (
-            <p>Không tìm thấy chủ đề phù hợp.</p>
-          ) : (
-            filteredTopics.map((topic) => (
-              <div className="col-md-3 mb-4" key={topic._id}>
-                <TopicCard
-                  topic={topic}
-                  onClick={() =>
-                    navigate(`/topic/${topic._id}`, {
-                      state: {
-                        ...topic,
-                        subjectId: selectedSubject,
-                        subjectName: subjectName,
-                      },
-                    })
-                  }
-                />
-              </div>
-            ))
-          )}
-        </div>
+        {loadingTopics ? (
+          <div className="text-center my-5">
+            <div className="spinner-border text-success" role="status">
+              <span className="visually-hidden">Đang tải chủ đề...</span>
+            </div>
+            <p className="mt-2">Đang tải chủ đề...</p>
+          </div>
+        ) : (
+          <div className="row">
+            {filteredTopics.length === 0 ? (
+              <p>Không tìm thấy chủ đề phù hợp.</p>
+            ) : (
+              filteredTopics.map((topic) => (
+                <div className="col-md-3 mb-4" key={topic._id}>
+                  <TopicCard
+                    topic={topic}
+                    onClick={() =>
+                      navigate(`/topic/${topic._id}`, {
+                        state: {
+                          ...topic,
+                          subjectId: selectedSubject,
+                          subjectName: subjectName,
+                        },
+                      })
+                    }
+                  />
+                </div>
+              ))
+            )}
+          </div>
+        )}
       </div>
     </>
   );

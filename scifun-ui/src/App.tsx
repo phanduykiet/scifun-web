@@ -30,7 +30,7 @@ export default function App() {
         <Route path="/change-password" element={<ChangePassword />} />
         <Route path="/test" element={<Test />} />
         <Route path="/test-review" element={<TestReview />} />
-        <Route path="/subject/:id" element={<SubjectPage />} />
+        <Route path="/subject" element={<SubjectPage />} />
         <Route path="/topic/:topicId" element={<TopicPage />} />
         <Route path="/statistic" element={<StatisticsPage />} />
         <Route path="/save-quiz" element={<SavedQuizsPage />} />

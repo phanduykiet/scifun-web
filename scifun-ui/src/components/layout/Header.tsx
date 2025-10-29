@@ -143,14 +143,14 @@ const Header: React.FC = () => {
 
             <li className="nav-item">
               <Link
-                to="/quiz"
+                to="/leaderboard"
                 className={`nav-link ${
                   location.pathname === "/" && !scrolled
                     ? "text-white"
                     : "text-success"
                 }`}
               >
-                Kiểm tra kiến thức
+                Bảng xếp hạng
               </Link>
             </li>
 
