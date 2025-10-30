@@ -165,8 +165,23 @@ const getprogressApi = async (subjectId: string) => {
   const res = await axios.get(`/api/v1/user-progress/${subjectId}`);
   return res;
 };
+const resetLeaderBoardApi = async (subjectId: string) => {
+  const res = await axios.post(`/api/v1/leaderboards/rebuild/${subjectId}`);
+  return res;
+};
+const getLeaderBoardApi = async (
+  subjectId: string,
+  page?: number,
+  limit?: number,
+  period?: string
+) => {
+  const res = await axios.get(`/api/v1/leaderboards/list/${subjectId}`, {
+    params: { page, limit, period },
+  });
+  return res;
+};
 
 export { createUserApi, loginApi, otpVerify, getLessonListApi, updateProfileApi, forgotPasswordApi, resetPasswordApi, changePasswordApi,
   getTopicsBySubjectApi, getQuizsByTopicApi, getQuestionsByQuizApi, submitQuizApi, saveQuizApi, delSavedQuizApi, getSavedQuizzesApi, 
-  getVideoLessonApi, getAnswersApi, getprogressApi
+  getVideoLessonApi, getAnswersApi, getprogressApi, resetLeaderBoardApi, getLeaderBoardApi
 };
