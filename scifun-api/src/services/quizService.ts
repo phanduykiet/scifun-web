@@ -240,6 +240,8 @@ export const getTrendingQuizzesSv = async (
       title: quiz.title,
       description: quiz.description,
       topic: quiz.topic,
+      duration: quiz.duration,
+      questionCount: quiz.questionCount,
       uniqueUserCount: quiz.uniqueUserCount,
       lastAttemptAt: quiz.lastAttemptAt,
       score: Math.round(quiz._score * 100) / 100, // Điểm tổng hợp
