@@ -79,7 +79,7 @@ router.delete("/video-lesson/delete/:id", authMiddleware, checkRole("ADMIN"), de
 router.get("/video-lesson/list", getVideoLessons);
 
 // Leaderboard routes
-router.post("/leaderboards/rebuild/:subjectId", authMiddleware, checkRole("ADMIN"), rebuildSubjectLeaderboard);
+router.post("/leaderboards/rebuild/:subjectId", authMiddleware, checkRole("ADMIN", "USER"), rebuildSubjectLeaderboard);
 router.get("/leaderboards/list/:subjectId", authMiddleware, checkRole("ADMIN", "USER"), getSubjectLeaderboard);
 
 // Notification routes
