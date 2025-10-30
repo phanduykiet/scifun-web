@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/Leaderboard.css";
 import LeaderboardHeader from "../components/leaderboard/LeaderboardHeader";
 import LeaderboardTop3 from "../components/leaderboard/LeaderboardTop3";
 import LeaderboardList from "../components/leaderboard/LeaderboardList";
+import { getLeaderBoardApi } from "../util/api";
 
 interface Student {
   rank: number;
@@ -12,24 +13,42 @@ interface Student {
   avatar: string;
 }
 
-const sampleStudents: Student[] = [
-  { rank: 1, name: "Nguyễn Văn A", score: 98, avatar: "https://i.pravatar.cc/150?img=1" },
-  { rank: 2, name: "Trần Thị B", score: 95, avatar: "https://i.pravatar.cc/150?img=2" },
-  { rank: 3, name: "Lê Văn C", score: 93, avatar: "https://i.pravatar.cc/150?img=3" },
-  { rank: 4, name: "Phạm D", score: 90, avatar: "https://i.pravatar.cc/150?img=4" },
-  { rank: 5, name: "Đặng E", score: 88, avatar: "https://i.pravatar.cc/150?img=5" },
-  { rank: 6, name: "Vũ F", score: 85, avatar: "https://i.pravatar.cc/150?img=6" },
-];
-
-const subjects = ["Tất cả môn học", "Lý", "Hóa", "Sinh"];
-
 const LeaderboardPage: React.FC = () => {
-  const [students, setStudents] = useState<Student[]>(sampleStudents);
-  const [selectedSubject, setSelectedSubject] = useState<string>("Tất cả môn học");
+  const [students, setStudents] = useState<Student[]>([]);
+  const [selectedSubject, setSelectedSubject] = useState<string>(""); // ✅ subjectId
+
+  // 🟢 Fetch leaderboard khi chọn môn
+  const fetchLeaderboard = async (subjectId: string) => {
+    try {
+      const res = await getLeaderBoardApi(subjectId, 1, 50, "alltime");
+  
+      console.log("📌 API trả về:", res.data);
+  
+      const list = res.data || []; // ✅ đúng theo API
+  
+      const formatted = list.map((item: any) => ({
+        rank: item.rank || 0,
+        name: item.userName || "Người dùng",
+        score: item.totalScore || 0,
+        avatar: item.userAvatar || "https://i.pravatar.cc/150",
+      }));
+  
+      setStudents(formatted);
+    } catch (error) {
+      console.error("❌ Lỗi lấy bảng xếp hạng:", error);
+      setStudents([]);
+    }
+  };  
+
+  // 🟢 Lần đầu có subjectId thì gọi API
+  useEffect(() => {
+    if (selectedSubject) {
+      fetchLeaderboard(selectedSubject);
+    }
+  }, [selectedSubject]);
 
   const handleRefresh = () => {
-    // Giả lập làm mới dữ liệu
-    alert("Bảng xếp hạng đã được làm mới!");
+    if (selectedSubject) fetchLeaderboard(selectedSubject);
   };
 
   const top3 = students.slice(0, 3);
@@ -41,7 +60,6 @@ const LeaderboardPage: React.FC = () => {
 
       <LeaderboardHeader
         selectedSubject={selectedSubject}
-        subjects={subjects}
         onSubjectChange={setSelectedSubject}
         onRefresh={handleRefresh}
       />
