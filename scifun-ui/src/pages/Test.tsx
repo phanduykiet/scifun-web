@@ -4,7 +4,7 @@ import TestQuestion from "../components/layout/TestQuestion";
 import ConfirmModal from "../components/common/ConfirmModal";
 import QuestionSidebar from "../components/layout/QuestionSidebar";
 import { useLocation, useNavigate } from "react-router-dom";
-import { getQuestionsByQuizApi, submitQuizApi } from "../util/api";
+import { getQuestionsByQuizApi, submitQuizApi, getprogressApi } from "../util/api";
 import Toast from "../components/common/Toast";
 
 const Test: React.FC = () => {
@@ -18,6 +18,7 @@ const Test: React.FC = () => {
   const quizId = (location.state as any)?.quizId || savedQuizMeta.quizId;
   const duration = (location.state as any)?.duration || savedQuizMeta.duration;
   const topicId = (location.state as any)?.topicId || savedQuizMeta.topicId;
+  const subjectId = (location.state as any)?.subjectId
 
   // Nếu chưa có dữ liệu nào thì báo lỗi để tránh crash
   if (!quizId || !duration) {
@@ -201,6 +202,7 @@ const Test: React.FC = () => {
 
   // 🔹 Xác nhận nộp bài từ modal
   const confirmSubmit = () => {
+    getprogressApi(subjectId);
     setShowConfirmSubmit(false);
     handleSubmit(true);
   };

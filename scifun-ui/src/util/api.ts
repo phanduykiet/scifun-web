@@ -180,8 +180,12 @@ const getLeaderBoardApi = async (
   });
   return res;
 };
+const getTrendingQuizApi = async () => {
+  const res = await axios.get("/api/v1/quiz/get-trend-quizzes");
+  return res;
+};
 
 export { createUserApi, loginApi, otpVerify, getLessonListApi, updateProfileApi, forgotPasswordApi, resetPasswordApi, changePasswordApi,
   getTopicsBySubjectApi, getQuizsByTopicApi, getQuestionsByQuizApi, submitQuizApi, saveQuizApi, delSavedQuizApi, getSavedQuizzesApi, 
-  getVideoLessonApi, getAnswersApi, getprogressApi, resetLeaderBoardApi, getLeaderBoardApi
+  getVideoLessonApi, getAnswersApi, getprogressApi, resetLeaderBoardApi, getLeaderBoardApi, getTrendingQuizApi
 };

@@ -20,7 +20,7 @@ const LeaderboardTop3: React.FC<Props> = ({ top3 }) => {
       
       {/* Hạng 2 */}
       {top3[1] && (
-        <div className="col-4 col-md-3 order-1">
+        <div className="col-4 col-md-3 order-0">
           <div className="leader-card second">
             <img src={top3[1].avatar} alt={top3[1].name} className="avatar" />
             <h5>{top3[1].name}</h5>
@@ -32,7 +32,7 @@ const LeaderboardTop3: React.FC<Props> = ({ top3 }) => {
 
       {/* Hạng 1 */}
       {top3[0] && (
-        <div className="col-4 col-md-3 order-0"> {/* order-0 để luôn ở giữa */}
+        <div className="col-4 col-md-3 order-1">
           <div className="leader-card first">
             <img src={top3[0].avatar} alt={top3[0].name} className="avatar" />
             <h4>{top3[0].name}</h4>
