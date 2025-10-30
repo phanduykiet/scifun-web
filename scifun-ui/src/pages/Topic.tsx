@@ -87,7 +87,7 @@ const Topic: React.FC = () => {
               className="fw-bold d-inline-block"
               style={{
                 color: "#000000",
-                paddingLeft: "15px",       // khớp với padding mặc định của container
+                paddingLeft: "15px", 
                 borderLeft: "4px solid #28a745",
               }}
             >
@@ -99,12 +99,12 @@ const Topic: React.FC = () => {
           {quizzes.length === 0 ? (
             <p className="ms-2">Chưa có quiz nào cho môn học này.</p>
           ) : (
-            <div className="row gx-3"> {/* gx-3: khoảng cách giữa các cột */}
+            <div className="row gx-3">
               {quizzes.map((quiz) => (
                 <div className="col-md-3 mb-4" key={quiz._id}>
                   <QuizCard 
                     quiz={quiz} 
-                    onClick={() => navigate("/test", { state: { topicId: quiz.topic._id, quizId: quiz._id, duration: quiz.duration } })} 
+                    onClick={() => navigate("/test", { state: { subjectId: quiz.topic.subject._id, topicId: quiz.topic._id, quizId: quiz._id, duration: quiz.duration } })} 
                   />
                 </div>
               ))}

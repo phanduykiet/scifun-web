@@ -2,6 +2,7 @@ import React from "react";
 import Header from "../components/layout/Header";
 import Lessons from "../components/layout/Lessons";
 import TopicList from "../components/layout/TopicList";
+import TrendingQuizList from "../components/layout/TrendingQuizList";
 import Footer from "../components/layout/Footer";
 
 const Home: React.FC = () => {
@@ -113,6 +114,10 @@ const Home: React.FC = () => {
       {/* Topics Section */}
       <div id="topics-section">
         <TopicList />
+      </div>
+      {/* Quizzes Section */}
+      <div id="quizzes-section">
+        <TrendingQuizList />
       </div>
 
       {/* Statistics Section */}
