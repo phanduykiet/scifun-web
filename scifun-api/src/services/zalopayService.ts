@@ -23,6 +23,10 @@ export interface ZLPCreateOrderRes {
   mac: string;
 }
 
+const embedDataObj = {
+  redirecturl: `${process.env.CLIENT_URL}`,
+};
+
 
 export const zlpService = {
   // ký request → key1
@@ -45,7 +49,7 @@ export const zlpService = {
     const app_time = Date.now();
     const app_id = Number(ZP_APP_ID);
     const app_user = userId || "guest";
-    const embed_data = JSON.stringify({});
+    const embed_data = JSON.stringify(embedDataObj);
     const item = JSON.stringify([]);
     const description = "Thanh toán gói PRO Scifun";
 
@@ -97,7 +101,7 @@ export const zlpService = {
   // Cập nhật DB NẾU thanh toán thành công.
   // returnCode === 1  => cập nhật Order=PAID + cấp PRO cho User
   // returnCode !== 1  => không cập nhật gì
-  async applyPaymentIfSuccessSv(appTransId: string, returnCode: number):
+  async applyPaymentIfSuccessSv(appTransId: string, returnCode: number, durationDays: number):
     Promise<"NOT_FOUND" | "IGNORED_FAILED" | "ALREADY_PAID" | "PAID"> {
 
     // chỉ xử lý khi thành công
@@ -112,22 +116,24 @@ export const zlpService = {
       return "ALREADY_PAID";
     }
 
-    // cập nhật Order
+    // Cập nhật order
     order.status = "PAID";
-    order.currentPeriodEnd = dayjs().add(1, "month").toDate();
+    order.period = durationDays >=30 ? "month" : "week";
     await order.save();
 
     // cập nhật User (cấp PRO)
     const user = await User.findById(order.user);
     if (user) {
-      const curEnd = user.subscription?.currentPeriodEnd ? dayjs(user.subscription.currentPeriodEnd) : null;
-      const newEnd = dayjs(order.currentPeriodEnd!);
-      const finalEnd = curEnd && curEnd.isAfter(newEnd) ? curEnd.toDate() : newEnd.toDate();
+      const now = dayjs();
+      const baseDate =
+      user.subscription.currentPeriodEnd && dayjs(user.subscription.currentPeriodEnd).isAfter(now)
+        ? dayjs(user.subscription.currentPeriodEnd)
+        : now;
 
       user.subscription = {
         status: "ACTIVE",
         tier: "PRO",
-        currentPeriodEnd: finalEnd,
+        currentPeriodEnd: baseDate.add(durationDays, "day").toDate(),
         provider: "ZALOPAY",
       } as any;
       await user.save();

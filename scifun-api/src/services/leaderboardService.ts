@@ -3,6 +3,7 @@ import Leaderboard from "../models/Leaderboard";
 import UserProgress from "../models/UserProgress"; // model tiến trình
 import User from "../models/User";      
 import Subject from "../models/Subject"; 
+import { notifyRankChanged } from "./notificationService";
 
 export type Period = "daily" | "weekly" | "monthly" | "alltime";
 
@@ -51,7 +52,7 @@ export const rebuildSubjectLeaderboardSv = async (
 ) => {
   const sid = new Types.ObjectId(subjectId);
 
-  // Lấy rank cũ để gắn previousRank
+  // Lấy rank cũ để gắn previousRank + dùng so sánh thay đổi
   const oldRows = await Leaderboard.find({ subjectId: sid, period })
     .select({ userId: 1, rank: 1 })
     .lean();
@@ -62,16 +63,14 @@ export const rebuildSubjectLeaderboardSv = async (
 
   const agg = await UserProgress.aggregate([
     { $match: { subjectId: sid } },
+    // Tổng điểm để xếp hạng (ví dụ: progress + averageScore)
     { $addFields: { totalScore: { $add: ["$progress", "$averageScore"] } } },
 
+    // Tạo sortKey = totalScore * MULTI - createdAt(ms)  (ưu tiên điểm cao, cùng điểm thì ai sớm hơn xếp cao hơn)
     {
       $addFields: {
         createdAtMs: {
-          $dateDiff: {
-            startDate: new Date(0),
-            endDate: "$createdAt",
-            unit: "millisecond",
-          },
+          $dateDiff: { startDate: new Date(0), endDate: "$createdAt", unit: "millisecond" },
         },
       },
     },
@@ -81,7 +80,7 @@ export const rebuildSubjectLeaderboardSv = async (
       },
     },
 
-    // Join user & subject (giữ nguyên như bạn đang làm)
+    // Join user & subject
     {
       $lookup: {
         from: User.collection.name,
@@ -102,7 +101,7 @@ export const rebuildSubjectLeaderboardSv = async (
     },
     { $set: { u: { $first: "$u" }, s: { $first: "$s" } } },
 
-    // Chỉ 1 field trong sortBy để dùng $rank
+    // Tính rank
     {
       $setWindowFields: {
         partitionBy: "$subjectId",
@@ -133,8 +132,6 @@ export const rebuildSubjectLeaderboardSv = async (
     },
   ]);
 
-
-
   // Upsert snapshot mới
   const ops = agg.map((r: any) => ({
     updateOne: {
@@ -161,13 +158,34 @@ export const rebuildSubjectLeaderboardSv = async (
 
   // Xoá entry không còn trong snapshot
   const keepIds = agg.map((r: any) => r.userId);
-  await Leaderboard.deleteMany({
-    subjectId: sid,
-    period,
-    userId: { $nin: keepIds },
-  });
+  await Leaderboard.deleteMany({ subjectId: sid, period, userId: { $nin: keepIds } });
 
   if (ops.length) await Leaderboard.bulkWrite(ops, { ordered: false });
 
-  return { subjectId, period, updated: ops.length };
+  // === GỬI THÔNG BÁO CHỈ KHI THỨ HẠNG ĐỔI ===
+  // Duyệt theo snapshot mới (agg), so với prevRank
+  const notifyTasks = agg
+    .map((r: any) => {
+      const oldRank = prevRank.get(String(r.userId));
+      if (oldRank === undefined) return null;         // user mới, không thông báo
+      if (oldRank === r.rank) return null;            // không đổi hạng -> bỏ qua
+
+      return notifyRankChanged({
+        userId: r.userId.toString(),
+        subjectId: r.subjectId.toString(),
+        subjectName: r.subjectName,
+        period,
+        oldRank,
+        newRank: r.rank,
+        persist: true, // lưu 1 notification tối giản (nếu muốn bỏ DB thì set false)
+        email: true,   // gửi email thuần text
+      });
+    })
+    .filter(Boolean) as Promise<any>[];
+
+  if (notifyTasks.length) {
+    await Promise.allSettled(notifyTasks);
+  }
+
+  return { subjectId, period, updated: ops.length, notified: notifyTasks.length };
 };
