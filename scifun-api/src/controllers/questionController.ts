@@ -55,14 +55,15 @@ export const deleteQuestion = async (req: Request, res: Response) => {
   }
 };
 
-// Lấy danh sách câu hỏi (phân trang, lọc theo quiz nếu có)
+// Lấy danh sách câu hỏi 
 export const getQuestions = async (req: Request, res: Response) => {
   try {
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
     const quizId = req.query.quizId as string;
+    const userId = req.user ? req.user.userId : null;
 
-    const result = await questionService.getQuestionsSv(page, limit, quizId);
+    const result = await questionService.getQuestionsSv(page, limit, quizId, userId);
     res.status(200).json({
       status: 200,
       message: "Lấy danh sách thành công",

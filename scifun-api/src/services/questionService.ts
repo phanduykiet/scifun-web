@@ -1,4 +1,41 @@
 import Question, { IQuestion } from "../models/Question";
+import Quiz from "../models/Quiz";
+import User from "../models/User";
+
+// Kiểm tra quyền truy cập quiz (FREE/PRO)
+export const checkQuizAccess = async (userId?: string, quizId?: string) => {
+  if (!quizId) throw new Error("Thiếu quizId");
+
+  // Lấy thông tin quiz
+  const quiz = await Quiz.findById(quizId);
+  if (!quiz) throw new Error("Không tìm thấy quiz");
+
+  // Nếu quiz FREE → ai cũng làm được
+  if (quiz.accessTier === "FREE") return true;
+
+  // Nếu quiz PRO → cần user có gói PRO hợp lệ
+  if (!userId) {
+    throw new Error("Cần đăng nhập để làm quiz PRO");
+  }
+
+  const user = await User.findById(userId);
+  if (!user) {
+    throw new Error("Không tìm thấy người dùng");
+  }
+
+  const sub = user.subscription;
+  const isPro =
+    sub?.status === "ACTIVE" &&
+    sub?.tier === "PRO" &&
+    sub?.currentPeriodEnd &&
+    new Date(sub.currentPeriodEnd) > new Date();
+
+  if (!isPro) {
+    throw new Error("Tài khoản của bạn chưa có gói PRO hoặc đã hết hạn");
+  }
+
+  return true;
+};
 
 // Thêm câu hỏi
 export const createQuestionSv = async (data: Partial<IQuestion>) => {
@@ -34,12 +71,14 @@ export const deleteQuestionSv = async (_id: string) => {
   return { message: "Xóa thành công", question };
 };
 
-// Lấy danh sách theo phân trang (có filter theo quizId nếu cần)
+// Lấy danh sách theo phân trang 
 export const getQuestionsSv = async (
   page: number,
   limit: number,
-  quizId?: string
+  quizId?: string,
+  userId?: string
 ) => {
+  await checkQuizAccess(userId, quizId);
   const filter: any = {};
   if (quizId) filter.quiz = quizId;
 
