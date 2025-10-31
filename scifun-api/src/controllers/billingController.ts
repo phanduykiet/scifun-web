@@ -5,14 +5,14 @@ import User from "../models/User";
 import { zlpService } from "../services/zalopayService";
 import { createHmac } from "node:crypto";
 
-const PLAN_PRICE = 99000;
-
 export const BillingController = {
   
   // Tạo đơn mua gói PRO qua ZaloPay
   async createCheckout(req: Request, res: Response) {
     try {
       const userId = (req as any)?.user?.userId || (req as any)?.user?._id || "guest";
+      const planPrice = req.body?.price || 0;
+    
 
       // Gọi ZaloPay tạo đơn
       const {
@@ -22,7 +22,7 @@ export const BillingController = {
         qr_code,
         app_trans_id,
         mac,
-      } = await zlpService.createOrder(PLAN_PRICE, String(userId));
+      } = await zlpService.createOrder(planPrice, String(userId));
 
       if (return_code !== 1) {
         return res.status(400).json({
@@ -34,7 +34,7 @@ export const BillingController = {
       // Lưu Order (PENDING)
       const order = await Order.create({
         user: userId,
-        total: PLAN_PRICE,
+        total: planPrice,
         currency: "VND",
         provider: "ZALOPAY",
         providerRef: app_trans_id, // để đối soát về sau
@@ -61,14 +61,13 @@ export const BillingController = {
   // Xác nhận thanh toán từ ZaloPay
   async verifyPayment(req: Request, res: Response) {
     try {
-      const { appTransId, returnCode } = req.body;
+      const { appTransId, returnCode, durationDays } = req.body;
 
       if (!appTransId) {
         return res.status(400).json({ message: "Thiếu appTransId" });
       }
 
-      // returnCode mặc định = 1 (thành công)
-      const result = await zlpService.applyPaymentIfSuccessSv(appTransId, returnCode ?? 1);
+      const result = await zlpService.applyPaymentIfSuccessSv(appTransId, returnCode ?? 1, durationDays ?? 30);
 
       switch (result) {
         case "PAID":
