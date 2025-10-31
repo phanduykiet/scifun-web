@@ -1,6 +1,5 @@
 import Topic, { ITopic } from "../models/Topic";
 import { esClient } from "../config/elasticSearch";
-import { notifyNewTopic } from "./notificationService";
 
 const TOPIC_INDEX = "topic";
 
@@ -12,13 +11,6 @@ export const createTopicSv = async (data: Partial<ITopic>) => {
   await topic.populate("subject");
   // Sync lên ES
   await syncOneTopicToES(topic._id.toString());
-
-  const subject = topic.subject as any;
-  await notifyNewTopic(
-    topic._id.toString(),
-    topic.name,
-    subject._id.toString()
-  );
   
   return topic;
 };
@@ -182,7 +174,6 @@ export const getTopicByIdSv = async (_id: string) => {
         subject: subject ? {
           _id: subject._id.toString(),
           name: subject.name || "",
-          code: subject.code || "",
           description: subject.description || "",
           image: subject.image || ""
         } : null

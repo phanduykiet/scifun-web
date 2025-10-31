@@ -4,12 +4,7 @@ import Subject from "../models/Subject";
 import Topic from "../models/Topic";
 import Quiz from "../models/Quiz";
 import Result from "../models/Result";
-import {
-  notifyQuizCompleted,
-  notifyTopicCompleted,
-  notifySubjectCompleted,
-  notifyNewBestScore
-} from "./notificationService";
+
 
 // Khởi tạo hoặc cập nhật UserProgress
 export const initializeOrUpdateUserProgressSv = async (
