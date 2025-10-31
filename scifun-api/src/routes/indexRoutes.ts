@@ -9,9 +9,11 @@ import { addFavoriteQuiz, removeFavoriteQuiz, getFavoriteQuizzes } from "../cont
 import { createVideoLesson, updateVideoLesson, deleteVideoLesson, getVideoLessons } from "../controllers/videoLessonController";
 import { rebuildSubjectLeaderboard, getSubjectLeaderboard } from "../controllers/leaderboardController";
 import { authMiddleware } from "../middleware/authMiddleware";
+import { optionalAuthMiddleware } from "../middleware/optionalAuthMiddleware";
 import { checkRole } from "../middleware/checkRole";
 import { upload } from "../middleware/upload";
 import { getUserProgress } from "../controllers/userProgressController";
+import { BillingController } from "../controllers/billingController";
 import * as notificationController from "../controllers/notificationController";
 
 const router = Router();
@@ -54,7 +56,7 @@ router.delete("/quiz/delete-quiz/:_id", authMiddleware, checkRole("ADMIN"), dele
 
 // Question routes
 router.post("/question/create-question", authMiddleware, checkRole("ADMIN"), createQuestion);
-router.get("/question/get-questions", getQuestions);
+router.get("/question/get-questions", optionalAuthMiddleware, getQuestions);
 router.get("/question/get-questionById/:_id", getQuestionById);
 router.put("/question/update-question/:_id", authMiddleware, checkRole("ADMIN"), updateQuestion);
 router.delete("/question/delete-question/:_id", authMiddleware, checkRole("ADMIN"), deleteQuestion);
@@ -87,6 +89,8 @@ router.get("/notifications", authMiddleware, checkRole("ADMIN", "USER"), notific
 router.post("/notifications/mark-as-read/:notificationId", authMiddleware, checkRole("ADMIN", "USER"), notificationController.markAsRead);
 router.post("/notifications/mark-all-as-read", authMiddleware, checkRole("ADMIN", "USER"), notificationController.markAllAsRead);
 
-
+// Billing routes
+router.post("/checkout", authMiddleware, checkRole("ADMIN", "USER"), BillingController.createCheckout);
+router.post("/zalopay/verifyPayment", BillingController.verifyPayment);
 
 export default router;

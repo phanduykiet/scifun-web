@@ -11,6 +11,8 @@ import http from "http";
 dotenv.config();
 //Khởi tạo ứng dụng Express, lưu vào biến app. Đây là đối tượng chính để gắn middleware, routes, và lắng nghe port.
 const app = express();
+// ZaloPay callback gửi x-www-form-urlencoded => cần parser này
+app.use(express.urlencoded({ extended: false }));
 const server = http.createServer(app);
 //Middleware của Express, cho phép server hiểu dữ liệu JSON gửi lên từ client.
 app.use(cors());
