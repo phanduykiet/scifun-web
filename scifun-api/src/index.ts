@@ -13,6 +13,8 @@ console.log("Loaded REACT_URL:", process.env.REACT_URL);
 
 //Khởi tạo ứng dụng Express, lưu vào biến app. Đây là đối tượng chính để gắn middleware, routes, và lắng nghe port.
 const app = express();
+// ZaloPay callback gửi x-www-form-urlencoded => cần parser này
+app.use(express.urlencoded({ extended: false }));
 const server = http.createServer(app);
 const PORT = process.env.PORT || 5000;
 app.use(
