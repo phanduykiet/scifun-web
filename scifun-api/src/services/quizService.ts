@@ -276,6 +276,7 @@ export const syncOneQuizToES = async (quizId: string) => {
       uniqueUserCount: quiz.uniqueUserCount || 0,
       favoriteCount: quiz.favoriteCount || 0,
       lastAttemptAt: quiz.lastAttemptAt || null,
+      accessTier: quiz.accessTier,
       topic: topic ? {
         _id: topic._id.toString(),
         name: topic.name || "",
@@ -283,7 +284,6 @@ export const syncOneQuizToES = async (quizId: string) => {
         subject: subject ? {
           _id: subject._id.toString(),
           name: subject.name || "",
-          code: subject.code || "",
           description: subject.description || "",
           image: subject.image || ""
         } : null
