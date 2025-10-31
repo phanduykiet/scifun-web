@@ -5,7 +5,6 @@ export interface ISubscription {
   tier?: "PRO";
   currentPeriodEnd?: Date;
   provider?: "ZALOPAY" | "MOMO"; 
-  providerCustomerId?: string;
 }
 
 export interface IUser extends Document {
@@ -38,14 +37,11 @@ const SubscriptionSchema = new Schema<ISubscription>(
     },
     currentPeriodEnd: { type: Date, default: undefined },
 
-    // ✅ sửa chỗ này: thêm MOMO
     provider: {
       type: String,
       enum: ["ZALOPAY"],
       default: undefined,
     },
-
-    providerCustomerId: { type: String, default: undefined },
   },
   { _id: false } // không cần _id riêng cho subdocument
 );
@@ -78,7 +74,6 @@ const UserSchema = new Schema<IUser>({
     default: 1,
   },
 
-  // ✅ giữ nguyên phần này
   subscription: {
     type: SubscriptionSchema,
     default: { status: "NONE" },

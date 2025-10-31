@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import * as authService from "../services/userService";
+import { checkAndUpdateSubscriptionStatus } from "../services/subscriptionService";
 import cloudinary from "../config/cloudinary";
 
 //Register có OTP
@@ -43,6 +44,7 @@ export const login = async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
     const { token, user } = await authService.loginUserSv(email, password);
+    await checkAndUpdateSubscriptionStatus(user._id.toString());
     res.status(200).json({
       status: 200,
       message: "Đăng nhập thành công",
