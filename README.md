@@ -130,157 +130,473 @@ SciFun là nền tảng học tập trực tuyến chuyên về kiến thức kh
 | Node.js | 18.x+ | [https://nodejs.org/](https://nodejs.org/) |
 | npm hoặc yarn | Latest | Đi kèm với Node.js |
 
-### 📥 Các bước cài đặt:
+### 📥 Cài đặt dự án:
 
-#### 1. Clone repository:
-# Câu lệnh
-git clone https://github.com/your-username/scifun.git
-
-#### 1. Backend (Node.js + Express + MongoDB):
+#### 1. Clone Repository:
 ```bash
 # Clone repository
+git clone https://github.com/your-username/scifun.git
+cd scifun
+```
+
+**Cấu trúc thư mục:**
+```
+scifun/
+├── scifun-api/          # Backend (Node.js + Express)
+├── scifun-ui/           # Frontend (React + Vite)
+├── docs/                # Documentation
+└── README.md
+```
+
+---
+
+### 🖥️ Setup Backend (scifun-api)
+
+#### Bước 1: Cài đặt dependencies
+```bash
+# Di chuyển vào thư mục backend
 cd scifun-api
 
-# Cài đặt dependencies
+# Cài đặt packages
 npm install
+```
 
+#### Bước 2: Cấu hình Environment Variables
+```bash
 # Tạo file .env từ template
 cp .env.example .env
 ```
 
-**Cấu hình file `.env`:**
+**Nội dung file `.env`:**
 ```env
-# Server
+# Server Configuration
 PORT=5000
 NODE_ENV=development
 
-# MongoDB
-MONGO_URI=mongodb://localhost:27017/scifun
+# Client URL (Frontend)
+CLIENT_URL=http://localhost:5173
 
-# JWT
-JWT_SECRET=your-super-secret-key-here-change-this
-JWT_EXPIRES=7d
+# MongoDB Database
+MONGO_URI=mongodb://127.0.0.1:27017/scifun_db
 
-# Email (Gmail App Password)
+# JWT Authentication
+JWT_SECRET=your-super-secret-jwt-key-min-32-characters-long
+JWT_EXPIRES=1h
+
+# Email Configuration (Gmail App Password)
 EMAIL_USER=your-email@gmail.com
-EMAIL_PASSWORD=your-16-digit-app-password
+EMAIL_PASS=your-16-digit-app-password
 
-# Cloudinary
-CLOUD_NAME=your-cloudinary-name
+# Elasticsearch Cloud
+ES_NODE=https://your-deployment.es.region.gcp.elastic.cloud:443
+ES_API_KEY=your-elasticsearch-api-key-here
+
+# Cloudinary Storage
+CLOUD_NAME=your-cloudinary-cloud-name
 CLOUD_API_KEY=your-cloudinary-api-key
 CLOUD_API_SECRET=your-cloudinary-api-secret
 
-# Elasticsearch (Optional)
-ES_NODE=http://localhost:9200
-
-# Client URL
-CLIENT_URL=http://localhost:3000
+# ZaloPay Payment Gateway (Sandbox)
+ZP_APP_ID=2554
+ZP_KEY1=your-zalopay-key1-from-sandbox
+ZP_CREATE_ENDPOINT=https://sb-openapi.zalopay.vn/v2/create
+ZP_QUERY_ENDPOINT=https://sb-openapi.zalopay.vn/v2/query
 ```
 
-**Lấy Gmail App Password:**
-1. Vào [https://myaccount.google.com/security](https://myaccount.google.com/security)
-2. Bật **2-Step Verification**
-3. Vào [https://myaccount.google.com/apppasswords](https://myaccount.google.com/apppasswords)
-4. Tạo app password mới cho "SciFun"
-5. Copy password 16 ký tự và paste vào `.env`
+#### Bước 3: Setup Database
 
-**Lấy Cloudinary credentials:**
-1. Đăng ký tài khoản tại [https://cloudinary.com/](https://cloudinary.com/)
-2. Vào Dashboard
-3. Copy **Cloud Name**, **API Key**, **API Secret**
+**Cài đặt MongoDB:**
 
-**Chạy Backend:**
+**Ubuntu/Debian:**
 ```bash
-# Development mode (nodemon)
-npm run dev
-
-# Production mode
-npm run build
-npm start
-```
-
-Backend sẽ chạy tại: `http://localhost:5000`
-
-#### 2. Database (MongoDB):
-
-**Cách 1: Cài đặt local**
-```bash
-# Ubuntu/Debian
+sudo apt-get update
 sudo apt-get install mongodb
+sudo systemctl start mongodb
+sudo systemctl enable mongodb
+```
 
-# macOS
+**macOS:**
+```bash
 brew tap mongodb/brew
 brew install mongodb-community
-
-# Khởi động MongoDB
-sudo systemctl start mongodb
-# Hoặc
-mongod
+brew services start mongodb-community
 ```
 
-**Cách 2: Sử dụng Docker**
+**Windows:**
+1. Tải MongoDB Installer từ [https://www.mongodb.com/try/download/community](https://www.mongodb.com/try/download/community)
+2. Chạy file installer và làm theo hướng dẫn
+3. Khởi động MongoDB từ Services
+
+**Import Database:**
 ```bash
-docker run -d -p 27017:27017 --name mongodb mongo:latest
+# Di chuyển vào thư mục database
+cd scifun-api/database
+
+# Import database từ file backup
+mongorestore --db scifun_db ./backup
+
+# Hoặc nếu có file .bak
+mongorestore --db scifun_db --archive=./backup/scifun_db.bak
 ```
 
-#### 3. Elasticsearch (Optional - Cho tìm kiếm nâng cao):
-
-**Cách 1: Cài đặt local**
+**Kiểm tra Database:**
 ```bash
-# Download và cài đặt
-wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-8.11.0-linux-x86_64.tar.gz
-tar -xzf elasticsearch-8.11.0-linux-x86_64.tar.gz
-cd elasticsearch-8.11.0
+# Mở MongoDB Shell
+mongosh
 
-# Chạy Elasticsearch
-./bin/elasticsearch
+# Chọn database
+use scifun_db
+
+# Xem danh sách collections
+show collections
+
+# Đếm số documents
+db.users.countDocuments()
+db.quizzes.countDocuments()
+
+# Thoát
+exit
 ```
 
-**Cách 2: Docker**
+#### Bước 4: Cấu hình Elasticsearch Cloud
+
+**SciFun sử dụng Elasticsearch Cloud, không cần cài đặt local.**
+
+Truy cập: [https://my-elasticsearch-project-a04988.kb.us-central1.gcp.elastic.cloud](https://my-elasticsearch-project-a04988.kb.us-central1.gcp.elastic.cloud/app/elasticsearch/home)
+
+**Lấy Endpoint URL:**
+1. Vào **Deployments** → Chọn **my-elasticsearch-project-a04988**
+2. Trong phần **Applications**, tìm **Elasticsearch**
+3. Copy URL endpoint (format: `https://xxx.es.us-central1.gcp.elastic.cloud:443`)
+4. Paste vào `ES_NODE` trong file `.env`
+
+**Tạo API Key:**
+1. Click **Open Kibana** từ deployment
+2. Vào **☰ Menu** → **Management** → **Stack Management**
+3. Chọn **Security** → **API Keys**
+4. Click **Create API key**
+5. Điền thông tin:
+   - **Name**: `SciFun Backend`
+   - **Expiration**: Để trống (không hết hạn)
+6. Click **Create API key**
+7. **Quan trọng:** Copy **Encoded** API key (chỉ hiện 1 lần!)
+8. Paste vào `ES_API_KEY` trong `.env`
+
+**Test kết nối:**
 ```bash
-docker run -d -p 9200:9200 -e "discovery.type=single-node" elasticsearch:8.11.0
+curl -H "Authorization: ApiKey YOUR_API_KEY" https://your-endpoint.es.us-central1.gcp.elastic.cloud:443
 ```
 
-**Kiểm tra Elasticsearch:**
+#### Bước 5: Chạy Backend Server
 ```bash
-curl http://localhost:9200
+# Trong thư mục scifun-api
+npm run dev
 ```
 
-#### 4. Frontend (React.js):
-```bash
-cd ../frontend
+✅ **Backend chạy thành công tại: http://localhost:5000/**
 
-# Cài đặt dependencies
+**Log khi chạy thành công:**
+```
+🚀 Server is running on http://localhost:5000
+✅ MongoDB Connected: scifun_db
+✅ Elasticsearch Connected: my-elasticsearch-project-a04988
+⚡ WebSocket server is ready
+📧 Email service initialized
+☁️  Cloudinary connected
+```
+
+**Test API:**
+```bash
+# Test health check
+curl http://localhost:5000/api/health
+
+# Response mong đợi
+{
+  "status": "OK",
+  "mongodb": "Connected",
+  "elasticsearch": "Connected",
+  "timestamp": "2024-11-02T10:30:00.000Z"
+}
+```
+
+---
+
+### 🎨 Setup Frontend (scifun-ui)
+
+#### Bước 1: Cài đặt dependencies
+
+**Mở terminal mới** (giữ terminal backend đang chạy):
+```bash
+# Từ thư mục gốc, di chuyển vào frontend
+cd scifun-ui
+
+# Cài đặt packages
 npm install
+```
 
+#### Bước 2: Cấu hình Environment Variables
+```bash
 # Tạo file .env
 cp .env.example .env
 ```
 
-**Cấu hình file `.env`:**
+**Nội dung file `.env`:**
 ```env
-REACT_APP_API_URL=http://localhost:5000/api
-REACT_APP_SOCKET_URL=http://localhost:5000
+# Backend API URL
+VITE_API_URL=http://localhost:5000/api
+
+# WebSocket URL
+VITE_SOCKET_URL=http://localhost:5000
 ```
 
-**Chạy Frontend:**
+#### Bước 3: Chạy Frontend Development Server
 ```bash
-# Development mode
-npm start
+# Trong thư mục scifun-ui
+npm run start
 ```
 
-Frontend sẽ chạy tại: `http://localhost:3000`
+✅ **Frontend chạy thành công tại: http://localhost:5173/**
 
-#### 5. Seed Database (Dữ liệu mẫu):
+**Kiểm tra:**
+1. Mở trình duyệt: [http://localhost:5173](http://localhost:5173)
+2. Bạn sẽ thấy trang chủ SciFun
+3. Mở **Developer Console** (F12):
+   - Không có lỗi kết nối API
+   - WebSocket connected
+4. Kiểm tra **Network** tab:
+   - API calls đến `http://localhost:5000/api`
+   - Status 200 OK
+
+---
+
+### 📝 Hướng dẫn lấy Credentials
+
+#### **1. Gmail App Password**
+
+1. Truy cập [Google Account Security](https://myaccount.google.com/security)
+2. Bật **2-Step Verification** (Xác thực 2 bước)
+3. Vào [App Passwords](https://myaccount.google.com/apppasswords)
+4. Chọn **Mail** và **Other (Custom name)**, đặt tên "SciFun"
+5. Copy password 16 ký tự (dạng: `xxxx xxxx xxxx xxxx`)
+6. **Xóa khoảng trắng** và paste vào `EMAIL_PASS` trong `.env`
+
+**Ví dụ:**
+```env
+# Sai (có khoảng trắng)
+EMAIL_PASS=abcd efgh ijkl mnop
+
+# Đúng (không có khoảng trắng)
+EMAIL_PASS=abcdefghijklmnop
+```
+
+---
+
+#### **2. Cloudinary**
+
+1. Đăng ký miễn phí tại [Cloudinary](https://cloudinary.com/users/register/free)
+2. Sau khi đăng nhập, vào **Dashboard**
+3. Copy các thông tin:
+   - **Cloud name** → `CLOUD_NAME`
+   - **API Key** → `CLOUD_API_KEY`
+   - **API Secret** → `CLOUD_API_SECRET`
+
+**Ví dụ:**
+```env
+CLOUD_NAME=dglm2f7sr
+CLOUD_API_KEY=616287875981434
+CLOUD_API_SECRET=WRKcek7fKoyzFe8iLeB6kMTTB8c
+```
+
+---
+
+#### **3. JWT Secret**
+
+Tạo chuỗi ngẫu nhiên an toàn (tối thiểu 32 ký tự):
+
+**Linux/Mac:**
 ```bash
-cd backend
-
-# Chạy script seed data
-npm run seed
-
-# Hoặc import file SQL
-mongorestore --db scifun ./database/dump
+openssl rand -base64 32
 ```
+
+**Windows PowerShell:**
+```powershell
+[Convert]::ToBase64String((1..32 | ForEach-Object { Get-Random -Minimum 0 -Maximum 256 }))
+```
+
+**Hoặc dùng online:** [RandomKeygen](https://randomkeygen.com/)
+
+**Lưu ý:** 
+- Không chia sẻ JWT secret với ai
+- Dùng secret khác cho development và production
+
+---
+
+#### **4. ZaloPay Sandbox**
+
+1. Đăng ký tài khoản tại [ZaloPay Developers](https://docs.zalopay.vn/)
+2. Đăng nhập và vào **Sandbox Environment**
+3. Lấy credentials:
+   - **App ID**: `2554` (mặc định cho sandbox)
+   - **Key1**: Copy từ dashboard
+4. Paste vào `.env`:
+```env
+ZP_APP_ID=2554
+ZP_KEY1=sdngKKJmqEMzvh5QQcdD2A9XBSKUNaYn
+```
+
+**Lưu ý:** Đây là môi trường test, không dùng cho production
+
+---
+
+### ✅ Kiểm tra hoàn tất Setup
+
+#### **1. Backend (scifun-api)**
+
+**Terminal logs:**
+```
+🚀 Server is running on http://localhost:5000
+✅ MongoDB Connected: scifun_db
+✅ Elasticsearch Connected: my-elasticsearch-project-a04988
+⚡ WebSocket server is ready
+📧 Email service initialized
+☁️  Cloudinary connected
+```
+
+**Test API endpoints:**
+```bash
+# Health check
+curl http://localhost:5000/api/health
+
+# Get subjects
+curl http://localhost:5000/api/subjects
+
+# Response: Array of subjects
+[
+  {
+    "_id": "...",
+    "name": "Vật lý",
+    "description": "...",
+    "imageUrl": "..."
+  }
+]
+```
+
+#### **2. Frontend (scifun-ui)**
+
+**Browser:**
+- ✅ Trang chủ hiển thị đầy đủ
+- ✅ Không có lỗi trong Console
+- ✅ WebSocket connected (check Console: "Socket connected")
+- ✅ API calls thành công (Network tab: status 200)
+
+**Test chức năng:**
+- Đăng ký tài khoản mới
+- Đăng nhập
+- Xem danh sách môn học
+- Vào làm quiz
+
+---
+
+### 🔧 Troubleshooting
+
+#### **Backend không khởi động được**
+
+**MongoDB connection error:**
+```bash
+# Kiểm tra MongoDB đang chạy
+sudo systemctl status mongodb
+
+# Hoặc trên Mac
+brew services list | grep mongodb
+
+# Restart MongoDB
+sudo systemctl restart mongodb
+
+# Mac
+brew services restart mongodb-community
+```
+
+**Port 5000 bị chiếm:**
+```bash
+# Kiểm tra process đang dùng port
+lsof -i :5000
+
+# Kill process (thay )
+kill -9 
+
+# Hoặc đổi PORT trong .env
+PORT=5001
+```
+
+---
+
+#### **Frontend không kết nối Backend**
+
+**CORS error:**
+Kiểm tra file `scifun-api/src/app.js` hoặc `server.js`:
+```javascript
+app.use(cors({
+  origin: 'http://localhost:5173',
+  credentials: true
+}));
+```
+
+**API URL sai:**
+```bash
+# Kiểm tra .env frontend
+cat scifun-ui/.env
+
+# Phải là:
+VITE_API_URL=http://localhost:5000/api
+```
+
+**Clear cache:**
+```bash
+cd scifun-ui
+rm -rf node_modules
+npm install
+npm run start
+```
+
+---
+
+#### **Elasticsearch không kết nối**
+
+- ✅ Kiểm tra `ES_NODE` có đúng format: `https://xxx.es.region.gcp.elastic.cloud:443`
+- ✅ Verify `ES_API_KEY` còn hiệu lực (tạo key mới nếu cần)
+- ✅ Test bằng curl:
+```bash
+curl -H "Authorization: ApiKey YOUR_KEY" https://your-endpoint:443
+```
+
+- ✅ Check firewall không block port 443
+
+---
+
+#### **Email không gửi được**
+
+- ✅ Verify Gmail App Password đã tạo đúng
+- ✅ Xóa khoảng trắng trong password
+- ✅ Kiểm tra 2-Step Verification đã bật
+- ✅ Thử gửi test email:
+```bash
+# Từ Postman hoặc curl
+POST http://localhost:5000/api/auth/test-email
+{
+  "to": "test@example.com",
+  "subject": "Test Email",
+  "text": "Hello from SciFun"
+}
+```
+
+---
+
+#### **Cloudinary upload lỗi**
+
+- ✅ Verify credentials từ Dashboard
+- ✅ Check Cloud Name không có khoảng trắng
+- ✅ Test với ảnh nhỏ (<1MB)
+- ✅ Kiểm tra quota free tier
 
 ---
 
@@ -292,10 +608,9 @@ mongorestore --db scifun ./database/dump
 |-----------|-----------|----------|-------------|
 | Node.js | 18.x | JavaScript Runtime | [https://nodejs.org/](https://nodejs.org/) |
 | Express.js | 4.18.x | Web Framework | `npm install express` |
-| TypeScript | 5.x | Type Safety | `npm install typescript` |
 | MongoDB | 6.x | Database NoSQL | [https://www.mongodb.com/](https://www.mongodb.com/) |
 | Mongoose | 8.x | MongoDB ODM | `npm install mongoose` |
-| Elasticsearch | 8.x | Search Engine | [https://www.elastic.co/](https://www.elastic.co/) |
+| Elasticsearch | 8.x | Search Engine (Cloud) | [https://www.elastic.co/](https://www.elastic.co/) |
 | Socket.IO | 4.x | WebSocket Realtime | `npm install socket.io` |
 | JWT | 9.x | Authentication | `npm install jsonwebtoken` |
 | Bcrypt | 5.x | Password Hashing | `npm install bcrypt` |
@@ -304,38 +619,115 @@ mongorestore --db scifun ./database/dump
 | Multer | 1.x | File Upload | `npm install multer` |
 | Node-Cron | 3.x | Scheduled Jobs | `npm install node-cron` |
 | Dotenv | 16.x | Environment Variables | `npm install dotenv` |
+| Cors | 2.x | CORS Middleware | `npm install cors` |
 
 ### Frontend Technologies
 
 | Công nghệ | Phiên bản | Mục đích | NPM Package |
 |-----------|-----------|----------|-------------|
-| React.js | 18.x | UI Library | `npx create-react-app frontend` |
+| React.js | 18.x | UI Library | `npm create vite@latest` |
+| Vite | 5.x | Build Tool & Dev Server | Built-in with Vite |
 | Bootstrap | 5.x | CSS Framework | `npm install bootstrap` |
 | Axios | 1.x | HTTP Client | `npm install axios` |
 | Socket.IO Client | 4.x | WebSocket Client | `npm install socket.io-client` |
 | React Router | 6.x | Routing | `npm install react-router-dom` |
 | React Hot Toast | 2.x | Notifications | `npm install react-hot-toast` |
 | Chart.js | 4.x | Charts & Graphs | `npm install chart.js react-chartjs-2` |
+| React Icons | 5.x | Icon Library | `npm install react-icons` |
 
 ---
 
-## 🧪 Testing
+## 🔒 Bảo mật
 
-Tài liệu này mô tả kế hoạch kiểm thử cho dự án **SciFun**. Mục tiêu:
+### Lưu ý quan trọng:
 
-- ✅ Xác minh tính đúng đắn của các chức năng học tập (xem nội dung, làm quiz, thống kê tiến độ)
-- ✅ Kiểm tra hệ thống thông báo realtime (WebSocket + Email)
-- ✅ Phát hiện và ghi nhận lỗi kịp thời trước khi triển khai
+- ⚠️ **KHÔNG BAO GIỜ** commit file `.env` lên Git
+- ✅ Thêm `.env` vào `.gitignore`
+- ✅ Sử dụng `.env.example` làm template (không chứa giá trị thật)
+- ✅ Đổi tất cả credentials khi deploy production
+- ✅ Sử dụng JWT secret mạnh (tối thiểu 32 ký tự)
+- ✅ Bật HTTPS khi deploy lên server thật
+- 🔐 Elasticsearch API Key nên set expiration cho production
+- 🔑 Gmail App Password tạo riêng cho từng môi trường
+- 🛡️ Enable rate limiting cho API endpoints
+- 🚫 Không log sensitive data (passwords, tokens, API keys)
 
-**Chạy tests:**
+### File `.gitignore` mẫu:
+```gitignore
+# Environment variables
+.env
+.env.local
+.env.production
+
+# Dependencies
+node_modules/
+package-lock.json
+yarn.lock
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build
+dist/
+build/
+
+# Database backups
+*.bak
+database/backup/*
+```
+
+---
+
+## 🚀 Chạy cả Backend và Frontend cùng lúc
+
+### Sử dụng Concurrently (Recommended)
+
+**Cài đặt concurrently ở thư mục root:**
 ```bash
-# Backend tests
-cd backend
-npm test
+# Ở thư mục scifun/
+npm install -g concurrently
+```
 
-# Frontend tests
-cd frontend
-npm test
+**Tạo script trong `package.json` (root):**
+```json
+{
+  "scripts": {
+    "dev": "concurrently \"cd scifun-api && npm run dev\" \"cd scifun-ui && npm run start\"",
+    "dev:backend": "cd scifun-api && npm run dev",
+    "dev:frontend": "cd scifun-ui && npm run start"
+  }
+}
+```
+
+**Chạy cả 2:**
+```bash
+npm run dev
+```
+
+### Hoặc dùng 2 Terminal riêng:
+
+**Terminal 1 - Backend:**
+```bash
+cd scifun-api
+npm run dev
+```
+
+**Terminal 2 - Frontend:**
+```bash
+cd scifun-ui
+npm run start
 ```
 
 ---
@@ -347,6 +739,7 @@ Nếu có bất kỳ câu hỏi nào, vui lòng liên hệ nhóm phát triển:
 - **Email:** contact@scifun.com
 - **GitHub Issues:** [https://github.com/your-username/scifun/issues](https://github.com/your-username/scifun/issues)
 - **Facebook:** [https://facebook.com/scifun](https://facebook.com/scifun)
+- **Documentation:** [https://docs.scifun.com](https://docs.scifun.com)
 
 ---
 
@@ -364,6 +757,19 @@ Dự án này được phân phối dưới giấy phép MIT. Xem file `LICENSE`
 
 ---
 
+## 🙏 Acknowledgments
+
+- [Node.js](https://nodejs.org/) - JavaScript Runtime
+- [React](https://react.dev/) - UI Library
+- [MongoDB](https://www.mongodb.com/) - Database
+- [Elasticsearch](https://www.elastic.co/) - Search Engine
+- [Cloudinary](https://cloudinary.com/) - Image Storage
+- [Socket.IO](https://socket.io/) - Realtime Communication
+
+---
+
 **Made with ❤️ by SciFun Team**
 
 ⭐ Nếu bạn thấy project hữu ích, hãy cho chúng tôi một star trên GitHub!
+
+📚 Happy Learning with SciFun! 🎓
