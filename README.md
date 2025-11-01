@@ -26,9 +26,6 @@ SciFun là nền tảng học tập trực tuyến chuyên về kiến thức kh
 ### Quên mật khẩu
 ![Quên mật khẩu](https://github.com/phanduykiet/scifun-web/blob/main/scifun-ui/src/assets/quen_mat_khau.png?raw=true)
 
-### React SVG
-![React SVG](https://github.com/phanduykiet/scifun-web/blob/main/scifun-ui/src/assets/reactsvg.png?raw=true)
-
 ### Thống kê
 ![Thống kê](https://github.com/phanduykiet/scifun-web/blob/main/scifun-ui/src/assets/thong_ke.png?raw=true)
 
