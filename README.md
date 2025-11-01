@@ -8,24 +8,42 @@ SciFun là nền tảng học tập trực tuyến chuyên về kiến thức kh
 
 ## 📱 Giao diện ứng dụng
 
-### Trang chủ
-![Tên mô tả ảnh](https://github.com/phanduykiet/scifun-web/blob/main/scifun-ui/src/assets/cap_nhat_thong_tin.png?raw=true)
+### Cập nhật thông tin
+![Cập nhật thông tin](https://github.com/phanduykiet/scifun-web/blob/main/scifun-ui/src/assets/cap_nhat_thong_tin.png?raw=true)
 
+### Đăng ký
+![Đăng ký](https://github.com/phanduykiet/scifun-web/blob/main/scifun-ui/src/assets/dang_ky.png?raw=true)
 
-### Dashboard học sinh
-![Student Dashboard](./docs/images/student-dashboard.png)
+### Đăng nhập
+![Đăng nhập](https://github.com/phanduykiet/scifun-web/blob/main/scifun-ui/src/assets/dang_nhap.png?raw=true)
 
-### Trang làm quiz
-![Quiz Page](./docs/images/quiz-page.png)
+### Đăng xuất
+![Đăng xuất](https://github.com/phanduykiet/scifun-web/blob/main/scifun-ui/src/assets/dang_xuat.png?raw=true)
 
-### Thống kê tiến độ
-![Progress Stats](./docs/images/progress-stats.png)
+### Làm bài trắc nghiệm
+![Làm bài trắc nghiệm](https://github.com/phanduykiet/scifun-web/blob/main/scifun-ui/src/assets/lam_bai_trac_nghiem.png?raw=true)
 
-### Thông báo realtime
-![Notifications](./docs/images/notifications.png)
+### Quên mật khẩu
+![Quên mật khẩu](https://github.com/phanduykiet/scifun-web/blob/main/scifun-ui/src/assets/quen_mat_khau.png?raw=true)
 
-### Admin Dashboard
-![Admin Dashboard](./docs/images/admin-dashboard.png)
+### React SVG
+![React SVG](https://github.com/phanduykiet/scifun-web/blob/main/scifun-ui/src/assets/reactsvg.png?raw=true)
+
+### Thống kê
+![Thống kê](https://github.com/phanduykiet/scifun-web/blob/main/scifun-ui/src/assets/thong_ke.png?raw=true)
+
+### Tìm kiếm chủ đề
+![Tìm kiếm chủ đề](https://github.com/phanduykiet/scifun-web/blob/main/scifun-ui/src/assets/tim_kiem_chu_de.png?raw=true)
+
+### Xem đáp án
+![Xem đáp án](https://github.com/phanduykiet/scifun-web/blob/main/scifun-ui/src/assets/xem_dap_an.png?raw=true)
+
+### Xem danh sách chủ đề
+![Xem danh sách chủ đề](https://github.com/phanduykiet/scifun-web/blob/main/scifun-ui/src/assets/xem_ds_chu_de.png?raw=true)
+
+### Xem video
+![Xem video](https://github.com/phanduykiet/scifun-web/blob/main/scifun-ui/src/assets/xem_video.png?raw=true)
+
 
 ---
 
