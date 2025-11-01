@@ -76,19 +76,18 @@ const TrendingQuizList: React.FC = () => {
               key={quiz._id}
               style={{ flex: `0 0 calc(${100 / quizzesPerView}% - 1rem)` }}
             >
-              <QuizCard
-                quiz={quiz}
-                onClick={() =>
-                  navigate("/test", {
-                    state: {
-                      subjectId: quiz.topic?.subject?._id,
-                      topicId: quiz.topic?._id,
-                      quizId: quiz._id,
-                      duration: quiz.duration,
-                    },
-                  })
-                }
-              />
+              <QuizCard 
+                  quiz={quiz}
+                  isPro={quiz.accessTier === "PRO"}
+                  onClick={() => navigate("/test", { 
+                    state: { 
+                      subjectId: quiz.topic.subject._id, 
+                      topicId: quiz.topic._id, 
+                      quizId: quiz._id, 
+                      duration: quiz.duration
+                    } 
+                  })} 
+                />
             </div>
           ))}
         </div>

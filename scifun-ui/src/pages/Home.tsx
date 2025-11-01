@@ -3,6 +3,7 @@ import Header from "../components/layout/Header";
 import Lessons from "../components/layout/Lessons";
 import TopicList from "../components/layout/TopicList";
 import TrendingQuizList from "../components/layout/TrendingQuizList";
+import Testimonials from "../components/socket/Testimonials";
 import Footer from "../components/layout/Footer";
 
 const Home: React.FC = () => {
@@ -145,101 +146,7 @@ const Home: React.FC = () => {
       </section>
 
       {/* Testimonials Section */}
-      <section style={{ padding: "80px 0", backgroundColor: "#fff" }}>
-        <div className="container">
-          <div className="text-center mb-5">
-            <h2 style={{ fontSize: "2.5rem", fontWeight: "bold", color: "#2c3e50" }}>
-              Học viên nói gì về chúng tôi
-            </h2>
-          </div>
-          <div className="row g-4">
-            <div className="col-md-4">
-              <div className="card border-0 shadow-sm p-4" style={{ borderRadius: "15px" }}>
-                <div className="mb-3">
-                  <span style={{ color: "#ffc107", fontSize: "1.5rem" }}>★★★★★</span>
-                </div>
-                <p style={{ color: "#6c757d", fontStyle: "italic", marginBottom: "1.5rem" }}>
-                  "SciFun đã giúp con tôi yêu thích môn khoa học hơn. Các bài học rất sinh động và dễ hiểu!"
-                </p>
-                <div className="d-flex align-items-center">
-                  <div style={{ 
-                    width: "50px", 
-                    height: "50px", 
-                    borderRadius: "50%", 
-                    backgroundColor: "#007bff",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    color: "white",
-                    fontWeight: "bold",
-                    marginRight: "15px"
-                  }}>NH</div>
-                  <div>
-                    <div style={{ fontWeight: "600" }}>Nguyễn Hải</div>
-                    <div style={{ color: "#6c757d", fontSize: "0.9rem" }}>Phụ huynh</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="col-md-4">
-              <div className="card border-0 shadow-sm p-4" style={{ borderRadius: "15px" }}>
-                <div className="mb-3">
-                  <span style={{ color: "#ffc107", fontSize: "1.5rem" }}>★★★★★</span>
-                </div>
-                <p style={{ color: "#6c757d", fontStyle: "italic", marginBottom: "1.5rem" }}>
-                  "Giao diện đẹp, dễ sử dụng. Các quiz rất hay và giúp em học tập hiệu quả hơn!"
-                </p>
-                <div className="d-flex align-items-center">
-                  <div style={{ 
-                    width: "50px", 
-                    height: "50px", 
-                    borderRadius: "50%", 
-                    backgroundColor: "#28a745",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    color: "white",
-                    fontWeight: "bold",
-                    marginRight: "15px"
-                  }}>MA</div>
-                  <div>
-                    <div style={{ fontWeight: "600" }}>Minh Anh</div>
-                    <div style={{ color: "#6c757d", fontSize: "0.9rem" }}>Học sinh lớp 8</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="col-md-4">
-              <div className="card border-0 shadow-sm p-4" style={{ borderRadius: "15px" }}>
-                <div className="mb-3">
-                  <span style={{ color: "#ffc107", fontSize: "1.5rem" }}>★★★★★</span>
-                </div>
-                <p style={{ color: "#6c757d", fontStyle: "italic", marginBottom: "1.5rem" }}>
-                  "Nền tảng tuyệt vời cho việc học tập! Tôi đã cải thiện đáng kể kiến thức của mình."
-                </p>
-                <div className="d-flex align-items-center">
-                  <div style={{ 
-                    width: "50px", 
-                    height: "50px", 
-                    borderRadius: "50%", 
-                    backgroundColor: "#ffc107",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    color: "white",
-                    fontWeight: "bold",
-                    marginRight: "15px"
-                  }}>TH</div>
-                  <div>
-                    <div style={{ fontWeight: "600" }}>Trần Hưng</div>
-                    <div style={{ color: "#6c757d", fontSize: "0.9rem" }}>Học sinh lớp 10</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      <Testimonials />
 
       {/* CTA Section */}
       <section style={{ 

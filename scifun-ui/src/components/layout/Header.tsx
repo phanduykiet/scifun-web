@@ -194,6 +194,11 @@ const Header: React.FC = () => {
                     </Link>
                   </li>
                   <li>
+                    <Link className="dropdown-item" to="/premium">
+                      Nâng cấp tài khoản
+                    </Link>
+                  </li>
+                  <li>
                     <a className="dropdown-item" href="#" onClick={handleLogout}>
                       Đăng xuất
                     </a>
