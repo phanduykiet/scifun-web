@@ -9,8 +9,7 @@ export interface IOrder extends Document {
   providerRef: string;                 
   status: "PENDING" | "PAID" | "FAILED" | "REFUNDED";
   planTier: "PRO";
-  period: "month";
-  currentPeriodEnd?: Date;
+  period: "month" | "week";
 }
 
 const OrderSchema = new Schema<IOrder>(
@@ -35,9 +34,7 @@ const OrderSchema = new Schema<IOrder>(
     },
 
     planTier: { type: String, enum: ["PRO"], required: true },
-    period: { type: String, enum: ["month"], default: "month" },
-
-    currentPeriodEnd: { type: Date },
+    period: { type: String, enum: ["month", "week"], default: "month" },
   },
   { timestamps: true }
 );

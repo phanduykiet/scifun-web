@@ -14,6 +14,8 @@ import { checkRole } from "../middleware/checkRole";
 import { upload } from "../middleware/upload";
 import { getUserProgress } from "../controllers/userProgressController";
 import { BillingController } from "../controllers/billingController";
+import * as planCtrl from "../controllers/planController";
+import * as commentCtrl from "../controllers/commentController";
 import * as notificationController from "../controllers/notificationController";
 
 const router = Router();
@@ -92,5 +94,17 @@ router.post("/notifications/mark-all-as-read", authMiddleware, checkRole("ADMIN"
 // Billing routes
 router.post("/checkout", authMiddleware, checkRole("ADMIN", "USER"), BillingController.createCheckout);
 router.post("/zalopay/verifyPayment", BillingController.verifyPayment);
+
+// Plan routes
+router.get("/plans/list", planCtrl.listPlans);
+router.get("/plans/getId/:id", planCtrl.getPlan);
+router.post("/plans/create", authMiddleware, checkRole("ADMIN"), planCtrl.createPlan);
+router.put("/plans/update/:id", authMiddleware, checkRole("ADMIN"), planCtrl.updatePlan);
+router.delete("/plans/delete/:id", authMiddleware, checkRole("ADMIN"), planCtrl.deletePlan);
+
+// Comment routes 
+router.get("/comments", commentCtrl.listRootComments);
+router.get("/comments/:parentId/replies", commentCtrl.listReplies);
+router.get("/comments/:id", commentCtrl.getCommentDetail);
 
 export default router;

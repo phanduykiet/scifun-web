@@ -5,7 +5,6 @@ import * as userProgressService from "../services/userProgressService";
 export const getUserProgress = async (req: Request, res: Response) => {
   try {
     const { subjectId } = req.params;
-    console.log("Subject ID:", subjectId);
     const userId = req.user!.userId;
 
     const progress = await userProgressService.getUserProgressSv(userId, subjectId);
