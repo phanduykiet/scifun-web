@@ -130,6 +130,8 @@ SciFun là nền tảng học tập trực tuyến chuyên về kiến thức kh
 | Node.js | 18.x+ | [https://nodejs.org/](https://nodejs.org/) |
 | npm hoặc yarn | Latest | Đi kèm với Node.js |
 
+---
+
 ### 📥 Cài đặt dự án:
 
 #### 1. Clone Repository:
