@@ -11,7 +11,10 @@ export const getNotifications = async (req: Request, res: Response) => {
     const skip = (page - 1) * limit;
 
     const [items, total, unreadCount] = await Promise.all([
-      Notification.find({ userId }).sort({ createdAt: -1 }).skip(skip).limit(limit),
+      Notification.find({ userId })
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit),
       Notification.countDocuments({ userId }),
       Notification.countDocuments({ userId, isRead: false }),
     ]);
@@ -36,7 +39,10 @@ export const getNotifications = async (req: Request, res: Response) => {
 export const getUnreadCount = async (req: Request, res: Response) => {
   try {
     const userId = req.user!.userId;
-    const unreadCount = await Notification.countDocuments({ userId, isRead: false });
+    const unreadCount = await Notification.countDocuments({
+      userId,
+      isRead: false,
+    });
     res.status(200).json({ status: 200, success: true, data: { unreadCount } });
   } catch (err: any) {
     res.status(400).json({ status: 400, success: false, message: err.message });
@@ -47,14 +53,24 @@ export const getUnreadCount = async (req: Request, res: Response) => {
 export const markAsRead = async (req: Request, res: Response) => {
   try {
     const userId = req.user!.userId;
-    const id = req.params.id;
+    const notificationId = req.params.notificationId;
     const doc = await Notification.findOneAndUpdate(
-      { _id: id, userId },
+      { _id: notificationId, userId },
       { isRead: true },
       { new: true }
     );
-    if (!doc) return res.status(404).json({ status: 404, success: false, message: "Không tìm thấy" });
-    res.status(200).json({ status: 200, success: true, message: "Đã đánh dấu đọc", data: doc });
+    if (!doc)
+      return res
+        .status(404)
+        .json({ status: 404, success: false, message: "Không tìm thấy" });
+    res
+      .status(200)
+      .json({
+        status: 200,
+        success: true,
+        message: "Đã đánh dấu đọc",
+        data: doc,
+      });
   } catch (err: any) {
     res.status(400).json({ status: 400, success: false, message: err.message });
   }
@@ -65,7 +81,13 @@ export const markAllAsRead = async (req: Request, res: Response) => {
   try {
     const userId = req.user!.userId;
     await Notification.updateMany({ userId, isRead: false }, { isRead: true });
-    res.status(200).json({ status: 200, success: true, message: "Đã đánh dấu tất cả đã đọc" });
+    res
+      .status(200)
+      .json({
+        status: 200,
+        success: true,
+        message: "Đã đánh dấu tất cả đã đọc",
+      });
   } catch (err: any) {
     res.status(400).json({ status: 400, success: false, message: err.message });
   }

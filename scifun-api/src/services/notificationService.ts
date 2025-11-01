@@ -70,3 +70,51 @@ export const notifyRankChanged = async (params: {
     }
   }
 };
+
+// Thông báo khi có người phản hồi bình luận của user
+export const notifyCommentReply = async (params: {
+  targetUserId: string; 
+  fromUserName: string;  
+  content: string;       
+  commentId: string;     
+  parentId: string;       
+  persist?: boolean;      
+  email?: boolean;        
+}) => {
+  const {
+    targetUserId,
+    fromUserName,
+    content,
+    commentId,
+    parentId,
+    persist = true,
+    email = false,
+  } = params;
+
+  // Lưu DB (nếu cần)
+  if (persist) {
+    await Notification.create({
+      userId: targetUserId,
+      type: "COMMENT_REPLY",
+      title: "Có phản hồi mới 💬",
+      message: `${fromUserName} vừa trả lời bình luận của bạn: "${content}"`,
+      data: { commentId, parentId },
+      link: "/#comments",
+    });
+  }
+
+  // 3️⃣ Gửi email text (tùy chọn)
+  if (email) {
+    const user = await User.findById(targetUserId);
+    if (user?.email) {
+      const subject = `[Quiz App] ${fromUserName} đã phản hồi bình luận của bạn`;
+      const text = [
+        `Xin chào ${user.fullname || "bạn"},`,
+        `${fromUserName} vừa trả lời bình luận của bạn:`,
+        `"${content}"`,
+        `Xem phản hồi tại: ${process.env.CLIENT_URL}/#comments`,
+      ].join("\n");
+      await sendPlainEmail(user.email, subject, text);
+    }
+  }
+};  
