@@ -9,7 +9,8 @@ SciFun là nền tảng học tập trực tuyến chuyên về kiến thức kh
 ## 📱 Giao diện ứng dụng
 
 ### Trang chủ
-![Homepage]([./docs/images/homepage.png](https://github.com/phanduykiet/scifun-web/blob/main/scifun-ui/src/assets/cap_nhat_thong_tin.png))
+![Tên mô tả ảnh](https://github.com/phanduykiet/scifun-web/blob/main/scifun-ui/src/assets/cap_nhat_thong_tin.png?raw=true)
+
 
 ### Dashboard học sinh
 ![Student Dashboard](./docs/images/student-dashboard.png)
