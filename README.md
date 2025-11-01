@@ -137,7 +137,7 @@ SciFun là nền tảng học tập trực tuyến chuyên về kiến thức kh
 #### 1. Clone Repository:
 ```bash
 # Clone repository
-git clone https://github.com/your-username/scifun.git
+git clone https://github.com/phanduykietphanduykiet/scifun.git
 cd scifun
 ```
 
@@ -146,7 +146,6 @@ cd scifun
 scifun/
 ├── scifun-api/          # Backend (Node.js + Express)
 ├── scifun-ui/           # Frontend (React + Vite)
-├── docs/                # Documentation
 └── README.md
 ```
 
