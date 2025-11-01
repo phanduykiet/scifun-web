@@ -216,10 +216,22 @@ const getReplyCommentsApi = async (commentId: string, page?: number, limit?: num
   );
   return res;
 };
+const getNotificationsApi = async () => {
+  const res = await axios.get("/api/v1/notifications");
+  return res;
+};
+const markAsReadApi = async (notiId: string) => {
+  const res = await axios.post(`/api/v1/notifications/mark-as-read/${notiId}`);
+  return res;
+};
+const markAllAsReadApi = async () => {
+  const res = await axios.post("/api/v1/notifications/mark-all-as-read");
+  return res;
+};
 
 
 export { createUserApi, loginApi, otpVerify, getLessonListApi, updateProfileApi, forgotPasswordApi, resetPasswordApi, changePasswordApi,
   getTopicsBySubjectApi, getQuizsByTopicApi, getQuestionsByQuizApi, submitQuizApi, saveQuizApi, delSavedQuizApi, getSavedQuizzesApi, 
   getVideoLessonApi, getAnswersApi, getprogressApi, resetLeaderBoardApi, getLeaderBoardApi, getTrendingQuizApi, getPlansApi, createPaymentApi,
-  checkPaymentApi, updatePaymentApi, getCommentsApi, getReplyCommentsApi
+  checkPaymentApi, updatePaymentApi, getCommentsApi, getReplyCommentsApi, getNotificationsApi, markAsReadApi, markAllAsReadApi
 };

@@ -9,7 +9,9 @@ interface TestQuestionProps {
   selectedAnswer?: string;
   correctAnswer?: string;
   mode?: "test" | "review";
-  explanation?: string; // ✅ Thêm prop giải thích
+  explanation?: string;
+  isExplanationLocked?: boolean; 
+  onUnlockClick?: () => void; 
 }
 
 const TestQuestion = forwardRef<HTMLDivElement, TestQuestionProps>(
@@ -22,7 +24,9 @@ const TestQuestion = forwardRef<HTMLDivElement, TestQuestionProps>(
       selectedAnswer,
       correctAnswer,
       mode = "test",
-      explanation, // ✅ Lấy prop giải thích
+      explanation,
+      isExplanationLocked, // ✅ Lấy prop
+      onUnlockClick,       // ✅ Lấy prop
     },
     ref
   ) => {
@@ -41,9 +45,9 @@ const TestQuestion = forwardRef<HTMLDivElement, TestQuestionProps>(
             {options.map((opt) => {
               let bg = "";
               if (mode === "review") {
-                if (opt._id === correctAnswer) bg = "#d4edda"; // xanh nhạt
+                if (opt._id === correctAnswer) bg = "#d4edda";
                 else if (opt._id === selectedAnswer && opt._id !== correctAnswer)
-                  bg = "#f8d7da"; // đỏ nhạt
+                  bg = "#f8d7da";
               }
 
               return (
@@ -90,19 +94,92 @@ const TestQuestion = forwardRef<HTMLDivElement, TestQuestionProps>(
           </div>
         )}
 
-        {/* ✅ Hiển thị phần giải thích khi review */}
+        {/* ✅ Hiển thị phần giải thích với Premium Lock */}
         {mode === "review" && explanation && (
           <div
             className="questionExplanation"
             style={{
-              backgroundColor: "#f1f1f1",
-              borderRadius: "6px",
-              padding: "10px",
+              backgroundColor: "#fff8f2",
+              border: "2px solid #ffd5b5",
+              borderRadius: "8px",
+              padding: "12px",
               marginTop: "10px",
               fontStyle: "italic",
+              position: "relative",
+              overflow: "hidden",
+              minHeight: isExplanationLocked ? "140px" : "auto",
             }}
           >
-            <strong>Giải thích:</strong> {explanation}
+            <strong style={{ color: "#e67e22" }}>💡 Giải thích:</strong>{" "}
+            
+            {isExplanationLocked ? (
+              <>
+                {/* Phần text bị blur nhẹ - vẫn đọc được 1 chút */}
+                <span style={{ 
+                  filter: "blur(3px)", 
+                  userSelect: "none",
+                  color: "#999"
+                }}>
+                  {explanation}
+                </span>
+                
+                {/* Overlay gradient để tạo hiệu ứng teaser */}
+                <div
+                  onClick={onUnlockClick}
+                  style={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    background: "linear-gradient(to bottom, rgba(255, 248, 242, 0.3) 0%, rgba(255, 248, 242, 0.95) 50%, rgba(255, 248, 242, 0.98) 100%)",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    cursor: "pointer",
+                    transition: "all 0.3s ease",
+                    padding: "20px",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = "linear-gradient(to bottom, rgba(255, 248, 242, 0.4) 0%, rgba(255, 248, 242, 0.97) 50%, rgba(255, 248, 242, 1) 100%)";
+                    e.currentTarget.style.transform = "scale(1.02)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = "linear-gradient(to bottom, rgba(255, 248, 242, 0.3) 0%, rgba(255, 248, 242, 0.95) 50%, rgba(255, 248, 242, 0.98) 100%)";
+                    e.currentTarget.style.transform = "scale(1)";
+                  }}
+                >
+                  <div style={{ 
+                    fontSize: "32px", 
+                    marginBottom: "6px",
+                  }}>
+                    🔒
+                  </div>
+                  <div style={{ 
+                    fontSize: "15px", 
+                    color: "#e67e22", 
+                    fontWeight: "bold",
+                    marginBottom: "6px",
+                    textShadow: "0 1px 2px rgba(0,0,0,0.1)"
+                  }}>
+                    Giải Thích Chi Tiết
+                  </div>
+                  <div style={{ 
+                    fontSize: "12px", 
+                    color: "#666",
+                    backgroundColor: "rgba(255, 255, 255, 0.9)",
+                    padding: "5px 12px",
+                    borderRadius: "12px",
+                    marginTop: "2px"
+                  }}>
+                    👑 Nâng cấp Premium để xem
+                  </div>
+                </div>
+              </>
+            ) : (
+              explanation
+            )}
           </div>
         )}
       </div>

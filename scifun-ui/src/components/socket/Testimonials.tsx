@@ -35,17 +35,30 @@ const Testimonials: React.FC = () => {
   
   // Lắng nghe testimonial mới từ socket để cập nhật real-time
   useEffect(() => {
+    // Khi có comment mới
     socket.on("comment:new", (data: Testimonial) => {
       setTopTestimonials((prev) => {
         const updated = [data, ...prev];
-        return updated.slice(0, 3); // Giữ lại 3 cái mới nhất
+        return updated.slice(0, 3);
       });
     });
-
+  
+    // Khi có reply mới
+    socket.on("comment:reply", (replyData: Testimonial) => {
+      setTopTestimonials(prev =>
+        prev.map(t =>
+          t._id === replyData.parentId
+            ? { ...t, repliesCount: t.repliesCount + 1 }
+            : t
+        )
+      );
+    });
+  
     return () => {
       socket.off("comment:new");
+      socket.off("comment:reply");
     };
-  }, []);
+  }, []);  
 
   // Hàm format thời gian
   const formatDate = (dateString: string) => {

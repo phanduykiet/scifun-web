@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
-import { getCommentsApi } from "../../util/api";
+import { getCommentsApi, getReplyCommentsApi } from "../../util/api";
 import { socket } from "../../util/socket";
 import ReplyModal from "./ReplyModal";
 
@@ -28,6 +28,7 @@ const AllCommentsModal: React.FC<AllCommentsModalProps> = ({ show, onClose }) =>
   const [newComment, setNewComment] = useState("");
   const [showReplyModal, setShowReplyModal] = useState(false);
   const [selectedComment, setSelectedComment] = useState<Testimonial | null>(null);
+  const [repliesCounts, setRepliesCounts] = useState<{[key: string]: number}>({});
   const observerTarget = useRef<HTMLDivElement>(null);
 
   // Hàm lấy initials từ userName
@@ -68,6 +69,30 @@ const AllCommentsModal: React.FC<AllCommentsModalProps> = ({ show, onClose }) =>
     });
   };
 
+  // Hàm fetch reply count cho một comment
+  const fetchReplyCount = async (commentId: string) => {
+    try {
+      const res = await getReplyCommentsApi(commentId, 1, 1); // Chỉ cần lấy 1 item để có total
+      const data = res.data as any;
+      return data.total || 0;
+    } catch (err) {
+      console.error(`Lỗi khi lấy reply count cho comment ${commentId}:`, err);
+      return 0;
+    }
+  };
+
+  // Fetch reply counts cho nhiều comments
+  const fetchReplyCounts = async (commentIds: string[]) => {
+    const counts: {[key: string]: number} = {};
+    await Promise.all(
+      commentIds.map(async (id) => {
+        const count = await fetchReplyCount(id);
+        counts[id] = count;
+      })
+    );
+    return counts;
+  };
+
   // Fetch comments với pagination
   const fetchComments = useCallback(async (pageNum: number) => {
     if (loading) return;
@@ -84,6 +109,11 @@ const AllCommentsModal: React.FC<AllCommentsModalProps> = ({ show, onClose }) =>
       }
       
       setHasMore(data.hasMore);
+
+      // Fetch reply counts từ API cho các comments mới
+      const commentIds = data.items.map((c: Testimonial) => c._id);
+      const counts = await fetchReplyCounts(commentIds);
+      setRepliesCounts(prev => ({ ...prev, ...counts }));
     } catch (err) {
       console.error("Lỗi khi lấy comments:", err);
     } finally {
@@ -125,24 +155,40 @@ const AllCommentsModal: React.FC<AllCommentsModalProps> = ({ show, onClose }) =>
   useEffect(() => {
     if (!show) return;
 
-    const handleNewComment = (data: Testimonial) => {
+    const handleNewComment = async (data: Testimonial) => {
       // Nếu là comment gốc (không có parentId)
       if (!data.parentId) {
         setComments(prev => [data, ...prev]);
+        // Khởi tạo replies count = 0 cho comment mới
+        setRepliesCounts(prev => ({
+          ...prev,
+          [data._id]: 0
+        }));
       } else {
-        // Nếu là reply, chỉ cập nhật repliesCount của comment cha
-        setComments(prev => prev.map(comment => 
-          comment._id === data.parentId 
-            ? { ...comment, repliesCount: comment.repliesCount + 1 }
-            : comment
-        ));
+        // Nếu là reply, fetch lại reply count của comment cha
+        const count = await fetchReplyCount(data.parentId);
+        setRepliesCounts(prev => ({
+          ...prev,
+          [data.parentId!]: count
+        }));
       }
     };
 
+    const handleReply = async (reply: Testimonial) => {
+      // Fetch lại reply count của comment cha
+      const count = await fetchReplyCount(reply.parentId!);
+      setRepliesCounts(prev => ({
+        ...prev,
+        [reply.parentId!]: count
+      }));
+    };
+
     socket.on("comment:new", handleNewComment);
+    socket.on("comment:reply", handleReply);
 
     return () => {
       socket.off("comment:new", handleNewComment);
+      socket.off("comment:reply", handleReply);
     };
   }, [show]);
 
@@ -164,7 +210,15 @@ const AllCommentsModal: React.FC<AllCommentsModalProps> = ({ show, onClose }) =>
     setShowReplyModal(true);
   };
 
-  const handleCloseReply = () => {
+  const handleCloseReply = async () => {
+    // Refresh reply count khi đóng modal
+    if (selectedComment) {
+      const count = await fetchReplyCount(selectedComment._id);
+      setRepliesCounts(prev => ({
+        ...prev,
+        [selectedComment._id]: count
+      }));
+    }
     setShowReplyModal(false);
     setSelectedComment(null);
   };
@@ -174,6 +228,7 @@ const AllCommentsModal: React.FC<AllCommentsModalProps> = ({ show, onClose }) =>
     setComments([]);
     setPage(1);
     setHasMore(true);
+    setRepliesCounts({});
     onClose();
   };
 
@@ -302,10 +357,14 @@ const AllCommentsModal: React.FC<AllCommentsModalProps> = ({ show, onClose }) =>
                             >
                               💬 Trả lời
                             </button>
-                            {comment.repliesCount > 0 && (
-                              <span style={{ color: "#6c757d", fontSize: "0.85rem" }}>
-                                • {comment.repliesCount} phản hồi
-                              </span>
+                            {repliesCounts[comment._id] > 0 && (
+                              <button
+                                className="btn btn-link text-decoration-none p-0"
+                                style={{ color: "#6c757d", fontSize: "0.85rem" }}
+                                onClick={() => handleOpenReply(comment)}
+                              >
+                                • {repliesCounts[comment._id]} phản hồi
+                              </button>
                             )}
                           </div>
                         </div>

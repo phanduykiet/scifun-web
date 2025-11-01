@@ -21,7 +21,6 @@ const TopicList: React.FC = () => {
   const fetchAllTopics = async () => {
     setLoading(true);
     try {
-      // 🔹 Chỉ cần 1 API call duy nhất!
       const res = await getTopicsBySubjectApi("", 1, 10);
       const topics = res.data.topics ?? res.data ?? [];
       
@@ -46,9 +45,13 @@ const TopicList: React.FC = () => {
 
   const handleNext = () => {
     setCurrentIndex((prev) =>
-      Math.min(prev + 1, Math.max(0, topics.length - topicsPerView))
+      Math.min(prev + 1, topics.length - topicsPerView)
     );
   };
+
+  // Cho thêm buffer 1 để chắc ăn card cuối hiện ra hoàn toàn
+  // Nút next sẽ ẩn khi: currentIndex + topicsPerView + 1 >= topics.length
+  const canScrollNext = currentIndex + topicsPerView + 1 <= topics.length;
 
   if (loading) {
     return (
@@ -85,7 +88,7 @@ const TopicList: React.FC = () => {
       </div>
 
       {/* Carousel danh sách chủ đề */}
-      <div className="overflow-hidden position-relative">
+      <div className="overflow-hidden position-relative" style={{ paddingRight: "50px" }}>
         <div
           className="d-flex transition-transform"
           style={{
@@ -97,7 +100,7 @@ const TopicList: React.FC = () => {
           {topics.map((topic) => (
             <div
               key={topic._id}
-              style={{ flex: `0 0 calc(${100 / topicsPerView}% - 1rem)` }}
+              style={{ flex: `0 0 calc(${100 / topicsPerView}% - 1.125rem)` }}
             >
               <TopicCard
                 topic={topic}
@@ -115,22 +118,47 @@ const TopicList: React.FC = () => {
           ))}
         </div>
 
-        {/* Nút chuyển trái/phải */}
+        {/* Nút chuyển trái */}
         {currentIndex > 0 && (
           <button
             onClick={handlePrev}
-            className="btn btn-success position-absolute top-50 start-0 translate-middle-y shadow"
-            style={{ borderRadius: "50%", width: "40px", height: "40px" }}
+            className="btn btn-success position-absolute shadow"
+            style={{ 
+              borderRadius: "50%", 
+              width: "40px", 
+              height: "40px",
+              padding: 0,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              top: "50%",
+              left: "0",
+              marginTop: "-20px",
+              zIndex: 10
+            }}
           >
             <ChevronLeft size={20} />
           </button>
         )}
 
-        {currentIndex < topics.length - topicsPerView && (
+        {/* Nút chuyển phải */}
+        {canScrollNext && (
           <button
             onClick={handleNext}
-            className="btn btn-success position-absolute top-50 end-0 translate-middle-y shadow"
-            style={{ borderRadius: "50%", width: "40px", height: "40px" }}
+            className="btn btn-success position-absolute shadow"
+            style={{ 
+              borderRadius: "50%", 
+              width: "40px", 
+              height: "40px",
+              padding: 0,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              top: "50%",
+              right: "0",
+              marginTop: "-20px",
+              zIndex: 10
+            }}
           >
             <ChevronRight size={20} />
           </button>

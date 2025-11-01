@@ -4,6 +4,7 @@ import "../styles/PreniumPage.css";
 import { getPlansApi, createPaymentApi, updatePaymentApi } from "../util/api";
 import Toast from "../components/common/Toast";
 import PaymentResultModal from "../components/Prenium/PaymentResultModal";
+import Header from "../components/layout/Header";
 
 interface Plan {
   _id: string;
@@ -142,77 +143,80 @@ const PreniumPage: React.FC = () => {
   }
 
   return (
-    <div className="container">
-      <h1>Nâng Cấp Tài Khoản</h1>
-      <p className="subtitle">Chọn gói phù hợp với nhu cầu của bạn</p>
+    <>
+      <Header/>
+      <div className="container" style={{marginTop: "60px"}}>
+        <h1>Nâng Cấp Tài Khoản</h1>
+        <p className="subtitle">Chọn gói phù hợp với nhu cầu của bạn</p>
 
-      <div className="plans-container">
-        {/* Gói miễn phí */}
-        <PlanCard
-          icon="⭐"
-          name="Miễn Phí"
-          price="0"
-          period="free"
-          description="Lựa chọn cơ bản với các tính năng miễn phí"
-          features={[
-            "Trải nghiệm miễn phí cơ bản",
-            "Bị giới hạn một số tính năng",
-            "Lượt làm bài bị giới hạn",
-          ]}
-          badge="Trải nghiệm"
-          onSelect={() =>
-            selectPlan({ _id: "free", name: "Miễn Phí", price: 0, durationDays: 0 })
-          }
-        />
-
-        {/* Các gói trả phí */}
-        {plans.map((plan) => (
+        <div className="plans-container">
+          {/* Gói miễn phí */}
           <PlanCard
-            key={plan._id}
-            icon={plan.durationDays === 7 ? "📅" : "⭐"}
-            name={plan.name}
-            price={plan.price.toLocaleString()}
-            period={`${plan.durationDays} ngày`}
-            description={
-              plan.durationDays === 7
-                ? "Truy cập đầy đủ tính năng trong 7 ngày"
-                : "Lựa chọn tiết kiệm cho người dùng thường xuyên"
-            }
+            icon="⭐"
+            name="Miễn Phí"
+            price="0"
+            period="free"
+            description="Lựa chọn cơ bản với các tính năng miễn phí"
             features={[
-              "Truy cập không giới hạn",
-              "Không quảng cáo",
-              "Hỗ trợ ưu tiên",
-              ...(plan.durationDays === 30
-                ? ["Tiết kiệm 30%", "Tài khoản đa thiết bị"]
-                : []),
+              "Trải nghiệm miễn phí cơ bản",
+              "Bị giới hạn một số tính năng",
+              "Lượt làm bài bị giới hạn",
             ]}
-            badge={plan.durationDays === 30 ? "Tiết kiệm 30%" : undefined}
-            onSelect={() => selectPlan(plan)}
+            badge="Trải nghiệm"
+            onSelect={() =>
+              selectPlan({ _id: "free", name: "Miễn Phí", price: 0, durationDays: 0 })
+            }
           />
-        ))}
+
+          {/* Các gói trả phí */}
+          {plans.map((plan) => (
+            <PlanCard
+              key={plan._id}
+              icon={plan.durationDays === 7 ? "📅" : "⭐"}
+              name={plan.name}
+              price={plan.price.toLocaleString()}
+              period={`${plan.durationDays} ngày`}
+              description={
+                plan.durationDays === 7
+                  ? "Truy cập đầy đủ tính năng trong 7 ngày"
+                  : "Lựa chọn tiết kiệm cho người dùng thường xuyên"
+              }
+              features={[
+                "Truy cập không giới hạn",
+                "Không quảng cáo",
+                "Hỗ trợ ưu tiên",
+                ...(plan.durationDays === 30
+                  ? ["Tiết kiệm 30%", "Tài khoản đa thiết bị"]
+                  : []),
+              ]}
+              badge={plan.durationDays === 30 ? "Tiết kiệm 30%" : undefined}
+              onSelect={() => selectPlan(plan)}
+            />
+          ))}
+        </div>
+
+        {processing && <p className="loading-text mt-3">Đang tạo đơn hàng...</p>}
+
+        {/* Toast thông báo nhỏ */}
+        {toast && (
+          <Toast
+            message={toast.message}
+            subtitle={toast.subtitle}
+            type={toast.type}
+            onClose={() => setToast(null)}
+          />
+        )}
+
+        {/* Modal kết quả thanh toán */}
+        {paymentStatus && (
+          <PaymentResultModal
+            show={!!paymentStatus}
+            status={paymentStatus}
+            onClose={handleCloseModal}
+          />
+        )}
       </div>
-
-      {processing && <p className="loading-text mt-3">Đang tạo đơn hàng...</p>}
-
-      {/* Toast thông báo nhỏ */}
-      {toast && (
-        <Toast
-          message={toast.message}
-          subtitle={toast.subtitle}
-          type={toast.type}
-          onClose={() => setToast(null)}
-        />
-      )}
-
-      {/* Modal kết quả thanh toán */}
-      {paymentStatus && (
-        <PaymentResultModal
-          show={!!paymentStatus}
-          status={paymentStatus}
-          onClose={handleCloseModal}
-        />
-      )}
-    </div>
+    </>
   );
 };
 

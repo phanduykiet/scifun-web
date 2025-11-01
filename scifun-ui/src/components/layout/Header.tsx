@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { AuthContext } from "../context/auth.context";
+import NotificationDropdown from "../socket/NotificationDropdown";
 import "../../styles/Header.css";
 
 const Header: React.FC = () => {
@@ -136,10 +137,17 @@ const Header: React.FC = () => {
                 }`}
                 style={{ cursor: "pointer" }}
               >
-                Thống kê
+                Tiến trình học tập
               </Link>
             </li>
           </ul>
+          {/* Notification Dropdown - Hiển thị bên trái avatar */}
+          <div>
+            <NotificationDropdown 
+              isHomePage={location.pathname === "/"}
+              isScrolled={scrolled}
+            />
+          </div>
 
           {/* Khu vực đăng nhập / tài khoản */}
           <div className="d-flex align-items-center">
@@ -155,55 +163,58 @@ const Header: React.FC = () => {
                 Đăng nhập
               </Link>
             ) : (
-              <div className="dropdown">
-                <button
-                  className={`btn dropdown-toggle d-flex align-items-center fw-semibold ${
-                    location.pathname === "/" && !scrolled
-                      ? "btn-outline-light text-white border-white"
-                      : "btn-outline-success"
-                  }`}
-                  type="button"
-                  data-bs-toggle="dropdown"
-                  aria-expanded="false"
-                >
-                  {auth.user.avatar && (
-                    <img
-                      src={auth.user.avatar}
-                      alt="avatar"
-                      style={{
-                        width: "30px",
-                        height: "30px",
-                        borderRadius: "50%",
-                        marginRight: "8px",
-                        objectFit: "cover",
-                      }}
-                    />
-                  )}
-                  {auth.user.fullname || auth.user.email}
-                </button>
+              <div className="d-flex align-items-center gap-2">
+                {/* User Dropdown */}
+                <div className="dropdown">
+                  <button
+                    className={`btn dropdown-toggle d-flex align-items-center fw-semibold ${
+                      location.pathname === "/" && !scrolled
+                        ? "btn-outline-light text-white border-white"
+                        : "btn-outline-success"
+                    }`}
+                    type="button"
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false"
+                  >
+                    {auth.user.avatar && (
+                      <img
+                        src={auth.user.avatar}
+                        alt="avatar"
+                        style={{
+                          width: "30px",
+                          height: "30px",
+                          borderRadius: "50%",
+                          marginRight: "8px",
+                          objectFit: "cover",
+                        }}
+                      />
+                    )}
+                    {auth.user.fullname || auth.user.email}
+                  </button>
 
-                <ul className="dropdown-menu dropdown-menu-end">
-                  <li>
-                    <Link className="dropdown-item" to="/profile">
-                      Hồ sơ
-                    </Link>
-                  </li>
-                  <li>
-                    <Link className="dropdown-item" to="/save-quiz">
-                      Bài đã lưu
-                    </Link>
-                  </li>
-                  <li>
-                    <Link className="dropdown-item" to="/premium">
-                      Nâng cấp tài khoản
-                    </Link>
-                  </li>
-                  <li>
-                    <a className="dropdown-item" href="#" onClick={handleLogout}>
-                      Đăng xuất
-                    </a>
-                  </li>
-                </ul>
+                  <ul className="dropdown-menu dropdown-menu-end">
+                    <li>
+                      <Link className="dropdown-item" to="/profile">
+                        Hồ sơ
+                      </Link>
+                    </li>
+                    <li>
+                      <Link className="dropdown-item" to="/save-quiz">
+                        Bài đã lưu
+                      </Link>
+                    </li>
+                    <li>
+                      <Link className="dropdown-item" to="/premium">
+                        Nâng cấp tài khoản
+                      </Link>
+                    </li>
+                    <li>
+                      <a className="dropdown-item" href="#" onClick={handleLogout}>
+                        Đăng xuất
+                      </a>
+                    </li>
+                  </ul>
+                </div>
               </div>
             )}
           </div>

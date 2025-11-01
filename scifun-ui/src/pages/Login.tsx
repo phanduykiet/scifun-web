@@ -42,13 +42,12 @@ export default function Login() {
         email: userData.data.email,
         fullname: userData.data.fullname,
         avatar: userData.data.avatar || undefined,
-        dob: userData.data.dob || undefined, // ISO string từ backend
+        dob: userData.data.dob || undefined,
         sex: sexValue,
         isPro: userData.data.subscription.status,
       };
       console.log("userInfo: ", user);
 
-      // ⚠️ Lưu ý: token nằm ở đâu? Nếu backend trả res.token thì:
       const token = (res as any).token;
       if (token) {
         localStorage.setItem("token", token);
@@ -56,7 +55,6 @@ export default function Login() {
       
       localStorage.setItem("user", JSON.stringify(user));
 
-      // Cập nhật context
       setAuth({
         isAuthenticated: true,
         user,
@@ -89,8 +87,35 @@ export default function Login() {
         justifyContent: "center",
         alignItems: "center",
         backgroundColor: "#d1e7dd",
+        position: "relative",
       }}
     >
+      {/* Logo SCIFUN - Góc trên bên trái */}
+      <Link
+        to="/"
+        style={{
+          position: "absolute",
+          top: 20,
+          left: 30,
+          fontSize: 32,
+          fontWeight: "bold",
+          color: "#198754",
+          textDecoration: "none",
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          transition: "transform 0.2s",
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = "scale(1.05)";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = "scale(1)";
+        }}
+      >
+        SCIFUN
+      </Link>
+
       <div
         style={{
           display: "flex",

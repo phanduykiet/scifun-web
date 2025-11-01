@@ -1,4 +1,5 @@
 import React from "react";
+import ReactDOM from "react-dom";
 import "../../styles/UpgradeModal.css";
 import { useNavigate } from "react-router-dom";
 
@@ -21,14 +22,14 @@ const UpgradeModal: React.FC<UpgradeModalProps> = ({ show, onClose }) => {
     if (e.target === e.currentTarget) onClose();
   };
 
-  return (
+  // ✅ Dùng Portal để render ra ngoài DOM tree
+  return ReactDOM.createPortal(
     <div className="vip-modal" onClick={handleClickOutside}>
       <div className="vip-modal-content">
         <span className="vip-close" onClick={onClose}>
           &times;
         </span>
 
-        {/* Vương miện */}
         <div className="crown-icon">👑</div>
 
         {/* Badge Premium */}
@@ -66,7 +67,8 @@ const UpgradeModal: React.FC<UpgradeModalProps> = ({ show, onClose }) => {
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body 
   );
 };
 

@@ -77,5 +77,4 @@ const QuestionSidebar: React.FC<QuestionSidebarProps> = ({
     </div>
   );
 };
-
 export default QuestionSidebar;

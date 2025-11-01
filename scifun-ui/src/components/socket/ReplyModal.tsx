@@ -68,7 +68,7 @@ const ReplyModal: React.FC<ReplyModalProps> = ({ show, testimonial, onClose }) =
 
   // Fetch replies với pagination
   const fetchReplies = useCallback(async (pageNum: number) => {
-    if (!testimonial || loading) return;
+    if (!testimonial) return;
     
     setLoading(true);
     try {
@@ -87,7 +87,7 @@ const ReplyModal: React.FC<ReplyModalProps> = ({ show, testimonial, onClose }) =
     } finally {
       setLoading(false);
     }
-  }, [testimonial, loading]);
+  }, [testimonial]);
 
   // Reset và fetch khi mở modal
   useEffect(() => {
@@ -101,7 +101,7 @@ const ReplyModal: React.FC<ReplyModalProps> = ({ show, testimonial, onClose }) =
 
   // Intersection Observer cho lazy loading
   useEffect(() => {
-    if (!observerTarget.current || !hasMore || loading) return;
+    if (!show || !observerTarget.current || !hasMore || loading) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -117,27 +117,74 @@ const ReplyModal: React.FC<ReplyModalProps> = ({ show, testimonial, onClose }) =
     observer.observe(observerTarget.current);
 
     return () => observer.disconnect();
-  }, [hasMore, loading, page, fetchReplies]);
+  }, [show, hasMore, loading, page, fetchReplies]);
 
-  // Lắng nghe reply mới từ socket
+  // Lắng nghe reply mới từ socket - FIXED
   useEffect(() => {
     if (!show || !testimonial) return;
 
-    const handleNewReply = (data: Testimonial) => {
+    const handleNewReply = (data: any) => {
+      console.log("Received reply:", data); // Debug log
+      console.log("Current testimonial ID:", testimonial._id); // Debug log
+      
+      // Kiểm tra nếu reply này thuộc về comment hiện tại
       if (data.parentId === testimonial._id) {
-        setReplies(prev => [data, ...prev]);
+        console.log("Adding reply to list"); // Debug log
+        
+        // Chuẩn hóa data từ socket về đúng format Testimonial
+        const normalizedReply: Testimonial = {
+          _id: data.commentId || data._id,
+          userId: data.userId || "",
+          userName: data.fromUserName || data.userName || "Anonymous",
+          userAvatar: data.userAvatar || "",
+          content: data.content,
+          parentId: data.parentId,
+          repliesCount: 0,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
+        
+        setReplies(prev => {
+          // Xóa reply tạm thời (nếu có) và thêm reply thật từ server
+          const filtered = prev.filter(r => !r._id.startsWith('temp-'));
+          
+          // Kiểm tra xem reply từ server đã tồn tại chưa
+          const exists = filtered.some(r => r._id === normalizedReply._id);
+          if (exists) return prev;
+          
+          return [normalizedReply, ...filtered];
+        });
       }
     };
 
+    // Lắng nghe cả 2 events để đảm bảo nhận được reply
     socket.on("comment:new", handleNewReply);
+    socket.on("comment:reply", handleNewReply);
 
     return () => {
       socket.off("comment:new", handleNewReply);
+      socket.off("comment:reply", handleNewReply);
     };
   }, [show, testimonial]);
 
   const handleSendReply = () => {
     if (!replyMessage.trim() || !testimonial) return;
+    
+    // Tạo reply tạm thời để hiển thị ngay
+    const tempReply: Testimonial = {
+      _id: `temp-${Date.now()}`, // ID tạm
+      userId: "", // Sẽ được server cập nhật
+      userName: "Bạn", // Hoặc lấy từ user context
+      userAvatar: "", // Hoặc lấy từ user context
+      content: replyMessage,
+      parentId: testimonial._id,
+      repliesCount: 0,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    
+    // Thêm reply vào danh sách ngay lập tức
+    setReplies(prev => [tempReply, ...prev]);
     
     // Gửi reply lên server qua socket
     socket.emit("comment:new", {
@@ -265,7 +312,7 @@ const ReplyModal: React.FC<ReplyModalProps> = ({ show, testimonial, onClose }) =
             {/* Danh sách replies */}
             <div>
               <h6 className="mb-3">
-                Các trả lời ({testimonial.repliesCount})
+                Các trả lời ({replies.length})
               </h6>
               
               {replies.length === 0 && !loading ? (
