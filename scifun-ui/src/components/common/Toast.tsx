@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import ReactDOM from "react-dom";
 import { CircleCheck, Info, CircleX, X } from "lucide-react";
 
 interface ToastProps {
@@ -55,7 +56,7 @@ const Toast: React.FC<ToastProps> = ({
 
   const { iconColor, borderColor, Icon } = styleMap;
 
-  return (
+  const toastElement = (
     <div
       className={`position-fixed top-0 end-0 m-3 p-3 border ${borderColor} bg-white rounded shadow d-flex align-items-start transition-all`}
       style={{
@@ -88,6 +89,7 @@ const Toast: React.FC<ToastProps> = ({
       </button>
     </div>
   );
+  return ReactDOM.createPortal(toastElement, document.body);
 };
 
 export default Toast;

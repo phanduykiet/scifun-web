@@ -7,6 +7,7 @@ interface User {
   avatar?: string;
   dob?: string;  // ngày sinh
   sex?: 0 | 1;   // giới tính: 0 = Nam, 1 = Nữ
+  isPro?: "NONE" | "ACTIVE";
 }
 
 interface AuthState {
@@ -26,7 +27,7 @@ export const AuthContext = createContext<AuthContextType | null>(null);
 export const AuthWrapper = ({ children }: { children: ReactNode }) => {
   const [auth, setAuth] = useState<AuthState>({
     isAuthenticated: false,
-    user: { _id: "", email: "", fullname: "", avatar: "", dob: "", sex: undefined },
+    user: { _id: "", email: "", fullname: "", avatar: "", dob: "", sex: undefined, isPro: "NONE" },
   });
 
   const [appLoading, setAppLoading] = useState(true);

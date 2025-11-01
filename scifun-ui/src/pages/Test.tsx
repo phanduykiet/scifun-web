@@ -193,7 +193,7 @@ const Test: React.FC = () => {
     } catch (err: any) {
       console.error("Lỗi khi nộp bài:", err.response?.data || err);
       setToast({
-        message: "❌ Nộp bài thất bại, vui lòng thử lại!",
+        message: "❌ Nộp bài thất bại, vui lòng làm hết câu hỏi trong bài!",
         type: "error",
       });
       setIsSubmitted(false);

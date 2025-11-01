@@ -185,6 +185,7 @@ const getTrendingQuizApi = async () => {
   return res;
 };
 
+
 export { createUserApi, loginApi, otpVerify, getLessonListApi, updateProfileApi, forgotPasswordApi, resetPasswordApi, changePasswordApi,
   getTopicsBySubjectApi, getQuizsByTopicApi, getQuestionsByQuizApi, submitQuizApi, saveQuizApi, delSavedQuizApi, getSavedQuizzesApi, 
   getVideoLessonApi, getAnswersApi, getprogressApi, resetLeaderBoardApi, getLeaderBoardApi, getTrendingQuizApi

@@ -11,6 +11,7 @@ export default function Register() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [hasHint, setHasHint] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState<{
     message: string;
     subtitle?: string;
@@ -21,7 +22,7 @@ export default function Register() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
+  
     if (hasHint) {
       setToast({
         message: "Thông tin chưa hợp lệ!",
@@ -30,7 +31,7 @@ export default function Register() {
       });
       return;
     }
-
+  
     if (password !== confirmPassword) {
       setToast({
         message: "Mật khẩu không khớp!",
@@ -39,27 +40,39 @@ export default function Register() {
       });
       return;
     }
-
+  
     try {
+      setLoading(true); // ✅ bật loading
       const res = await createUserApi(email, password, fullname);
-
+  
       setToast({
         message: "Đăng ký thành công!",
         subtitle: res.data?.message || "Tài khoản của bạn đã được tạo.",
         type: "success",
       });
-
+  
+      // ✅ Toast thông báo đang chuyển
       setTimeout(() => {
-        navigate("/otp", { state: { email, flow: "register" } });
-      }, 1500);
+        setToast({
+          message: "Vui lòng kiểm tra email!",
+          subtitle: "Đang chuyển bạn đến trang nhập mã OTP...",
+          type: "info",
+        });
+      }, 800);
+  
+      setTimeout(() => {
+        navigate("/otp", { state: { email, password, fullname ,flow: "register" } });
+      }, 2000);
     } catch (err: any) {
       setToast({
         message: "Đăng ký thất bại!",
         subtitle: err.response?.data?.message || "Vui lòng thử lại.",
         type: "error",
       });
+    } finally {
+      setLoading(false); // ✅ tắt loading
     }
-  };
+  };  
 
   const cardWidth = 400;
   const cardHeight = 520;
@@ -161,11 +174,10 @@ export default function Register() {
               <Button
                 type="submit"
                 style={{ width: "100%", marginTop: "10px" }}
-                disabled={hasHint}
+                disabled={loading}
               >
-                Đăng ký
+                {loading ? "Đang xử lý..." : "Đăng ký"}
               </Button>
-
               <div style={{ marginTop: 12, textAlign: "center" }}>
                 Bạn đã có tài khoản? <a href="/login">Đăng nhập</a>
               </div>

@@ -1,0 +1,216 @@
+/* Modal Overlay */
+.vip-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.65);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  backdrop-filter: blur(5px);
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Modal Content */
+.vip-modal-content {
+  background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
+  border: 2px solid #ffd700;
+  border-radius: 20px;
+  padding: 45px 35px;
+  max-width: 480px;
+  width: 90%;
+  text-align: center;
+  position: relative;
+  box-shadow: 
+    0 10px 40px rgba(0, 0, 0, 0.15),
+    0 0 0 1px rgba(255, 215, 0, 0.1);
+  animation: slideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Close Button */
+.vip-close {
+  position: absolute;
+  top: 15px;
+  right: 20px;
+  font-size: 32px;
+  font-weight: bold;
+  color: #999;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  line-height: 1;
+}
+
+.vip-close:hover {
+  color: #333;
+  transform: rotate(90deg);
+}
+
+/* Crown Icon */
+.crown-icon {
+  font-size: 70px;
+  margin-bottom: 15px;
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+/* VIP Badge */
+.vip-badge {
+  display: inline-block;
+  background: linear-gradient(135deg, #ffd700, #ffed4e);
+  color: #333;
+  padding: 6px 20px;
+  border-radius: 20px;
+  font-weight: 800;
+  font-size: 13px;
+  letter-spacing: 2px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
+}
+
+/* Title */
+.vip-title {
+  font-size: 28px;
+  font-weight: 800;
+  color: #333;
+  margin-bottom: 15px;
+  letter-spacing: 0.5px;
+}
+
+/* Message */
+.vip-message {
+  font-size: 16px;
+  line-height: 1.6;
+  color: #666;
+  margin-bottom: 25px;
+}
+
+.vip-message strong {
+  color: #ffa500;
+  font-weight: 700;
+}
+
+/* Benefits List */
+.benefits-list {
+  text-align: left;
+  margin: 25px auto 30px;
+  max-width: 380px;
+}
+
+.benefit-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 0;
+  color: #555;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.benefit-icon {
+  color: #ffd700;
+  font-weight: bold;
+  font-size: 18px;
+  min-width: 20px;
+}
+
+/* Buttons Container */
+.vip-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* Button Base */
+.vip-btn {
+  padding: 14px 32px;
+  font-size: 16px;
+  font-weight: 700;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 150px;
+}
+
+/* Primary Button */
+.vip-primary {
+  background: linear-gradient(135deg, #ffd700, #ffed4e);
+  color: #333;
+  box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+}
+
+.vip-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 215, 0, 0.4);
+}
+
+.vip-primary:active {
+  transform: translateY(0);
+}
+
+/* Secondary Button */
+.vip-secondary {
+  background: #f0f0f0;
+  color: #666;
+  border: 1px solid #ddd;
+}
+
+.vip-secondary:hover {
+  background: #e8e8e8;
+  transform: translateY(-2px);
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .vip-modal-content {
+    padding: 35px 25px;
+  }
+
+  .crown-icon {
+    font-size: 60px;
+  }
+
+  .vip-title {
+    font-size: 24px;
+  }
+
+  .vip-message {
+    font-size: 15px;
+  }
+
+  .benefits-list {
+    font-size: 14px;
+  }
+
+  .vip-buttons {
+    flex-direction: column;
+  }
+
+  .vip-btn {
+    width: 100%;
+  }
+}

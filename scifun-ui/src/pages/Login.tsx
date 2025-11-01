@@ -26,10 +26,7 @@ export default function Login() {
     try {
       const res = await loginApi(email, password);
       console.log("user: ", res);
-
-      // ✅ Backend trả về res là object chứa _id, email, fullname...
-      // KHÔNG phải res.data nữa
-      const userData = res as any; // Tạm dùng any để tránh lỗi type
+      const userData = res as any;
       console.log("userData: ", userData);
 
       // Parse sex từ backend (backend trả về 0 hoặc 1)
@@ -47,6 +44,7 @@ export default function Login() {
         avatar: userData.data.avatar || undefined,
         dob: userData.data.dob || undefined, // ISO string từ backend
         sex: sexValue,
+        isPro: userData.data.subscription.status,
       };
       console.log("userInfo: ", user);
 

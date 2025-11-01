@@ -15,6 +15,7 @@ export interface Quiz {
     title: string;
     description?: string;
     topic: TopicMini;
-    questionsCount?: number;  // số câu hỏi
-    duration?: number; // thời gian làm bài
+    questionsCount?: number; 
+    duration?: number; 
+    accessTier?: string;
   }

@@ -1,4 +1,5 @@
 import React from "react";
+import ReactDOM from "react-dom";
 
 interface ConfirmModalProps {
   show: boolean;
@@ -10,18 +11,31 @@ interface ConfirmModalProps {
   cancelText?: string;
 }
 
-const ConfirmModal: React.FC<ConfirmModalProps> = ({ show, title = "Xác nhận", message, onConfirm, onCancel, confirmText, cancelText }) => {
+const ConfirmModal: React.FC<ConfirmModalProps> = ({
+  show,
+  title = "Xác nhận",
+  message,
+  onConfirm,
+  onCancel,
+  confirmText,
+  cancelText,
+}) => {
   if (!show) return null;
 
-  return (
+  return ReactDOM.createPortal(
     <div
       className="modal-backdrop"
       style={{
         position: "fixed",
-        top: 0, left: 0, width: "100%", height: "100%",
+        top: 0,
+        left: 0,
+        width: "100%",
+        height: "100%",
         backgroundColor: "rgba(0,0,0,0.5)",
-        display: "flex", justifyContent: "center", alignItems: "center",
-        zIndex: 1050
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        zIndex: 1050,
       }}
     >
       <div
@@ -32,14 +46,13 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({ show, title = "Xác nhận"
           padding: "20px",
           maxWidth: "400px",
           width: "90%",
-          boxShadow: "0 5px 15px rgba(0,0,0,0.3)"
+          boxShadow: "0 5px 15px rgba(0,0,0,0.3)",
         }}
       >
         {title && <h5>{title}</h5>}
-        <div>
-            {message}
-        </div>
-        <div className="d-flex justify-content-end" style={{ gap: "10px" }}>
+        <div>{message}</div>
+
+        <div className="d-flex justify-content-end mt-3" style={{ gap: "10px" }}>
           <button className="btn btn-secondary" onClick={onCancel}>
             {cancelText || "Hủy"}
           </button>
@@ -48,7 +61,8 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({ show, title = "Xác nhận"
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body // ✅ Portal mount vào <body>
   );
 };
 

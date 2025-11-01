@@ -82,55 +82,23 @@ const Header: React.FC = () => {
               </Link>
             </li>
 
-            {/* Dropdown Môn học */}
-            <li className="nav-item dropdown">
+            <li className="nav-item">
               <a
-                className={`nav-link dropdown-toggle ${
+                href="#lessons-section"
+                className={`nav-link ${
                   location.pathname === "/" && !scrolled
                     ? "text-white"
                     : "text-success"
                 }`}
-                href="#"
-                id="subjectDropdown"
-                role="button"
-                data-bs-toggle="dropdown"
-                aria-expanded="false"
               >
                 Môn học
               </a>
-              <ul className="dropdown-menu">
-                <li>
-                  <Link className="dropdown-item" to="/subject/math">
-                    Toán học
-                  </Link>
-                </li>
-                <li>
-                  <Link className="dropdown-item" to="/subject/physics">
-                    Vật lý
-                  </Link>
-                </li>
-                <li>
-                  <Link className="dropdown-item" to="/subject/chemistry">
-                    Hóa học
-                  </Link>
-                </li>
-                <li>
-                  <Link className="dropdown-item" to="/subject/biology">
-                    Sinh học
-                  </Link>
-                </li>
-                <li>
-                  <Link className="dropdown-item" to="/subject/english">
-                    Tiếng Anh
-                  </Link>
-                </li>
-              </ul>
             </li>
 
             {/* Các trang phụ */}
             <li className="nav-item">
-              <Link
-                to="/highlight-lessons"
+              <a
+                href="#quizzes-section"
                 className={`nav-link ${
                   location.pathname === "/" && !scrolled
                     ? "text-white"
@@ -138,7 +106,7 @@ const Header: React.FC = () => {
                 }`}
               >
                 Bài học nổi bật
-              </Link>
+              </a>
             </li>
 
             <li className="nav-item">

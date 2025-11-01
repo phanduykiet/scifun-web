@@ -1,39 +1,307 @@
-/* Header.css */
+/* Navbar cơ bản */
+.navbar {
+  transition: all 0.3s ease-in-out;
+  backdrop-filter: blur(10px);
+}
 
-/* Navbar trong suốt khi ở đầu trang */
+/* Navbar trong suốt (trang chủ chưa scroll) */
 .transparent-navbar {
-  background-color: transparent !important;
-  transition: all 0.3s ease;
+  background-color: rgba(0, 0, 0, 0.3) !important;
+  box-shadow: none;
 }
 
-/* Navbar nền trắng khi cuộn hoặc ở trang khác */
+/* Navbar trắng (các trang khác hoặc sau khi scroll) */
 .white-navbar {
-  background-color: #ffffff !important;
-  border-bottom: 1px solid #e0e0e0;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-  transition: all 0.3s ease;
+  background-color: rgba(255, 255, 255, 0.95) !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
-/* Khi ở navbar trắng */
-.white-navbar .navbar-brand,
+/* Logo styles */
+.navbar-brand {
+  font-weight: 700 !important;
+  font-size: 1.75rem !important;
+  transition: all 0.3s ease;
+  letter-spacing: 0.5px;
+}
+
+.navbar-brand:hover {
+  transform: scale(1.05);
+}
+
+/* Nav links cơ bản */
+.nav-link {
+  position: relative;
+  padding: 0.5rem 1rem !important;
+  transition: all 0.3s ease;
+  font-weight: 600;
+}
+
+/* Hiệu ứng underline cho nav-link */
+.nav-link::after {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 2px;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: currentColor;
+  transition: width 0.3s ease;
+}
+
+.nav-link:hover::after {
+  width: 80%;
+}
+
+/* Nav link màu trắng (navbar trong suốt) */
+.transparent-navbar .nav-link {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.transparent-navbar .nav-link:hover {
+  color: #ffffff !important;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+}
+
+/* Nav link màu xanh (navbar trắng) */
 .white-navbar .nav-link {
   color: #198754 !important;
 }
 
-/* Khi navbar trong suốt */
-.transparent-navbar .nav-link,
-.transparent-navbar .navbar-brand {
+.white-navbar .nav-link:hover {
+  color: #146c43 !important;
+  background-color: rgba(25, 135, 84, 0.1);
+  border-radius: 6px;
+}
+
+/* Dropdown toggle */
+.dropdown-toggle {
+  transition: all 0.3s ease;
+}
+
+/* Dropdown toggle khi navbar trong suốt */
+.transparent-navbar .dropdown-toggle {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.transparent-navbar .dropdown-toggle:hover {
+  color: #fff !important;
+  background-color: rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+}
+
+/* ✅ Khi dropdown mở trong navbar trong suốt → chữ xanh */
+.transparent-navbar .dropdown.show .dropdown-toggle {
+  color: #198754 !important;
+  background-color: rgba(255, 255, 255, 0.25);
+}
+
+/* Navbar trắng */
+.white-navbar .dropdown-toggle {
+  color: #198754 !important;
+}
+
+.white-navbar .dropdown-toggle:hover {
+  color: #146c43 !important;
+  background-color: rgba(25, 135, 84, 0.1);
+  border-radius: 6px;
+}
+
+/* Dropdown mở trong navbar trắng */
+.white-navbar .dropdown.show .dropdown-toggle {
+  color: #198754 !important;
+  background-color: rgba(25, 135, 84, 0.15);
+}
+
+/* Dropdown menu */
+.dropdown-menu {
+  border: none;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  border-radius: 8px;
+  padding: 0.5rem 0;
+  margin-top: 0.5rem;
+  animation: slideDown 0.3s ease;
+  overflow: hidden;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Dropdown items */
+.dropdown-item {
+  padding: 0.6rem 1.5rem;
+  color: #333;
+  transition: all 0.2s ease;
+  font-weight: 500;
+  border-radius: 0;
+  margin: 0;
+  width: 100%;
+}
+
+.dropdown-item:hover {
+  background-color: #198754;
+  color: white !important;
+  border-radius: 0;
+  margin: 0;
+}
+
+/* Nút đăng nhập */
+.btn {
+  padding: 0.5rem 1.5rem;
+  border-radius: 25px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+}
+
+.btn-light {
+  border-color: white;
+}
+
+.btn-light:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.3);
+}
+
+.btn-success:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(25, 135, 84, 0.3);
+}
+
+.btn-outline-light:hover {
+  background-color: rgba(255, 255, 255, 0.2) !important;
+  border-color: white !important;
+  color: white !important;
+}
+
+.btn-outline-success:hover {
+  background-color: rgba(25, 135, 84, 0.1) !important;
+  border-color: #198754 !important;
+  color: #198754 !important;
+}
+
+/* User dropdown button */
+.dropdown > .btn {
+  border-radius: 25px;
+  padding: 0.4rem 1rem;
+}
+
+/* User dropdown trong navbar trong suốt */
+.transparent-navbar .btn-outline-light {
+  color: rgba(255, 255, 255, 0.9) !important;
+  border-color: rgba(255, 255, 255, 0.7) !important;
+}
+
+.transparent-navbar .btn-outline-light:hover {
+  background-color: rgba(255, 255, 255, 0.15) !important;
+  border-color: white !important;
+  color: white !important;
+}
+
+/* Khi user dropdown đang mở trong navbar trong suốt */
+.transparent-navbar .dropdown.show .btn-outline-light {
+  background-color: rgba(255, 255, 255, 0.95) !important;
+  border-color: white !important;
+  color: #198754 !important;
+}
+
+/* User dropdown trong navbar trắng */
+.white-navbar .btn-outline-success {
+  color: #198754 !important;
+  border-color: #198754 !important;
+}
+
+.white-navbar .btn-outline-success:hover {
+  background-color: rgba(25, 135, 84, 0.1) !important;
+  border-color: #198754 !important;
+  color: #198754 !important;
+}
+
+/* Khi user dropdown đang mở trong navbar trắng */
+.white-navbar .dropdown.show .btn-outline-success {
+  background-color: rgba(25, 135, 84, 0.15) !important;
+  border-color: #198754 !important;
+  color: #198754 !important;
+}
+
+/* Avatar trong user dropdown */
+.dropdown > .btn img {
+  border: 2px solid white;
+  transition: transform 0.3s ease;
+}
+
+.dropdown > .btn:hover img {
+  transform: scale(1.1);
+}
+
+/* Navbar toggler (mobile) */
+.navbar-toggler {
+  border: none;
+  padding: 0.25rem 0.5rem;
+  transition: all 0.3s ease;
+}
+
+.navbar-toggler:focus {
+  box-shadow: none;
+  outline: 2px solid rgba(255, 255, 255, 0.5);
+}
+
+.transparent-navbar .navbar-toggler-icon {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 0.9%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+}
+
+.white-navbar .navbar-toggler-icon {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%2825, 135, 84, 1%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+}
+
+/* Active link state */
+.nav-link.active {
+  font-weight: 700;
+}
+
+.transparent-navbar .nav-link.active {
   color: #ffffff !important;
 }
 
-/* Nút hover */
-.navbar .btn:hover {
-  opacity: 0.9;
+.white-navbar .nav-link.active {
+  color: #146c43 !important;
 }
 
-/* Dropdown */
-.dropdown-menu {
-  background-color: #fff;
-  border: 1px solid #ddd;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+/* Responsive adjustments */
+@media (max-width: 991px) {
+  .navbar-collapse {
+    background-color: white;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-top: 1rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  }
+
+  .transparent-navbar .navbar-collapse {
+    background-color: rgba(255, 255, 255, 0.95);
+  }
+
+  .transparent-navbar .nav-link,
+  .transparent-navbar .dropdown-toggle {
+    color: #198754 !important;
+  }
+
+  .transparent-navbar .nav-link:hover,
+  .transparent-navbar .dropdown-toggle:hover {
+    color: #146c43 !important;
+    background-color: rgba(25, 135, 84, 0.1);
+  }
+
+  .nav-link::after {
+    display: none;
+  }
 }

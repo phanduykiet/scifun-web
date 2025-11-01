@@ -6,7 +6,7 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   rounded?: boolean;
   error?: string;
   hint?: string;
-  onHintChange?: (hasHint: boolean) => void; // ✅ thêm prop này
+  onHintChange?: (hasHint: boolean) => void;
 }
 
 const Input: React.FC<InputProps> = ({
@@ -22,7 +22,6 @@ const Input: React.FC<InputProps> = ({
 }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [hintText, setHintText] = useState<string | null>(hint || null);
-  const [touched, setTouched] = useState(false);
 
   const isPassword = type === "password";
   const isEmail = type === "email";
@@ -30,97 +29,95 @@ const Input: React.FC<InputProps> = ({
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
 
-    // Gợi ý email
+    // ✅ Hint email
     if (isEmail) {
       if (value && !value.includes("@gmail.com")) {
         setHintText("Email phải có đuôi @gmail.com");
       } else {
-        setHintText(hint || null);
+        setHintText(null);
       }
     }
 
-    // Gợi ý mật khẩu
+    // ✅ Hint password
     if (isPassword) {
-      if (value && value.length < 8) {
-        setHintText("Mật khẩu phải dài tối thiểu 8 ký tự");
-      } else if (value && !/[A-Z]/.test(value)) {
-        setHintText("Mật khẩu phải chứa ít nhất 1 chữ hoa");
-      } else if (value && !/[0-9]/.test(value)) {
-        setHintText("Mật khẩu phải chứa ít nhất 1 số");
-      } else {
-        setHintText(hint || null);
-      }
+      if (!value) setHintText(null);
+      else if (value.length < 8) setHintText("Mật khẩu phải dài tối thiểu 8 ký tự");
+      else if (!/[A-Z]/.test(value)) setHintText("Mật khẩu phải có ít nhất 1 chữ hoa");
+      else if (!/[0-9]/.test(value)) setHintText("Mật khẩu phải có ít nhất 1 số");
+      else setHintText(null);
     }
 
-    if (rest.onChange) rest.onChange(e);
+    rest.onChange?.(e);
   };
 
   useEffect(() => {
-    if (onHintChange) {
-      onHintChange(!!hintText);
-    }
-  }, [hintText, onHintChange]);
+    onHintChange?.(!!hintText);
+  }, [hintText]);
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", marginBottom: "15px" }}>
-      {label && <label style={{ marginBottom: "5px", fontWeight: "bold" }}>{label}</label>}
+    <div style={{ marginBottom: "16px" }}>
+      {label && <label style={{ fontWeight: 600, marginBottom: "6px", display: "block" }}>{label}</label>}
 
-      <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
-        <input
-          {...rest}
-          type={isPassword && showPassword ? "text" : type}
-          onChange={handleChange}
-          onBlur={() => setTouched(true)}
-          disabled={disabled}
-          style={{
-            padding: isPassword ? "10px 40px 10px 12px" : "10px 12px",
-            border: error ? "1px solid red" : "1px solid #ccc",
-            borderRadius: rounded ? "20px" : "4px",
-            fontSize: "14px",
-            outline: "none",
-            boxSizing: "border-box",
-            width: "100%",
-            backgroundColor: "white",
-            color: "#000",
-            ...style,
-          }}
-        />
+      <div style={{ position: "relative" }}>
+      <input
+        {...rest}
+        disabled={disabled}
+        type={isPassword && showPassword ? "text" : type}
+        onChange={handleChange}
+        style={{
+          padding: isPassword ? "10px 42px 10px 12px" : "10px 12px",
+          border: error ? "1px solid red" : "1px solid #ccc",
+          borderRadius: rounded ? "20px" : "6px",
+          fontSize: "14px",
+          width: "100%",
+          outline: "none",
+          boxSizing: "border-box",
+          background: disabled ? "#f5f5f5" : "white",
+          color: "#000",            // ✅ THÊM DÒNG NÀY
+          ...style,
+        }}
+      />
 
         {isPassword && (
           <span
             onClick={() => setShowPassword((prev) => !prev)}
             style={{
               position: "absolute",
-              right: 12,
+              right: 10,
               top: "50%",
               transform: "translateY(-50%)",
               cursor: "pointer",
-              userSelect: "none",
               fontSize: "18px",
-              color: "#555",
-              display: "flex", alignItems: "center", justifyContent: "center", height: "24px", width: "24px"
+              color: "#666",
+              display: "flex",
+              alignItems: "center",
             }}
           >
             {showPassword ? <FaEyeSlash /> : <FaEye />}
           </span>
         )}
+
+        {/* ✅ Hint/Error không đẩy layout + animate */}
+        {(hintText || error) && (
+          <span
+            style={{
+              position: "absolute",
+              bottom: "-16px",
+              left: "2px",
+              fontSize: "12px",
+              color: "red",
+              opacity: 1,
+              animation: "fadeIn .15s ease",
+              pointerEvents: "none",
+              whiteSpace: "nowrap"
+            }}
+          >
+            {error || hintText}
+          </span>
+        )}
       </div>
-
-      {/* Hiển thị hint luôn, ngay cả khi disabled */}
-      {hintText && !error && (
-        <span style={{ color: "red", fontSize: "12px", marginTop: "3px" }}>
-          {hintText}
-        </span>
-      )}
-
-      {error && (
-        <span style={{ color: "red", fontSize: "12px", marginTop: "3px" }}>
-          {error}
-        </span>
-      )}
     </div>
   );
 };
-
 
 export default Input;

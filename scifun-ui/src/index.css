@@ -75,3 +75,12 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+html {
+  scroll-behavior: smooth;
+}
+#lessons-section {
+  scroll-margin-top: 100px; /* khoảng cách */
+}
+#quizzes-section {
+  scroll-margin-top: 100px; /* khoảng cách */
+}

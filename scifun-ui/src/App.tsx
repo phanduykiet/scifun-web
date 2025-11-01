@@ -15,6 +15,7 @@ import TopicPage from "./pages/Topic";
 import StatisticsPage from "./pages/StatisticsPage";
 import SavedQuizsPage from "./pages/SavedQuizsPage";
 import Leaderboard from "./pages/Leaderboard";
+import PremiumPage from "./pages/PremiumPage";
 
 export default function App() {
   return (
@@ -35,6 +36,7 @@ export default function App() {
         <Route path="/statistic" element={<StatisticsPage />} />
         <Route path="/save-quiz" element={<SavedQuizsPage />} />
         <Route path="/leaderboard" element={<Leaderboard />} />
+        <Route path="/premium" element={<PremiumPage />} />
       </Routes>
   );
 }

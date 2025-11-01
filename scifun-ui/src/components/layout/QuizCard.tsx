@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import type { Quiz } from "../../types/quiz";
-import { FaClock, FaQuestionCircle, FaBookmark } from "react-icons/fa";
+import { FaClock, FaQuestionCircle, FaBookmark, FaCrown } from "react-icons/fa";
 import { CiBookmark } from "react-icons/ci";
 import {
   getQuestionsByQuizApi,
@@ -10,18 +10,21 @@ import {
 } from "../../util/api";
 import ConfirmModal from "../common/ConfirmModal";
 import Toast from "../common/Toast";
+import UpgradeModal from "../Prenium/UpgradeModal";
 
 interface QuizCardProps {
   quiz: Quiz;
   onClick?: (quiz: Quiz) => void;
   className?: string;
+  isPro?: boolean;
 }
 
-const QuizCard: React.FC<QuizCardProps> = ({ quiz, onClick }) => {
+const QuizCard: React.FC<QuizCardProps> = ({ quiz, onClick, isPro = false }) => {
   const [questionsCount, setQuestionsCount] = useState<number | null>(null);
   const [durationMinutes, setDurationMinutes] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [bookmarked, setBookmarked] = useState(false);
   const [toast, setToast] = useState<{
     message: string;
@@ -29,7 +32,7 @@ const QuizCard: React.FC<QuizCardProps> = ({ quiz, onClick }) => {
     type?: "success" | "error" | "info";
   } | null>(null);
 
-  // ✅ Lấy userId từ localStorage
+  // ✅ Lấy userId và isPro từ localStorage
   const userId = (() => {
     try {
       const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -38,6 +41,16 @@ const QuizCard: React.FC<QuizCardProps> = ({ quiz, onClick }) => {
       return null;
     }
   })();
+
+  const userIsPro = (() => {
+    try {
+      const user = JSON.parse(localStorage.getItem("user") || "{}");
+      return user.isPro === "ACTIVE";
+    } catch {
+      return false;
+    }
+  })();
+
   // ✅ Lấy thông tin quiz (số câu, thời lượng)
   useEffect(() => {
     const fetchQuizStats = async () => {
@@ -109,6 +122,16 @@ const QuizCard: React.FC<QuizCardProps> = ({ quiz, onClick }) => {
     }
   };
 
+  // ✅ Xử lý khi nhấn nút "Bắt đầu"
+  const handleStartQuiz = () => {
+    // Kiểm tra nếu quiz là PRO và user không phải PRO
+    if (isPro && !userIsPro) {
+      setShowUpgradeModal(true);
+    } else {
+      setShowModal(true);
+    }
+  };
+
   return (
     <>
       <div
@@ -119,6 +142,8 @@ const QuizCard: React.FC<QuizCardProps> = ({ quiz, onClick }) => {
           cursor: "pointer",
           padding: "16px",
           backgroundColor: "#f8f9fa",
+          border: isPro ? "3px solid #FFD700" : "1px solid #dee2e6",
+          position: "relative",
         }}
         onMouseEnter={(e) => {
           e.currentTarget.style.transform = "translateY(-4px)";
@@ -129,6 +154,30 @@ const QuizCard: React.FC<QuizCardProps> = ({ quiz, onClick }) => {
           e.currentTarget.style.boxShadow = "0 2px 6px rgba(0,0,0,0.1)";
         }}
       >
+        {/* ✅ Badge Pro với icon vương miện */}
+        {isPro && (
+          <div
+            style={{
+              position: "absolute",
+              top: "-10px",
+              right: "10px",
+              backgroundColor: "#FFD700",
+              color: "#000",
+              padding: "4px 12px",
+              borderRadius: "20px",
+              fontSize: "0.75rem",
+              fontWeight: "bold",
+              display: "flex",
+              alignItems: "center",
+              gap: "4px",
+              boxShadow: "0 2px 8px rgba(255, 215, 0, 0.5)",
+            }}
+          >
+            <FaCrown size={14} />
+            PRO
+          </div>
+        )}
+
         <h5
           className="fw-bold mb-2 text-truncate"
           title={quiz.title}
@@ -161,7 +210,10 @@ const QuizCard: React.FC<QuizCardProps> = ({ quiz, onClick }) => {
         </div>
 
         <div className="d-flex align-items-center mt-auto" style={{ gap: "8px" }}>
-          <button className="btn btn-success flex-grow-1" onClick={() => setShowModal(true)}>
+          <button 
+            className="btn btn-success flex-grow-1" 
+            onClick={handleStartQuiz}
+          >
             Bắt đầu
           </button>
 
@@ -211,6 +263,12 @@ const QuizCard: React.FC<QuizCardProps> = ({ quiz, onClick }) => {
           onClose={() => setToast(null)}
         />
       )}
+
+      {/* ✅ Modal nâng cấp */}
+      <UpgradeModal 
+        show={showUpgradeModal} 
+        onClose={() => setShowUpgradeModal(false)} 
+      />
     </>
   );
 };
