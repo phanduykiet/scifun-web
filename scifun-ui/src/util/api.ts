@@ -184,13 +184,54 @@ const getTrendingQuizApi = async () => {
   const res = await axios.get("/api/v1/quiz/get-trend-quizzes");
   return res;
 };
-const creat = async (subjectId: string) => {
-  const res = await axios.post(`/api/v1/leaderboards/rebuild/${subjectId}`);
+const createPaymentApi = async (price: number) => {
+  const res = await axios.post("/api/v1/checkout", {price});
+  return res;
+};
+const getPlansApi = async () => {
+  const res = await axios.get("/api/v1/plans/list");
+  return res;
+};
+const checkPaymentApi = async (app_id: number, app_trans_id: string, mac: string) => {
+  const res = await axios.post("https://sb-openapi.zalopay.vn/v2/query", {app_id, app_trans_id, mac});
+  return res;
+};
+const updatePaymentApi = async (appTransId: string, returnCode: number, durationDays: number) => {
+  const res = await axios.post("/api/v1/zalopay/verifyPayment", {appTransId, returnCode, durationDays});
+  return res;
+};
+const getCommentsApi = async (page?: number, limit?: number) => {
+  const res = await axios.get("/api/v1/comments", 
+    {
+      params: {page, limit}
+    }
+  );
+  return res;
+};
+const getReplyCommentsApi = async (commentId: string, page?: number, limit?: number) => {
+  const res = await axios.get(`api/v1/comments/${commentId}/replies`, 
+    {
+      params: {page, limit}
+    }
+  );
+  return res;
+};
+const getNotificationsApi = async () => {
+  const res = await axios.get("/api/v1/notifications");
+  return res;
+};
+const markAsReadApi = async (notiId: string) => {
+  const res = await axios.post(`/api/v1/notifications/mark-as-read/${notiId}`);
+  return res;
+};
+const markAllAsReadApi = async () => {
+  const res = await axios.post("/api/v1/notifications/mark-all-as-read");
   return res;
 };
 
 
 export { createUserApi, loginApi, otpVerify, getLessonListApi, updateProfileApi, forgotPasswordApi, resetPasswordApi, changePasswordApi,
   getTopicsBySubjectApi, getQuizsByTopicApi, getQuestionsByQuizApi, submitQuizApi, saveQuizApi, delSavedQuizApi, getSavedQuizzesApi, 
-  getVideoLessonApi, getAnswersApi, getprogressApi, resetLeaderBoardApi, getLeaderBoardApi, getTrendingQuizApi
+  getVideoLessonApi, getAnswersApi, getprogressApi, resetLeaderBoardApi, getLeaderBoardApi, getTrendingQuizApi, getPlansApi, createPaymentApi,
+  checkPaymentApi, updatePaymentApi, getCommentsApi, getReplyCommentsApi, getNotificationsApi, markAsReadApi, markAllAsReadApi
 };

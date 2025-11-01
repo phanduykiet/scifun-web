@@ -2,6 +2,7 @@ import React, { useRef, useState, useEffect } from "react";
 import "../styles/TestPage.css";
 import TestQuestion from "../components/layout/TestQuestion";
 import QuestionSidebar from "../components/layout/QuestionSidebar";
+import UpgradeModal from "../components/Prenium/UpgradeModal"; // ✅ Import modal
 import { useLocation, useNavigate } from "react-router-dom";
 import { getQuestionsByQuizApi, getAnswersApi } from "../util/api";
 
@@ -16,20 +17,23 @@ const TestReview: React.FC = () => {
   const [isOpen, setIsOpen] = useState(true);
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const [answers, setAnswers] = useState<any[]>([]);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false); // ✅ State modal
   const questionRefs = useRef<Array<HTMLDivElement | null>>([]);
 
   const isMobile = windowWidth <= 900;
   const questionMarginRight = !isMobile ? (isOpen ? "280px" : "60px") : "0";
 
+  // ✅ Lấy user từ localStorage
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const isPremium = user?.isPro === "ACTIVE";
+
   useEffect(() => {
     if (!quizId) return;
     const fetchData = async () => {
       try {
-        // Lấy câu hỏi
         const qRes = await getQuestionsByQuizApi(quizId);
         setQuestions(qRes.data.data);
   
-        // Lấy đáp án (có thể chứa giải thích)
         const aRes = await getAnswersApi(submissionId);
         setAnswers(aRes.data.answers);
       } catch (err) {
@@ -39,7 +43,6 @@ const TestReview: React.FC = () => {
     fetchData();
   }, [quizId]);  
 
-  // 🔹 Resize
   useEffect(() => {
     const handleResize = () => setWindowWidth(window.innerWidth);
     window.addEventListener("resize", handleResize);
@@ -52,18 +55,16 @@ const TestReview: React.FC = () => {
       block: "start",
     });
   };
-  // Câu đúng → true, sai hoặc chưa chọn → false
+
   const answeredQuestions = questions.map((q) => {
     const selectedId = userAnswers?.[q._id];
     const correctId = q.answers.find((a: any) => a.isCorrect)?._id;
-  
-    return selectedId === correctId; // đúng → true, sai/không chọn → false
+    return selectedId === correctId;
   });  
   
 
   return (
     <div className="test-page">
-      {/* 🔹 Header hiển thị kết quả */}
       <div
         className="test-header"
         style={{
@@ -119,7 +120,6 @@ const TestReview: React.FC = () => {
       </div>
 
       <div className="test-main">
-        {/* 🔹 Danh sách câu hỏi */}
         <div
           className="questions-container"
           style={{ marginRight: questionMarginRight }}
@@ -143,13 +143,14 @@ const TestReview: React.FC = () => {
                   correctAnswer={correctAnswerId}
                   mode="review"
                   explanation={explanation}
+                  isExplanationLocked={!isPremium} // ✅ Thêm prop
+                  onUnlockClick={() => setShowUpgradeModal(true)} // ✅ Thêm prop
                 />
               );
             })
           )}
         </div>
 
-        {/* 🔹 Sidebar */}
         <QuestionSidebar
             questions={questions}
             answeredQuestions={answeredQuestions}
@@ -161,6 +162,12 @@ const TestReview: React.FC = () => {
             showSubmitButton={false}
         />
       </div>
+
+      {/* ✅ Thêm modal */}
+      <UpgradeModal 
+        show={showUpgradeModal}
+        onClose={() => setShowUpgradeModal(false)}
+      />
     </div>
   );
 };

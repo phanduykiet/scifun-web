@@ -24,7 +24,7 @@ export interface ZLPCreateOrderRes {
 }
 
 const embedDataObj = {
-  redirecturl: `${process.env.CLIENT_URL}`,
+  redirecturl: `${process.env.CLIENT_URL}/premium`,
 };
 
 
