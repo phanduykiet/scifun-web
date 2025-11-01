@@ -306,20 +306,6 @@ npm run dev
 ☁️  Cloudinary connected
 ```
 
-**Test API:**
-```bash
-# Test health check
-curl http://localhost:5000/api/health
-
-# Response mong đợi
-{
-  "status": "OK",
-  "mongodb": "Connected",
-  "elasticsearch": "Connected",
-  "timestamp": "2024-11-02T10:30:00.000Z"
-}
-```
-
 ---
 
 ### 🎨 Setup Frontend (scifun-ui)
@@ -364,9 +350,6 @@ npm run start
 3. Mở **Developer Console** (F12):
    - Không có lỗi kết nối API
    - WebSocket connected
-4. Kiểm tra **Network** tab:
-   - API calls đến `http://localhost:5000/api`
-   - Status 200 OK
 
 ---
 
