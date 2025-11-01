@@ -3,7 +3,6 @@ import type { Quiz } from "../../types/quiz";
 import { FaClock, FaQuestionCircle, FaBookmark, FaCrown } from "react-icons/fa";
 import { CiBookmark } from "react-icons/ci";
 import {
-  getQuestionsByQuizApi,
   saveQuizApi,
   delSavedQuizApi,
   getSavedQuizzesApi,
@@ -20,9 +19,6 @@ interface QuizCardProps {
 }
 
 const QuizCard: React.FC<QuizCardProps> = ({ quiz, onClick, isPro = false }) => {
-  const [questionsCount, setQuestionsCount] = useState<number | null>(null);
-  const [durationMinutes, setDurationMinutes] = useState<number | null>(null);
-  const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [bookmarked, setBookmarked] = useState(false);
@@ -32,7 +28,7 @@ const QuizCard: React.FC<QuizCardProps> = ({ quiz, onClick, isPro = false }) => 
     type?: "success" | "error" | "info";
   } | null>(null);
 
-  // ✅ Lấy userId và isPro từ localStorage
+  // ✅ Lấy userId và trạng thái Pro từ localStorage
   const userId = (() => {
     try {
       const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -51,25 +47,7 @@ const QuizCard: React.FC<QuizCardProps> = ({ quiz, onClick, isPro = false }) => 
     }
   })();
 
-  // ✅ Lấy thông tin quiz (số câu, thời lượng)
-  useEffect(() => {
-    const fetchQuizStats = async () => {
-      try {
-        setLoading(true);
-        const res = await getQuestionsByQuizApi(quiz._id);
-        const questions = res.data.data;
-        setQuestionsCount(questions.length);
-        setDurationMinutes(quiz.duration ?? 0);
-      } catch (err) {
-        console.error("Failed to fetch quiz stats:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchQuizStats();
-  }, [quiz._id, quiz.duration]);
-
-  // ✅ Lấy danh sách quiz đã lưu để fill màu bookmark sẵn
+  // ✅ Kiểm tra quiz đã lưu chưa
   useEffect(() => {
     const fetchSaved = async () => {
       if (!userId) return;
@@ -124,7 +102,6 @@ const QuizCard: React.FC<QuizCardProps> = ({ quiz, onClick, isPro = false }) => 
 
   // ✅ Xử lý khi nhấn nút "Bắt đầu"
   const handleStartQuiz = () => {
-    // Kiểm tra nếu quiz là PRO và user không phải PRO
     if (isPro && !userIsPro) {
       setShowUpgradeModal(true);
     } else {
@@ -194,26 +171,22 @@ const QuizCard: React.FC<QuizCardProps> = ({ quiz, onClick, isPro = false }) => 
           </p>
         )}
 
-        <div className="d-flex justify-content-between mb-3" style={{ fontSize: "0.85rem" }}>
-          {loading ? (
-            <span>Đang tải...</span>
-          ) : (
-            <>
-              <span>
-                <FaQuestionCircle className="me-1" /> {questionsCount ?? 0} câu
-              </span>
-              <span>
-                <FaClock className="me-1" /> {durationMinutes ?? 0} phút
-              </span>
-            </>
-          )}
+        {/* ✅ Số câu hỏi + thời gian */}
+        <div
+          className="d-flex justify-content-between mb-3"
+          style={{ fontSize: "0.85rem" }}
+        >
+          <span>
+            <FaQuestionCircle className="me-1" /> {quiz.questionCount ?? 0} câu
+          </span>
+          <span>
+            <FaClock className="me-1" /> {quiz.duration ?? 0} phút
+          </span>
         </div>
 
+        {/* ✅ Nút và bookmark */}
         <div className="d-flex align-items-center mt-auto" style={{ gap: "8px" }}>
-          <button 
-            className="btn btn-success flex-grow-1" 
-            onClick={handleStartQuiz}
-          >
+          <button className="btn btn-success flex-grow-1" onClick={handleStartQuiz}>
             Bắt đầu
           </button>
 
@@ -243,8 +216,8 @@ const QuizCard: React.FC<QuizCardProps> = ({ quiz, onClick, isPro = false }) => 
         message={
           <>
             <p>Bạn có chắc chắn muốn bắt đầu bài kiểm tra "{quiz.title}"?</p>
-            <p>Số câu hỏi: {questionsCount ?? 0}</p>
-            <p>Thời gian: {durationMinutes ?? 0} phút</p>
+            <p>Số câu hỏi: {quiz.questionCount ?? 0}</p>
+            <p>Thời gian: {quiz.duration ?? 0} phút</p>
           </>
         }
         onConfirm={() => {
@@ -254,7 +227,7 @@ const QuizCard: React.FC<QuizCardProps> = ({ quiz, onClick, isPro = false }) => 
         onCancel={() => setShowModal(false)}
       />
 
-      {/* ✅ Toast thông báo */}
+      {/* ✅ Toast */}
       {toast && (
         <Toast
           message={toast.message}
@@ -265,9 +238,9 @@ const QuizCard: React.FC<QuizCardProps> = ({ quiz, onClick, isPro = false }) => 
       )}
 
       {/* ✅ Modal nâng cấp */}
-      <UpgradeModal 
-        show={showUpgradeModal} 
-        onClose={() => setShowUpgradeModal(false)} 
+      <UpgradeModal
+        show={showUpgradeModal}
+        onClose={() => setShowUpgradeModal(false)}
       />
     </>
   );

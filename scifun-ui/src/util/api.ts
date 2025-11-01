@@ -184,6 +184,10 @@ const getTrendingQuizApi = async () => {
   const res = await axios.get("/api/v1/quiz/get-trend-quizzes");
   return res;
 };
+const creat = async (subjectId: string) => {
+  const res = await axios.post(`/api/v1/leaderboards/rebuild/${subjectId}`);
+  return res;
+};
 
 
 export { createUserApi, loginApi, otpVerify, getLessonListApi, updateProfileApi, forgotPasswordApi, resetPasswordApi, changePasswordApi,

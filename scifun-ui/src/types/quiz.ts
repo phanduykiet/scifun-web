@@ -15,7 +15,7 @@ export interface Quiz {
     title: string;
     description?: string;
     topic: TopicMini;
-    questionsCount?: number; 
+    questionCount?: number; 
     duration?: number; 
     accessTier?: string;
   }
