@@ -444,6 +444,8 @@ ZP_APP_ID=2554
 ZP_KEY1=sdngKKJmqEMzvh5QQcdD2A9XBSKUNaYn
 ```
 
+---
+
 **Lưu ý:** Đây là môi trường test, không dùng cho production
 
 ---
@@ -462,24 +464,7 @@ ZP_KEY1=sdngKKJmqEMzvh5QQcdD2A9XBSKUNaYn
 ☁️  Cloudinary connected
 ```
 
-**Test API endpoints:**
-```bash
-# Health check
-curl http://localhost:5000/api/health
-
-# Get subjects
-curl http://localhost:5000/api/subjects
-
-# Response: Array of subjects
-[
-  {
-    "_id": "...",
-    "name": "Vật lý",
-    "description": "...",
-    "imageUrl": "..."
-  }
-]
-```
+---
 
 #### **2. Frontend (scifun-ui)**
 
@@ -488,12 +473,6 @@ curl http://localhost:5000/api/subjects
 - ✅ Không có lỗi trong Console
 - ✅ WebSocket connected (check Console: "Socket connected")
 - ✅ API calls thành công (Network tab: status 200)
-
-**Test chức năng:**
-- Đăng ký tài khoản mới
-- Đăng nhập
-- Xem danh sách môn học
-- Vào làm quiz
 
 ---
 
@@ -530,46 +509,10 @@ PORT=5001
 
 ---
 
-#### **Frontend không kết nối Backend**
-
-**CORS error:**
-Kiểm tra file `scifun-api/src/app.js` hoặc `server.js`:
-```javascript
-app.use(cors({
-  origin: 'http://localhost:5173',
-  credentials: true
-}));
-```
-
-**API URL sai:**
-```bash
-# Kiểm tra .env frontend
-cat scifun-ui/.env
-
-# Phải là:
-VITE_API_URL=http://localhost:5000/api
-```
-
-**Clear cache:**
-```bash
-cd scifun-ui
-rm -rf node_modules
-npm install
-npm run start
-```
-
----
-
 #### **Elasticsearch không kết nối**
 
 - ✅ Kiểm tra `ES_NODE` có đúng format: `https://xxx.es.region.gcp.elastic.cloud:443`
 - ✅ Verify `ES_API_KEY` còn hiệu lực (tạo key mới nếu cần)
-- ✅ Test bằng curl:
-```bash
-curl -H "Authorization: ApiKey YOUR_KEY" https://your-endpoint:443
-```
-
-- ✅ Check firewall không block port 443
 
 ---
 
@@ -578,16 +521,6 @@ curl -H "Authorization: ApiKey YOUR_KEY" https://your-endpoint:443
 - ✅ Verify Gmail App Password đã tạo đúng
 - ✅ Xóa khoảng trắng trong password
 - ✅ Kiểm tra 2-Step Verification đã bật
-- ✅ Thử gửi test email:
-```bash
-# Từ Postman hoặc curl
-POST http://localhost:5000/api/auth/test-email
-{
-  "to": "test@example.com",
-  "subject": "Test Email",
-  "text": "Hello from SciFun"
-}
-```
 
 ---
 
@@ -637,86 +570,9 @@ POST http://localhost:5000/api/auth/test-email
 
 ---
 
-## 🔒 Bảo mật
-
-### Lưu ý quan trọng:
-
-- ⚠️ **KHÔNG BAO GIỜ** commit file `.env` lên Git
-- ✅ Thêm `.env` vào `.gitignore`
-- ✅ Sử dụng `.env.example` làm template (không chứa giá trị thật)
-- ✅ Đổi tất cả credentials khi deploy production
-- ✅ Sử dụng JWT secret mạnh (tối thiểu 32 ký tự)
-- ✅ Bật HTTPS khi deploy lên server thật
-- 🔐 Elasticsearch API Key nên set expiration cho production
-- 🔑 Gmail App Password tạo riêng cho từng môi trường
-- 🛡️ Enable rate limiting cho API endpoints
-- 🚫 Không log sensitive data (passwords, tokens, API keys)
-
-### File `.gitignore` mẫu:
-```gitignore
-# Environment variables
-.env
-.env.local
-.env.production
-
-# Dependencies
-node_modules/
-package-lock.json
-yarn.lock
-
-# Logs
-logs/
-*.log
-npm-debug.log*
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Build
-dist/
-build/
-
-# Database backups
-*.bak
-database/backup/*
-```
-
----
-
 ## 🚀 Chạy cả Backend và Frontend cùng lúc
 
-### Sử dụng Concurrently (Recommended)
-
-**Cài đặt concurrently ở thư mục root:**
-```bash
-# Ở thư mục scifun/
-npm install -g concurrently
-```
-
-**Tạo script trong `package.json` (root):**
-```json
-{
-  "scripts": {
-    "dev": "concurrently \"cd scifun-api && npm run dev\" \"cd scifun-ui && npm run start\"",
-    "dev:backend": "cd scifun-api && npm run dev",
-    "dev:frontend": "cd scifun-ui && npm run start"
-  }
-}
-```
-
-**Chạy cả 2:**
-```bash
-npm run dev
-```
-
-### Hoặc dùng 2 Terminal riêng:
+### Dùng 2 Terminal riêng:
 
 **Terminal 1 - Backend:**
 ```bash
@@ -736,36 +592,18 @@ npm run start
 
 Nếu có bất kỳ câu hỏi nào, vui lòng liên hệ nhóm phát triển:
 
-- **Email:** contact@scifun.com
-- **GitHub Issues:** [https://github.com/your-username/scifun/issues](https://github.com/your-username/scifun/issues)
-- **Facebook:** [https://facebook.com/scifun](https://facebook.com/scifun)
-- **Documentation:** [https://docs.scifun.com](https://docs.scifun.com)
+- **Email:** phanduykiet22@gmail.com
+- **GitHub Issues:** ...
+- **Facebook:** ...
+- **Documentation:** ...
 
 ---
 
 ## 👥 Nhóm phát triển
 
-- **Nguyễn Văn A** - Full-stack Developer - [GitHub](https://github.com/user-a)
-- **Trần Thị B** - Frontend Developer - [GitHub](https://github.com/user-b)
-- **Lê Văn C** - Backend Developer - [GitHub](https://github.com/user-c)
-
----
-
-## 📄 License
-
-Dự án này được phân phối dưới giấy phép MIT. Xem file `LICENSE` để biết thêm chi tiết.
-
----
-
-## 🙏 Acknowledgments
-
-- [Node.js](https://nodejs.org/) - JavaScript Runtime
-- [React](https://react.dev/) - UI Library
-- [MongoDB](https://www.mongodb.com/) - Database
-- [Elasticsearch](https://www.elastic.co/) - Search Engine
-- [Cloudinary](https://cloudinary.com/) - Image Storage
-- [Socket.IO](https://socket.io/) - Realtime Communication
-
+- **Phan Duy Kiệt** - Backend Developer
+- **Phùng Gia Long** - Frontend Developer
+- **Trương Quốc Duy** - Frontend Developer
 ---
 
 **Made with ❤️ by SciFun Team**
