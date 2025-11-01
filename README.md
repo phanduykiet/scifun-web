@@ -18,7 +18,7 @@ SciFun là nền tảng học tập trực tuyến chuyên về kiến thức kh
 ![Đăng nhập](https://github.com/phanduykiet/scifun-web/blob/main/scifun-ui/src/assets/dang_nhap.png?raw=true)
 
 ### Đăng xuất
-![Đăng xuất](https://github.com/phanduykiet/scifun-web/blob/main/scifun-ui/src/assets/dang_xuat.png?raw=true)
+![Đăng xuất](<img width="1781" height="825" alt="image" src="https://github.com/user-attachments/assets/b81ff31b-1587-467c-9862-519fca904db9" />)
 
 ### Làm bài trắc nghiệm
 ![Làm bài trắc nghiệm](https://github.com/phanduykiet/scifun-web/blob/main/scifun-ui/src/assets/lam_bai_trac_nghiem.png?raw=true)
