@@ -86,10 +86,6 @@ SciFun là nền tảng học tập trực tuyến chuyên về kiến thức kh
   - Thêm/sửa/xóa câu hỏi
   - Thêm giải thích cho đáp án
   - Sync dữ liệu lên Elasticsearch
-- **Gửi thông báo:**
-  - Gửi notification đến tất cả user
-  - Gửi notification đến user cụ thể
-  - Gửi email hàng loạt
 - **Thống kê hệ thống:**
   - Tổng số user đăng ký
   - Số quiz được tạo
@@ -118,20 +114,16 @@ SciFun là nền tảng học tập trực tuyến chuyên về kiến thức kh
 | Node.js | 18.x+ | [https://nodejs.org/](https://nodejs.org/) |
 | npm hoặc yarn | Latest | Đi kèm với Node.js |
 
-#### Optional (DevOps)
-| Công cụ | Tải về |
-|---------|--------|
-| Git | [https://git-scm.com/downloads](https://git-scm.com/downloads) |
-
----
-
 ### 📥 Các bước cài đặt:
+
+#### 1. Clone repository:
+# Câu lệnh
+git clone https://github.com/your-username/scifun.git
 
 #### 1. Backend (Node.js + Express + MongoDB):
 ```bash
 # Clone repository
-git clone https://github.com/your-username/scifun.git
-cd scifun/backend
+cd scifun-api
 
 # Cài đặt dependencies
 npm install
@@ -214,11 +206,6 @@ mongod
 ```bash
 docker run -d -p 27017:27017 --name mongodb mongo:latest
 ```
-
-**Cách 3: MongoDB Atlas (Cloud)**
-1. Đăng ký tại [https://www.mongodb.com/cloud/atlas](https://www.mongodb.com/cloud/atlas)
-2. Tạo cluster miễn phí
-3. Copy connection string và cập nhật vào `.env`
 
 #### 3. Elasticsearch (Optional - Cho tìm kiếm nâng cao):
 
