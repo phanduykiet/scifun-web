@@ -23,7 +23,7 @@ const TopicList: React.FC = () => {
     try {
       const res = await getTopicsBySubjectApi("", 1, 10);
       const topics = res.data.topics ?? res.data ?? [];
-      
+
       setTopics(topics);
       console.debug(`🎯 Đã load ${topics.length} topics`);
     } catch (err) {
@@ -32,7 +32,7 @@ const TopicList: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };   
+  };
 
   useEffect(() => {
     fetchAllTopics();
@@ -82,18 +82,26 @@ const TopicList: React.FC = () => {
         >
           Ôn tập theo chủ đề
         </h3>
-        <Link to="/subject/" className="text-decoration-none text-success fw-semibold">
+        <Link
+          to="/subject/"
+          className="text-decoration-none text-success fw-semibold"
+        >
           Xem tất cả →
         </Link>
       </div>
 
       {/* Carousel danh sách chủ đề */}
-      <div className="overflow-hidden position-relative" style={{ paddingRight: "50px" }}>
+      <div
+        className="overflow-hidden position-relative"
+        style={{ paddingRight: "50px" }}
+      >
         <div
           className="d-flex transition-transform"
           style={{
             gap: "1.5rem",
-            transform: `translateX(-${currentIndex * (100 / topicsPerView)}%)`,
+            transform: `translateX(calc(-${currentIndex * 25}% - ${
+              currentIndex * 3
+            }rem))`,
             transition: "transform 0.3s ease-in-out",
           }}
         >
@@ -123,9 +131,9 @@ const TopicList: React.FC = () => {
           <button
             onClick={handlePrev}
             className="btn btn-success position-absolute shadow"
-            style={{ 
-              borderRadius: "50%", 
-              width: "40px", 
+            style={{
+              borderRadius: "50%",
+              width: "40px",
               height: "40px",
               padding: 0,
               display: "flex",
@@ -134,7 +142,7 @@ const TopicList: React.FC = () => {
               top: "50%",
               left: "0",
               marginTop: "-20px",
-              zIndex: 10
+              zIndex: 10,
             }}
           >
             <ChevronLeft size={20} />
@@ -146,9 +154,9 @@ const TopicList: React.FC = () => {
           <button
             onClick={handleNext}
             className="btn btn-success position-absolute shadow"
-            style={{ 
-              borderRadius: "50%", 
-              width: "40px", 
+            style={{
+              borderRadius: "50%",
+              width: "40px",
               height: "40px",
               padding: 0,
               display: "flex",
@@ -157,7 +165,7 @@ const TopicList: React.FC = () => {
               top: "50%",
               right: "0",
               marginTop: "-20px",
-              zIndex: 10
+              zIndex: 10,
             }}
           >
             <ChevronRight size={20} />

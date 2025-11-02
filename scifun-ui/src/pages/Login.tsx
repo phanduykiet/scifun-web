@@ -9,6 +9,11 @@ import Toast from "../components/common/Toast";
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [errors, setErrors] = useState<{ email?: string; password?: string }>(
+    {}
+  );
+  const [submitted, setSubmitted] = useState(false);
+
   const [toast, setToast] = useState<{
     message: string;
     subtitle?: string;
@@ -21,8 +26,29 @@ export default function Login() {
   if (!authContext) return null;
   const { setAuth } = authContext;
 
+  const validate = () => {
+    const newErrors: { email?: string; password?: string } = {};
+    if (!email) {
+      newErrors.email = "Email là bắt buộc.";
+    } else if (!email.includes("@")) {
+      newErrors.email = "Email không hợp lệ.";
+    }
+
+    if (!password) {
+      newErrors.password = "Mật khẩu là bắt buộc.";
+    } else if (password.length < 6) {
+      newErrors.password = "Mật khẩu phải có ít nhất 6 ký tự.";
+    }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSubmitted(true);
+    if (!validate()) {
+      return;
+    }
     try {
       const res = await loginApi(email, password);
       console.log("user: ", res);
@@ -52,7 +78,7 @@ export default function Login() {
       if (token) {
         localStorage.setItem("token", token);
       }
-      
+
       localStorage.setItem("user", JSON.stringify(user));
 
       setAuth({
@@ -161,21 +187,32 @@ export default function Login() {
                 type="email"
                 placeholder="Nhập email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  if (submitted) validate();
+                }}
                 required
+                error={errors.email}
               />
               <Input
                 label="Mật khẩu"
                 type="password"
                 placeholder="Nhập mật khẩu"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  if (submitted) validate();
+                }}
                 required
+                error={errors.password}
               />
             </div>
 
             <div>
-              <Button type="submit" style={{ width: "100%", marginTop: "10px" }}>
+              <Button
+                type="submit"
+                style={{ width: "100%", marginTop: "10px" }}
+              >
                 Đăng nhập
               </Button>
 

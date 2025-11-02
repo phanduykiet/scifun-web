@@ -10,7 +10,13 @@ export default function Register() {
   const [fullname, setFullname] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [hasHint, setHasHint] = useState(false);
+  const [errors, setErrors] = useState<{
+    fullname?: string;
+    email?: string;
+    password?: string;
+    confirmPassword?: string;
+  }>({});
+  const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState<{
     message: string;
@@ -20,37 +26,46 @@ export default function Register() {
 
   const navigate = useNavigate();
 
+  const validate = () => {
+    const newErrors: typeof errors = {};
+    if (!fullname) newErrors.fullname = "Họ và tên là bắt buộc.";
+
+    if (!email) {
+      newErrors.email = "Email là bắt buộc.";
+    } else if (!email.includes("@")) {
+      newErrors.email = "Email không hợp lệ.";
+    }
+
+    if (!password) {
+      newErrors.password = "Mật khẩu là bắt buộc.";
+    } else if (password.length < 6) {
+      newErrors.password = "Mật khẩu phải có ít nhất 6 ký tự.";
+    }
+
+    if (password !== confirmPassword) {
+      newErrors.confirmPassword = "Mật khẩu xác nhận không khớp.";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-  
-    if (hasHint) {
-      setToast({
-        message: "Thông tin chưa hợp lệ!",
-        subtitle: "Vui lòng kiểm tra lại các trường.",
-        type: "error",
-      });
+    setSubmitted(true);
+    if (!validate()) {
       return;
     }
-  
-    if (password !== confirmPassword) {
-      setToast({
-        message: "Mật khẩu không khớp!",
-        subtitle: "Vui lòng kiểm tra lại mật khẩu và xác nhận mật khẩu.",
-        type: "error",
-      });
-      return;
-    }
-  
     try {
       setLoading(true); // ✅ bật loading
       const res = await createUserApi(email, password, fullname);
-  
+
       setToast({
         message: "Đăng ký thành công!",
         subtitle: res.data?.message || "Tài khoản của bạn đã được tạo.",
         type: "success",
       });
-  
+
       // ✅ Toast thông báo đang chuyển
       setTimeout(() => {
         setToast({
@@ -59,9 +74,11 @@ export default function Register() {
           type: "info",
         });
       }, 800);
-  
+
       setTimeout(() => {
-        navigate("/otp", { state: { email, password, fullname ,flow: "register" } });
+        navigate("/otp", {
+          state: { email, password, fullname, flow: "register" },
+        });
       }, 2000);
     } catch (err: any) {
       setToast({
@@ -72,7 +89,7 @@ export default function Register() {
     } finally {
       setLoading(false); // ✅ tắt loading
     }
-  };  
+  };
 
   const cardWidth = 400;
   const cardHeight = 520;
@@ -112,23 +129,23 @@ export default function Register() {
         </div>
 
         {/* Bên phải - Form */}
-        <div 
-          className="p-4" 
-          style={{ 
+        <div
+          className="p-4"
+          style={{
             width: cardWidth,
             height: cardHeight,
-            display: "flex", 
-            flexDirection: "column" 
+            display: "flex",
+            flexDirection: "column",
           }}
         >
           <h4 className="text-center mb-3">Đăng ký</h4>
-          <form 
+          <form
             onSubmit={handleSubmit}
-            style={{ 
-              flex: 1, 
-              display: "flex", 
-              flexDirection: "column", 
-              justifyContent: "space-between" 
+            style={{
+              flex: 1,
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "space-between",
             }}
           >
             <div>
@@ -137,39 +154,51 @@ export default function Register() {
                 type="text"
                 placeholder="Nhập họ và tên"
                 value={fullname}
-                onChange={(e) => setFullname(e.target.value)}
-                onHintChange={(hasHint) => setHasHint(hasHint)}
+                onChange={(e) => {
+                  setFullname(e.target.value);
+                  if (submitted) validate();
+                }}
                 required
+                error={errors.fullname}
               />
               <Input
                 label="Email"
                 type="email"
                 placeholder="Nhập email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                onHintChange={(hasHint) => setHasHint(hasHint)}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  if (submitted) validate();
+                }}
                 required
+                error={errors.email}
               />
               <Input
                 label="Mật khẩu"
                 type="password"
                 placeholder="Nhập mật khẩu"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                onHintChange={(hasHint) => setHasHint(hasHint)}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  if (submitted) validate();
+                }}
                 required
+                error={errors.password}
               />
               <Input
                 label="Xác nhận mật khẩu"
                 type="password"
                 placeholder="Nhập lại mật khẩu"
                 value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                onHintChange={(hasHint) => setHasHint(hasHint)}
+                onChange={(e) => {
+                  setConfirmPassword(e.target.value);
+                  if (submitted) validate();
+                }}
                 required
+                error={errors.confirmPassword}
               />
             </div>
-            
+
             <div>
               <Button
                 type="submit"
