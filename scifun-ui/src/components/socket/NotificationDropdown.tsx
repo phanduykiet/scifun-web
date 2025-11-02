@@ -2,16 +2,22 @@ import React, { useEffect, useState, useRef } from "react";
 import { socket } from "../../util/socket";
 import { getNotificationsApi, markAsReadApi, markAllAsReadApi } from "../../util/api";
 
-// Updated interface to match API response
+// Updated interface to include rank change notifications
 interface Notification {
   _id: string;
   userId: string;
-  type: "COMMENT_REPLY";
+  type: "COMMENT_REPLY" | "RANK_CHANGED";
   title: string;
   message: string;
   data: {
-    commentId: string;
+    commentId?: string;
     parentId?: string;
+    subjectId?: string;
+    subjectName?: string;
+    period?: "daily" | "weekly" | "monthly" | "alltime";
+    oldRank?: number;
+    newRank?: number;
+    change?: "up" | "down";
   };
   link: string;
   isRead: boolean;
@@ -104,7 +110,7 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
         const notification: Notification = {
           _id: data.notificationId || data._id,
           userId: data.userId || "",
-          type: "COMMENT_REPLY",
+          type: data.type || "COMMENT_REPLY",
           title: data.title || "Có phản hồi mới 💬",
           message: data.message || "",
           data: {
@@ -120,7 +126,6 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
         setUnreadCount(prev => prev + 1);
 
         if (Notification.permission === "granted") {
-          const userName = extractUserName(notification.message);
           new Notification(notification.title, {
             body: notification.message,
           });
@@ -145,12 +150,49 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
       }
     };
 
+    // 🔔 Handle rank change notification
+    const handleRankChange = (data: any) => {
+      const notification: Notification = {
+        _id: `rank_${Date.now()}`,
+        userId: data.userId || "",
+        type: "RANK_CHANGED",
+        title: data.change === "up" ? "🎉 Hạng của bạn đã tăng!" : "📉 Hạng của bạn đã thay đổi",
+        message: `Hạng của bạn trong môn ${data.subjectName} đã thay đổi: Hạng ${data.oldRank} → Hạng ${data.newRank}`,
+        data: {
+          subjectId: data.subjectId,
+          subjectName: data.subjectName,
+          period: data.period,
+          oldRank: data.oldRank,
+          newRank: data.newRank,
+          change: data.change,
+        },
+        link: `/leaderboard?subject=${data.subjectId}`,
+        isRead: false,
+        createdAt: new Date().toISOString(),
+      };
+
+      setNotifications(prev => [notification, ...prev]);
+      setUnreadCount(prev => prev + 1);
+
+      // Browser notification
+      if (Notification.permission === "granted") {
+        new Notification(notification.title, {
+          body: notification.message,
+          icon: data.change === "up" 
+            ? "https://cdn-icons-png.flaticon.com/512/179/179386.png"
+            : "https://cdn-icons-png.flaticon.com/512/179/179377.png",
+        });
+      }
+    };
+
     socket.on("comment:reply", handleNewNotification);
     socket.on("notification:new", handleNewNotification);
+    socket.on("leaderboard:rankChanged", handleRankChange);
 
     return () => {
       socket.off("comment:reply", handleNewNotification);
       socket.off("notification:new", handleNewNotification);
+      socket.off("leaderboard:rankChanged", handleRankChange);
     };
   }, []);
 
@@ -182,6 +224,17 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
 
   const handleMarkAsRead = async (notificationId: string) => {
     try {
+      // Skip API call for temporary rank change notifications
+      if (notificationId.startsWith('rank_')) {
+        setNotifications(prev =>
+          prev.map(n =>
+            n._id === notificationId ? { ...n, isRead: true } : n
+          )
+        );
+        setUnreadCount(prev => Math.max(0, prev - 1));
+        return;
+      }
+
       await markAsReadApi(notificationId);
       
       setNotifications(prev =>
@@ -217,12 +270,109 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
     // Close dropdown
     setIsOpen(false);
     
-    // Open comment modal if callback provided
-    if (onOpenCommentModal) {
-      // Nếu có parentId thì mở reply modal, nếu không thì mở comment modal
+    // Handle different notification types
+    if (notification.type === "RANK_CHANGED") {
+      // Navigate to leaderboard page
+      window.location.href = notification.link;
+    } else if (notification.type === "COMMENT_REPLY" && onOpenCommentModal) {
+      // Open comment modal
       onOpenCommentModal(
-        notification.data.commentId,
+        notification.data.commentId!,
         notification.data.parentId
+      );
+    }
+  };
+
+  // Render notification icon based on type
+  const renderNotificationIcon = (notification: Notification) => {
+    if (notification.type === "RANK_CHANGED") {
+      const bgColor = notification.data.change === "up" ? "#28a745" : "#ffc107";
+      const emoji = notification.data.change === "up" ? "📈" : "📉";
+      
+      return (
+        <div
+          style={{
+            width: "48px",
+            height: "48px",
+            borderRadius: "50%",
+            backgroundColor: bgColor,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: "1.5rem",
+          }}
+        >
+          {emoji}
+        </div>
+      );
+    } else {
+      // Comment reply notification
+      const userName = extractUserName(notification.message);
+      return (
+        <div
+          style={{
+            width: "48px",
+            height: "48px",
+            borderRadius: "50%",
+            backgroundColor: getRandomColor(userName),
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: "white",
+            fontWeight: "bold",
+            fontSize: "0.9rem",
+          }}
+        >
+          {getInitials(userName)}
+        </div>
+      );
+    }
+  };
+
+  // Render notification content based on type
+  const renderNotificationContent = (notification: Notification) => {
+    if (notification.type === "RANK_CHANGED") {
+      return (
+        <>
+          <div className="mb-1">
+            <span className="fw-semibold">Hạng môn {notification.data.subjectName}</span>
+            <span className="text-muted ms-1">của bạn đã {notification.data.change === "up" ? "tăng" : "giảm"}</span>
+          </div>
+          <p
+            className="mb-1 text-muted"
+            style={{
+              fontSize: "0.9rem",
+            }}
+          >
+            Hạng {notification.data.oldRank} → Hạng {notification.data.newRank}
+          </p>
+        </>
+      );
+    } else {
+      // Comment reply notification
+      const userName = extractUserName(notification.message);
+      const content = extractContent(notification.message);
+      
+      return (
+        <>
+          <div className="mb-1">
+            <span className="fw-semibold">{userName}</span>
+            <span className="text-muted ms-1">đã trả lời bình luận của bạn</span>
+          </div>
+          <p
+            className="mb-1 text-muted"
+            style={{
+              fontSize: "0.9rem",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              display: "-webkit-box",
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: "vertical",
+            }}
+          >
+            {content}
+          </p>
+        </>
       );
     }
   };
@@ -315,46 +465,28 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
                 <p className="mb-0">Chưa có thông báo nào</p>
               </div>
             ) : (
-              notifications.map((notif) => {
-                const userName = extractUserName(notif.message);
-                const content = extractContent(notif.message);
-                
-                return (
-                  <div
-                    key={notif._id}
-                    className={`d-flex align-items-start p-3 border-bottom cursor-pointer ${
-                      !notif.isRead ? "bg-light" : ""
-                    }`}
-                    onClick={() => handleNotificationClick(notif)}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = "#f8f9fa";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = notif.isRead ? "white" : "#f8f9fa";
-                    }}
-                    style={{
-                      cursor: "pointer",
-                      transition: "background-color 0.2s",
-                    }}
-                  >
-                    <div className="position-relative me-3" style={{ flexShrink: 0 }}>
-                      <div
-                        style={{
-                          width: "48px",
-                          height: "48px",
-                          borderRadius: "50%",
-                          backgroundColor: getRandomColor(userName),
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          color: "white",
-                          fontWeight: "bold",
-                          fontSize: "0.9rem",
-                        }}
-                      >
-                        {getInitials(userName)}
-                      </div>
-                      
+              notifications.map((notif) => (
+                <div
+                  key={notif._id}
+                  className={`d-flex align-items-start p-3 border-bottom cursor-pointer ${
+                    !notif.isRead ? "bg-light" : ""
+                  }`}
+                  onClick={() => handleNotificationClick(notif)}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = "#f8f9fa";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = notif.isRead ? "white" : "#f8f9fa";
+                  }}
+                  style={{
+                    cursor: "pointer",
+                    transition: "background-color 0.2s",
+                  }}
+                >
+                  <div className="position-relative me-3" style={{ flexShrink: 0 }}>
+                    {renderNotificationIcon(notif)}
+                    
+                    {notif.type === "COMMENT_REPLY" && (
                       <div
                         className="position-absolute bottom-0 end-0 bg-primary rounded-circle d-flex align-items-center justify-content-center"
                         style={{
@@ -373,47 +505,29 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
                           <path d="M10.5 2H8.5V1C8.5 0.4 8.1 0 7.5 0H4.5C3.9 0 3.5 0.4 3.5 1V2H1.5C0.9 2 0.5 2.4 0.5 3V11C0.5 11.6 0.9 12 1.5 12H10.5C11.1 12 11.5 11.6 11.5 11V3C11.5 2.4 11.1 2 10.5 2ZM4.5 1H7.5V2H4.5V1ZM3 9.5L1.5 8L2.2 7.3L3 8.1L5.3 5.8L6 6.5L3 9.5Z" />
                         </svg>
                       </div>
-                    </div>
+                    )}
+                  </div>
 
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div className="mb-1">
-                        <span className="fw-semibold">{userName}</span>
-                        <span className="text-muted ms-1">
-                          đã trả lời bình luận của bạn
-                        </span>
-                      </div>
-                      <p
-                        className="mb-1 text-muted"
-                        style={{
-                          fontSize: "0.9rem",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          display: "-webkit-box",
-                          WebkitLineClamp: 2,
-                          WebkitBoxOrient: "vertical",
-                        }}
-                      >
-                        {content}
-                      </p>
-                      <div className="d-flex align-items-center">
-                        <small className="text-primary">
-                          {formatDate(notif.createdAt)}
-                        </small>
-                        {!notif.isRead && (
-                          <span
-                            className="ms-2 bg-primary rounded-circle"
-                            style={{
-                              width: "8px",
-                              height: "8px",
-                              display: "inline-block",
-                            }}
-                          ></span>
-                        )}
-                      </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    {renderNotificationContent(notif)}
+                    <div className="d-flex align-items-center">
+                      <small className="text-primary">
+                        {formatDate(notif.createdAt)}
+                      </small>
+                      {!notif.isRead && (
+                        <span
+                          className="ms-2 bg-primary rounded-circle"
+                          style={{
+                            width: "8px",
+                            height: "8px",
+                            display: "inline-block",
+                          }}
+                        ></span>
+                      )}
                     </div>
                   </div>
-                );
-              })
+                </div>
+              ))
             )}
           </div>
         </div>

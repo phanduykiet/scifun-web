@@ -12,7 +12,7 @@ const TopicCard: React.FC<TopicCardProps> = ({ topic, onClick }) => {
     <div
       className="card shadow-sm"
       style={{
-        width: "18rem",
+        width: "17rem",
         height: "25rem",
         borderRadius: "12px",
         overflow: "hidden",

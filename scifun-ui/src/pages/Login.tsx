@@ -154,7 +154,7 @@ export default function Login() {
         {/* Bên trái - Ảnh */}
         <div style={{ width: cardWidth, height: cardHeight }}>
           <img
-            src="https://png.pngtree.com/thumb_back/fh260/background/20210902/pngtree-hand-gesture-handshake-cooperation-technology-business-photography-map-map-business-people-image_789752.jpg"
+            src="https://res.cloudinary.com/dglm2f7sr/image/upload/v1762095330/scifun_q6nehn.png"
             alt="Login Illustration"
             style={{ width: "100%", height: "100%", objectFit: "cover" }}
           />
