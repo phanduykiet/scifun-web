@@ -65,8 +65,6 @@ const TrendingQuizList: React.FC = () => {
       const sortedQuizzes = trendingData.map((tq: any) => 
         enrichedQuizzes.find(eq => eq._id === tq._id) || { ...tq, accessTier: "FREE" }
       );
-
-      console.log("✅ Quizzes enriched:", sortedQuizzes);
       setQuizzes(sortedQuizzes);
     } catch (err) {
       console.error("❌ Lỗi tải danh sách quiz:", err);

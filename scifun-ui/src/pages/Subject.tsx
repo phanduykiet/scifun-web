@@ -28,10 +28,13 @@ const SubjectPage: React.FC = () => {
         const res = await getLessonListApi("1", "50", "");
         const subjectList = res.data.subjects || [];
         setSubjects(subjectList);
-
+        
         if (location.state) {
           const s = location.state as any;
           const found = subjectList.find((sub: any) => sub._id === s._id);
+          console.log("location.state:", location.state);
+          console.log("subjectList:", subjectList);
+          console.log("found:", found?._id);
           if (found) {
             setSubject(found);
             setSelectedSubject(found._id);
@@ -58,10 +61,12 @@ const SubjectPage: React.FC = () => {
   // === Lấy chủ đề theo selectedSubject & searchInput ===
   useEffect(() => {
     const fetchTopics = async () => {
+      if (loadingPage) return;
       setLoadingTopics(true);
       try {
+        console.log("selectsubject:", selectedSubject);
         const topicRes = await getTopicsBySubjectApi(
-          selectedSubject || undefined, // nếu rỗng thì lấy tất cả
+          selectedSubject, // nếu rỗng thì lấy tất cả
           1,
           50,
           searchInput.trim() || undefined // thêm search nếu có
@@ -81,7 +86,7 @@ const SubjectPage: React.FC = () => {
     };
 
     fetchTopics();
-  }, [selectedSubject, searchInput]); // ✅ chỉ cần 2 dependency này
+  }, [selectedSubject, searchInput, loadingPage]); // ✅ chỉ cần 2 dependency này
 
   // === Lọc dữ liệu hiển thị ===
   const filteredTopics = topics.filter((t) =>
