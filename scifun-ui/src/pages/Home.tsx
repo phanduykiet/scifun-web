@@ -161,17 +161,19 @@ const Home: React.FC = () => {
           <p style={{ fontSize: "1.2rem", marginBottom: "2rem", opacity: 0.9 }}>
             Tham gia cùng hàng ngàn học viên đang học tập trên SciFun
           </p>
-          <button 
-            className="btn btn-light btn-lg px-5 py-3" 
-            style={{ 
-              borderRadius: "50px", 
-              fontWeight: "600",
-              fontSize: "1.1rem",
-              boxShadow: "0 4px 15px rgba(0,0,0,0.2)"
-            }}
-          >
-            Bắt đầu ngay
-          </button>
+          <a href="#lessons-section">
+            <button 
+              className="btn btn-light btn-lg px-5 py-3"
+              style={{
+                borderRadius: "50px",
+                fontWeight: "600",
+                fontSize: "1.1rem",
+                boxShadow: "0 4px 15px rgba(0,0,0,0.2)"
+              }}
+            >
+              Bắt đầu ngay
+            </button>
+          </a>
         </div>
       </section>
 

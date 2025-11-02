@@ -110,7 +110,7 @@
 
 /* Dropdown mở trong navbar trắng */
 .white-navbar .dropdown.show .dropdown-toggle {
-  color: #198754 !important;
+  color: #fff !important;
   background-color: rgba(25, 135, 84, 0.15);
 }
 
@@ -305,3 +305,56 @@
     display: none;
   }
 }
+/* Khi dropdown mở (cả trường hợp `.dropdown.show` hoặc button có aria-expanded="true") */
+/* đảm bảo nền sáng và chữ hiển thị rõ, áp dụng cả khi không hover */
+.transparent-navbar .dropdown.show .btn-outline-light,
+.transparent-navbar .dropdown.show .dropdown-toggle,
+.transparent-navbar .btn-outline-light[aria-expanded="true"],
+.transparent-navbar .dropdown-toggle[aria-expanded="true"] {
+  background-color: rgba(255, 255, 255, 0.95) !important; /* nền sáng */
+  color: #198754 !important; /* chữ xanh - dễ nhìn trên nền sáng */
+  border-color: white !important;
+}
+
+/* Đảm bảo khi đang mở nhưng hover cũng giữ chữ xanh (không đổi thành trắng bị lẫn nền) */
+.transparent-navbar .dropdown.show .btn-outline-light:hover,
+.transparent-navbar .dropdown.show .dropdown-toggle:hover,
+.transparent-navbar .btn-outline-light[aria-expanded="true"]:hover,
+.transparent-navbar .dropdown-toggle[aria-expanded="true"]:hover {
+  color: #198754 !important;
+}
+
+/* Nếu có rule nào làm chữ thành trắng trên nền sáng (ví dụ .btn-light), chặn nó */
+.transparent-navbar .dropdown.show .btn-outline-light,
+.transparent-navbar .btn-outline-light[aria-expanded="true"] {
+  /* vô hiệu hóa các màu chữ trắng mặc định */
+  -webkit-text-fill-color: #198754 !important;
+  color: #198754 !important;
+}
+/* ✅ Khi dropdown mở trong navbar trắng → chữ xanh đậm, nền sáng */
+.white-navbar .dropdown.show .dropdown-toggle,
+.white-navbar .dropdown-toggle[aria-expanded="true"],
+.white-navbar .dropdown.show .btn-outline-success,
+.white-navbar .btn-outline-success[aria-expanded="true"] {
+  background-color: rgba(25, 135, 84, 0.15) !important; /* nền xanh nhạt */
+  color: #198754 !important; /* chữ xanh đậm */
+  border-color: #198754 !important;
+}
+
+/* ✅ Khi hover lúc đang mở vẫn giữ đúng màu */
+.white-navbar .dropdown.show .dropdown-toggle:hover,
+.white-navbar .dropdown-toggle[aria-expanded="true"]:hover,
+.white-navbar .dropdown.show .btn-outline-success:hover,
+.white-navbar .btn-outline-success[aria-expanded="true"]:hover {
+  background-color: rgba(25, 135, 84, 0.2) !important;
+  color: #146c43 !important; /* xanh đậm hơn khi hover */
+  border-color: #198754 !important;
+}
+
+/* Chặn trường hợp bị đổi màu chữ thành trắng */
+.white-navbar .dropdown.show .dropdown-toggle,
+.white-navbar .dropdown-toggle[aria-expanded="true"] {
+  -webkit-text-fill-color: #198754 !important;
+}
+
+

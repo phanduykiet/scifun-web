@@ -93,7 +93,7 @@ const TopicList: React.FC = () => {
           className="d-flex transition-transform"
           style={{
             gap: "1.5rem",
-            transform: `translateX(-${currentIndex * (100 / topicsPerView)}%)`,
+            transform: `translateX(-${currentIndex * (105 / topicsPerView)}%)`,
             transition: "transform 0.3s ease-in-out",
           }}
         >
@@ -117,9 +117,9 @@ const TopicList: React.FC = () => {
             </div>
           ))}
         </div>
-
-        {/* Nút chuyển trái */}
-        {currentIndex > 0 && (
+      </div>
+      {/* Nút chuyển trái */}
+      {currentIndex > 0 && (
           <button
             onClick={handlePrev}
             className="btn btn-success position-absolute shadow"
@@ -132,7 +132,7 @@ const TopicList: React.FC = () => {
               alignItems: "center",
               justifyContent: "center",
               top: "50%",
-              left: "0",
+              left: "-32px",
               marginTop: "-20px",
               zIndex: 10
             }}
@@ -155,7 +155,7 @@ const TopicList: React.FC = () => {
               alignItems: "center",
               justifyContent: "center",
               top: "50%",
-              right: "0",
+              right: "-16px",
               marginTop: "-20px",
               zIndex: 10
             }}
@@ -163,7 +163,6 @@ const TopicList: React.FC = () => {
             <ChevronRight size={20} />
           </button>
         )}
-      </div>
     </div>
   );
 };

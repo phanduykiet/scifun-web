@@ -117,7 +117,7 @@ const TrendingQuizList: React.FC = () => {
             gap: "1.5rem",
             transform: `translateX(-${currentIndex * (100 / quizzesPerView)}%)`,
             transition: "transform 0.3s ease-in-out",
-            overflow: "visible", // ✅ THÊM: Cho phép nội dung tràn ra
+            overflow: "visible", 
           }}
         >
           {quizzes.map((quiz) => (
@@ -151,7 +151,7 @@ const TrendingQuizList: React.FC = () => {
           <button
             onClick={handlePrev}
             className="btn btn-success position-absolute top-50 start-0 translate-middle-y"
-            style={{ width: 40, height: 40, borderRadius: "50%", zIndex: 10 }} // ✅ THÊM zIndex
+            style={{ width: 40, height: 40, borderRadius: "50%", zIndex: 10 }}
           >
             <ChevronLeft size={20} />
           </button>
@@ -161,7 +161,7 @@ const TrendingQuizList: React.FC = () => {
           <button
             onClick={handleNext}
             className="btn btn-success position-absolute top-50 end-0 translate-middle-y"
-            style={{ width: 40, height: 40, borderRadius: "50%", zIndex: 10 }} // ✅ THÊM zIndex
+            style={{ width: 40, height: 40, borderRadius: "50%", zIndex: 10 }} 
           >
             <ChevronRight size={20} />
           </button>
